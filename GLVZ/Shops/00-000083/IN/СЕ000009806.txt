@@ -1,0 +1,47 @@
+﻿{
+ "WBRegId": "СЕ000009806",
+ "NUMBER": "СЕ000009806",
+ "Date": "2018-05-29T14:59:52",
+ "SkladID": "00-000004",
+ "SkladName": "Магазин №17(Р) _К.МАРКСА",
+ "PostID": "010000004469",
+ "PostName": "ОАО \"ЛВЗ \"Глазовский\"",
+ "Content": [
+  {
+   "position": "1",
+   "alccode": "0011813000001186643",
+   "name": "Аперитив \"Степные травы\"",
+   "Capacity": 0.5,
+   "AlcVolume": 18,
+   "QTY": 1,
+   "Price": 119.6,
+   "BottlingDate": "2018-04-18",
+   "Marked": 1,
+   "MarkInfo": [
+    {"Box": "BOX01", "Mark": "MARK01-01"},
+    {"Box": "BOX01", "Mark": "MARK01-02"},
+    {"Box": "", "Mark": "MARK01-03"},
+    {"Box": "", "Mark": "MARK01-04"}
+   ]
+  },
+  {
+   "position": "2",
+   "alccode": "0011813000001188999",
+   "name": "Водка особая \"Глазов\"",
+   "Capacity": 0.1,
+   "AlcVolume": 40,
+   "QTY": 2,
+   "Price": 39.99,
+   "BottlingDate": "2018-04-11",
+   "Marked": 1,
+   "MarkInfo": [
+    {"Box": "BOX02", "Mark": "MARK02-01"},
+    {"Box": "BOX02", "Mark": "MARK02-02"},
+    {"Box": "BOX02", "Mark": "MARK02-03"},
+    {"Box": "BOX03", "Mark": "MARK02-04"},
+    {"Box": "BOX03", "Mark": "MARK02-05"},
+    {"Box": "BOX03", "Mark": "MARK02-06"}
+   ]
+  }
+ ]
+}
