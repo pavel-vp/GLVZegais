@@ -86,7 +86,7 @@ public class IncomeContentArrayAdapter extends ArrayAdapter<IncomeRecContent> {
 
         public void setItem(IncomeRecContent incomeRec) {
             this.incomeRec = incomeRec;
-            tvPosition.setText(incomeRec.getPosition());
+            tvPosition.setText(incomeRec.getPosition().toString());
             tvStatus.setText(incomeRec.getStatus().getMessage());
             tvNameEgais.setText(incomeRec.getIncomeContentIn().getName());
             tvCapacityEgais.setText(incomeRec.getIncomeContentIn().getCapacity());
@@ -95,9 +95,16 @@ public class IncomeContentArrayAdapter extends ArrayAdapter<IncomeRecContent> {
             if (incomeRec.getNomenIn() != null) {
                 tvName1c.setText(incomeRec.getNomenIn().getName());
                 tvCapacity1c.setText(String.valueOf(incomeRec.getNomenIn().getCapacity()));
+            } else {
+                tvName1c.setText("");
+                tvCapacity1c.setText("");
             }
             tvQty.setText(String.valueOf(incomeRec.getIncomeContentIn().getQty()));
-            tvQtyAccepted.setText(String.valueOf(incomeRec.getQtyAccepted()));
+            if (incomeRec.getQtyAccepted() != null) {
+                tvQtyAccepted.setText(String.valueOf(incomeRec.getQtyAccepted()));
+            } else {
+                tvQtyAccepted.setText("");
+            }
 
         }
 

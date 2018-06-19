@@ -2,10 +2,7 @@ package com.glvz.egais.utils;
 
 import android.content.Context;
 import android.util.Log;
-import com.honeywell.aidc.AidcManager;
-import com.honeywell.aidc.BarcodeReader;
-import com.honeywell.aidc.ScannerUnavailableException;
-import com.honeywell.aidc.UnsupportedPropertyException;
+import com.honeywell.aidc.*;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -13,6 +10,10 @@ import java.util.Map;
 public class BarcodeObject {
     private static BarcodeReader barcodeReader;
     private static AidcManager manager;
+
+    public enum BarCodeType {
+        EAN13, PDF417, DATAMATRIX, CODE128, UNSUPPORTED
+    }
 
 
     public static void create(Context context) {
@@ -52,6 +53,7 @@ public class BarcodeObject {
             properties.put(BarcodeReader.PROPERTY_DATAMATRIX_ENABLED, true);
             properties.put(BarcodeReader.PROPERTY_UPC_A_ENABLE, true);
             properties.put(BarcodeReader.PROPERTY_EAN_13_ENABLED, true);
+            properties.put(BarcodeReader.PROPERTY_EAN_13_CHECK_DIGIT_TRANSMIT_ENABLED, true);
             properties.put(BarcodeReader.PROPERTY_AZTEC_ENABLED, false);
             properties.put(BarcodeReader.PROPERTY_CODABAR_ENABLED, false);
             properties.put(BarcodeReader.PROPERTY_INTERLEAVED_25_ENABLED, false);
@@ -112,4 +114,19 @@ public class BarcodeObject {
             manager.close();
         }
     }
+
+    public static BarCodeType getBarCodeType(BarcodeReadEvent barcodeReadEvent) {
+        // FIXME: пока непонятно как по-другому
+        if (barcodeReadEvent.getCodeId().equals("d"))
+            return BarCodeType.EAN13;
+        if (barcodeReadEvent.getCodeId().equals("r"))
+            return BarCodeType.PDF417;
+        if (barcodeReadEvent.getCodeId().equals("w"))
+            return BarCodeType.DATAMATRIX;
+        if (barcodeReadEvent.getCodeId().equals("I") || barcodeReadEvent.getCodeId().equals("j") )
+            return BarCodeType.CODE128;
+        return BarCodeType.UNSUPPORTED;
+
+    }
+
 }

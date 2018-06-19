@@ -33,6 +33,7 @@ public class DaoMem {
     }
 
     Integration integrationFile;
+
     Dictionary dictionary;
 
     public Document getDocument() {
@@ -98,20 +99,26 @@ public class DaoMem {
 
     }
 
-    private void writeLocalData(IncomeRec incomeRec) {
+    public void writeLocalDataIncomeRec(IncomeRec incomeRec) {
         SharedPreferences.Editor ed = sharedPreferences.edit();
         ed.putInt(KEY_CNTDONE+"_"+incomeRec.getWbRegId(), incomeRec.getCntDone());
         ed.putString(KEY_STATUS+"_"+incomeRec.getWbRegId(), incomeRec.getStatus().toString());
+        ed.apply();
         // записать данные по строкам
         for (IncomeRecContent incomeRecContent : incomeRec.getIncomeRecContentList()) {
-            ed.putString(KEY_POS_ID1C+"_"+incomeRec.getWbRegId()+"_"+incomeRecContent.getPosition(), incomeRecContent.getId1c());
-            ed.putString(KEY_POS_STATUS+"_"+incomeRec.getWbRegId()+"_"+incomeRecContent.getPosition(), incomeRecContent.getStatus().toString());
-            float qty = 0;
-            if (incomeRecContent.getQtyAccepted() != null) {
-                qty = incomeRecContent.getQtyAccepted().floatValue();
-            }
-            ed.putFloat(KEY_POS_QTYACCEPTED+"_"+incomeRec.getWbRegId()+"_"+incomeRecContent.getPosition(), qty);
+            writeLocalDataIncomeRecContent(incomeRec.getWbRegId(), incomeRecContent);
         }
+    }
+
+    public void writeLocalDataIncomeRecContent(String wbRegId, IncomeRecContent incomeRecContent) {
+        SharedPreferences.Editor ed = sharedPreferences.edit();
+        ed.putString(KEY_POS_ID1C+"_"+wbRegId+"_"+incomeRecContent.getPosition(), incomeRecContent.getId1c());
+        ed.putString(KEY_POS_STATUS+"_"+wbRegId+"_"+incomeRecContent.getPosition(), incomeRecContent.getStatus().toString());
+        float qty = 0;
+        if (incomeRecContent.getQtyAccepted() != null) {
+            qty = incomeRecContent.getQtyAccepted().floatValue();
+        }
+        ed.putFloat(KEY_POS_QTYACCEPTED+"_"+wbRegId+"_"+incomeRecContent.getPosition(), qty);
         ed.apply();
     }
 
@@ -136,4 +143,10 @@ public class DaoMem {
         }
         return null; // FIXME: обработку ексепшнов и сообщений пользователю
     }
+
+    public Dictionary getDictionary() {
+        return dictionary;
+    }
+
+
 }

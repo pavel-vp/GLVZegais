@@ -39,7 +39,6 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:inputType="textPersonName"
-                android:text="000000"
                 android:ems="10"
                 android:id="@+id/etQtyAccepted"/>
     </LinearLayout>

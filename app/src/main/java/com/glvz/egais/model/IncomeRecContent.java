@@ -19,6 +19,17 @@ public class IncomeRecContent {
     }
 
 
+    public IncomeRecContentPositionType getPositionType() {
+        if (incomeContentIn.getCapacity() == null || incomeContentIn.getCapacity().equals("")
+                || incomeContentIn.getCapacity().equals("0")) {
+            return IncomeRecContentPositionType.NONMARKED_LIQUID;
+        }
+        if (incomeContentIn.getMarked() == null || incomeContentIn.getMarked().intValue() == 0) {
+            return IncomeRecContentPositionType.NONMARKED;
+        }
+        return IncomeRecContentPositionType.MARKED;
+    }
+
     public Integer getPosition() {
         return position;
     }

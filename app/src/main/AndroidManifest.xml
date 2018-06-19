@@ -35,6 +35,8 @@
         <activity android:name=".ui.ActChooseShop"/>
         <activity android:name=".ui.ActMainMenu"/>
         <activity android:name=".ui.ActIncomeList"/>
+        <activity android:name=".ui.ActIncomeRec"/>
+        <activity android:name=".ui.ActIncomeRecContent"/>
 
 
     </application>

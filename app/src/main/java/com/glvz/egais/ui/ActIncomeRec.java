@@ -48,7 +48,7 @@ public class ActIncomeRec extends Activity implements BarcodeReader.BarcodeListe
         incomeRec = DaoMem.getDaoMem().getMapIncomeRec().get(key);
 
         setResources();
-
+        updateData();
     }
 
     private void setResources() {
@@ -91,7 +91,7 @@ public class ActIncomeRec extends Activity implements BarcodeReader.BarcodeListe
         Intent in = new Intent();
         in.setClass(ActIncomeRec.this, ActIncomeRecContent.class);
         in.putExtra(ActIncomeRec.INCOMEREC_WBREGID, incomeRec.getWbRegId());
-        in.putExtra(ActIncomeRec.INCOMERECCONTENT_POSITION, req.getPosition());
+        in.putExtra(ActIncomeRec.INCOMERECCONTENT_POSITION, req.getPosition().toString());
         startActivity(in);
     }
 
