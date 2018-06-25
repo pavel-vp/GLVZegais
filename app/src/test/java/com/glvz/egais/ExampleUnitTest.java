@@ -7,6 +7,7 @@ import com.glvz.egais.dao.DocumentMem;
 import com.glvz.egais.integration.Integration;
 import com.glvz.egais.integration.IntegrationSDCard;
 import com.glvz.egais.integration.model.*;
+import com.glvz.egais.utils.BarcodeObject;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -24,7 +25,7 @@ public class ExampleUnitTest {
 
     @Before
     public void setup() {
-        integrationFile = new IntegrationSDCard("/home/pasha/soft/mobile-me/Android/GLVZegais");
+        integrationFile = new IntegrationSDCard("/home/pasha/soft/mobile-me/Android/GLVZegais/GLVZ");
         List<ShopIn> listS = integrationFile.loadShops();
         List<PostIn> listP = integrationFile.loadPosts();
         List<NomenIn> listN = integrationFile.loadNomen();
@@ -66,6 +67,13 @@ public class ExampleUnitTest {
         System.out.println(incomeContentIn);
     }
 
+
+    @Test
+    public void pdf417_toAlcode() {
+        String pdf = "20N00001CGUMZYCB99J1NKN31105001000056NQQMS5VP4HTF5SB46ZSQQJD8BNJP891";
+        String alcode = BarcodeObject.extractAlcode2(pdf);
+        System.out.println(alcode);
+    }
 
 
 }

@@ -3,6 +3,9 @@ package com.glvz.egais.model;
 import com.glvz.egais.integration.model.IncomeContentIn;
 import com.glvz.egais.integration.model.NomenIn;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class IncomeRecContent {
     // ссылка наисходный имопртированную позицию документа
     private Integer position;
@@ -12,12 +15,12 @@ public class IncomeRecContent {
     private String id1c; // кодсопоставленной записи 1с
     private NomenIn nomenIn; // ссылка на запись в 1с (сопоставленную)
     private Double qtyAccepted;
+    private List<IncomeRecContentMark> incomeRecContentMarkList = new ArrayList<>(); // список сканированных марок
 
     public IncomeRecContent(Integer position, IncomeContentIn incomeContentIn) {
         this.position = position;
         this.incomeContentIn = incomeContentIn;
     }
-
 
     public IncomeRecContentPositionType getPositionType() {
         if (incomeContentIn.getCapacity() == null || incomeContentIn.getCapacity().equals("")
@@ -75,6 +78,15 @@ public class IncomeRecContent {
 
     public void setQtyAccepted(Double qtyAccepted) {
         this.qtyAccepted = qtyAccepted;
+    }
+
+
+    public List<IncomeRecContentMark> getIncomeRecContentMarkList() {
+        return incomeRecContentMarkList;
+    }
+
+    public void setIncomeRecContentMarkList(List<IncomeRecContentMark> incomeRecContentMarkList) {
+        this.incomeRecContentMarkList = incomeRecContentMarkList;
     }
 
 

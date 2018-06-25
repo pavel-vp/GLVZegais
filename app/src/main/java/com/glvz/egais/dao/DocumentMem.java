@@ -3,6 +3,8 @@ package com.glvz.egais.dao;
 import com.glvz.egais.integration.model.IncomeContentIn;
 import com.glvz.egais.integration.model.IncomeContentMarkIn;
 import com.glvz.egais.integration.model.IncomeIn;
+import com.glvz.egais.model.IncomeRec;
+import com.glvz.egais.model.IncomeRecContentMark;
 
 import java.util.HashMap;
 import java.util.List;
@@ -37,4 +39,5 @@ public class DocumentMem implements Document {
         }
         return null;
     }
+
 }

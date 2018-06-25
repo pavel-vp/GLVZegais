@@ -4,6 +4,8 @@ import android.content.Context;
 import android.util.Log;
 import com.honeywell.aidc.*;
 
+import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -126,6 +128,61 @@ public class BarcodeObject {
         if (barcodeReadEvent.getCodeId().equals("I") || barcodeReadEvent.getCodeId().equals("j") )
             return BarCodeType.CODE128;
         return BarCodeType.UNSUPPORTED;
+
+    }
+
+    public static String extractAlcode2(String input)
+    {
+        String code = input.substring(8, 20);
+        String codeTemplate = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        BigInteger result = BigInteger.ZERO;
+        int pos = 0;
+        for (int i = code.length() - 1; i >= 0; i--)
+        {
+            int idx = codeTemplate.indexOf(code.charAt(i));
+            BigInteger t = BigInteger.valueOf(36);
+            result = result.add( t.pow(pos).multiply( BigInteger.valueOf(idx) )  );
+            pos++;
+        }
+        return String.format("%019d", result);
+    }
+
+    public static String extractAlcode(String pdf417) {
+        StringBuilder result = new StringBuilder();
+        int x, y;
+        BigInteger m;
+        String code;
+        code = pdf417.substring(8, 20);
+//        byte[] bytes = new BigInteger(code, 36).toByteArray();
+//        result.append(new String(bytes, StandardCharsets.UTF_8));
+
+
+        String text = code;
+        String codeTemplate = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        BigInteger num = BigInteger.ZERO;
+        int j = code.length();
+        for(int i = 0; i < j; i++){
+            num = num.add( BigInteger.valueOf((long) (codeTemplate.indexOf(text.charAt(0))*Math.pow(codeTemplate.length(), i))));
+            text = text.substring(1);
+        }
+        result.append(String.format("%019d", num));
+
+/*
+        result.append("0");
+        for (x=1; x<=12; x++ ) {
+            m = BigInteger.valueOf(1);
+            for (y = 1; y <= 12 - x; y++) {
+                m = m.multiply(BigInteger.valueOf(36));
+            }
+            char ch = code.charAt(x);
+            int idx = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ".indexOf(ch) - 1;
+            BigInteger chCode = m.multiply(BigInteger.valueOf(idx))
+            char newCh = (char) chCode.;
+            result.append(Character.toString ( newCh ));
+        }
+//        return String.format("%019s", result.toString());
+*/
+        return result.toString();
 
     }
 

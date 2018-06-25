@@ -7,10 +7,8 @@ import com.glvz.egais.MainApp;
 import com.glvz.egais.integration.Integration;
 import com.glvz.egais.integration.IntegrationSDCard;
 import com.glvz.egais.integration.model.*;
-import com.glvz.egais.model.IncomeRec;
-import com.glvz.egais.model.IncomeRecContent;
-import com.glvz.egais.model.IncomeRecContentStatus;
-import com.glvz.egais.model.IncomeRecStatus;
+import com.glvz.egais.model.*;
+import com.glvz.egais.utils.BarcodeObject;
 
 import java.util.*;
 
@@ -21,6 +19,9 @@ public class DaoMem {
     private static final String KEY_POS_ID1C = "pos_id1c";
     private static final String KEY_POS_STATUS = "pos_status";
     private static final String KEY_POS_QTYACCEPTED = "pos_qtyaccepted";
+    private static final String KEY_POS_MARKSCANNED_CNT = "pos_markscanned_cnt";
+    private static final String KEY_POS_MARKSCANNED = "pos_markscanned";
+    private static final String KEY_POS_MARKSCANNED_ASTYPE = "pos_markscanned_astype";
 
 
     private static DaoMem daoMem = null;
@@ -94,6 +95,14 @@ public class DaoMem {
             if (qty != 0) {
                 incomeRecContent.setQtyAccepted(Double.valueOf(qty));
             }
+            int cnt = sharedPreferences.getInt(KEY_POS_MARKSCANNED_CNT+"_"+incomeRec.getWbRegId()+"_"+incomeContentIn.getPosition(), 0);
+            if (cnt > 0) {
+                for (int i = 1; i <= cnt; i++) {
+                    String mark = sharedPreferences.getString(KEY_POS_MARKSCANNED+"_"+incomeRec.getWbRegId()+"_"+incomeContentIn.getPosition()+"_" + i, null);
+                    int typeAs = sharedPreferences.getInt(KEY_POS_MARKSCANNED_ASTYPE+"_"+incomeRec.getWbRegId()+"_"+incomeContentIn.getPosition()+"_" + i, 0);
+                    incomeRecContent.getIncomeRecContentMarkList().add(new IncomeRecContentMark(mark, typeAs));
+                }
+            }
             incomeRec.getIncomeRecContentList().add(incomeRecContent);
         }
 
@@ -119,6 +128,13 @@ public class DaoMem {
             qty = incomeRecContent.getQtyAccepted().floatValue();
         }
         ed.putFloat(KEY_POS_QTYACCEPTED+"_"+wbRegId+"_"+incomeRecContent.getPosition(), qty);
+        ed.putInt(KEY_POS_MARKSCANNED_CNT + "_"+wbRegId+"_"+incomeRecContent.getPosition(), incomeRecContent.getIncomeRecContentMarkList().size());
+        int idx = 1;
+        for (IncomeRecContentMark incomeRecContentMark : incomeRecContent.getIncomeRecContentMarkList()) {
+            ed.putString(KEY_POS_MARKSCANNED + "_"+wbRegId+"_"+incomeRecContent.getPosition()+"_"+idx, incomeRecContentMark.getMarkScanned());
+            ed.putInt(KEY_POS_MARKSCANNED_ASTYPE + "_"+wbRegId+"_"+incomeRecContent.getPosition()+"_"+idx, incomeRecContentMark.getMarkScannedAsType());
+            idx++;
+        }
         ed.apply();
     }
 
@@ -148,5 +164,47 @@ public class DaoMem {
         return dictionary;
     }
 
+    // Найти сканировалась ли уже эта марка
+    public Integer checkMarkScanned(IncomeRec incomeRec, String mark) {
+        // проверить сканирован ли этот ШК в накладной
+        // пройтись по каждой позиции
+        for (IncomeRecContent incomeRecContent : incomeRec.getIncomeRecContentList()) {
+            // в каждой позиции пройтись по сканированным маркам
+            for (IncomeRecContentMark incomeRecContentMark : incomeRecContent.getIncomeRecContentMarkList()) {
+                if (incomeRecContentMark.getMarkScanned().equals(mark)) {
+                    return incomeRecContentMark.getMarkScannedAsType();
+                }
+            }
+        }
+        return null; // ничего не нашли - не сканирован
+    }
 
+    // Найти позиции по алкокоду (может быть несколько)
+    public List<IncomeRecContent> findIncomeRecContentListByAlcocode(IncomeRec incomeRec, String alcocode) {
+        List<IncomeRecContent> result = new ArrayList<>();
+        // пройтись по каждой позиции
+        for (IncomeRecContent incomeRecContent : incomeRec.getIncomeRecContentList()) {
+            //
+            if (alcocode != null && alcocode.equals(incomeRecContent.getIncomeContentIn().getAlccode()) ) {
+                result.add(incomeRecContent);
+            }
+        }
+        return result;
+    }
+
+    // найти позицию по ШК в приходе ЕГАИС
+    public IncomeRecContent findIncomeRecContentByMark(IncomeRec incomeRec, String barcode) {
+        // пройтись по каждой позиции
+        for (IncomeRecContent incomeRecContent : incomeRec.getIncomeRecContentList()) {
+            // в каждой позиции пройтись по маркам в ТТН
+            for (IncomeContentIn incomeContentIn : incomeRec.getIncomeIn().getContent()) {
+                for (IncomeContentMarkIn incomeContentMarkIn : incomeContentIn.getMarkInfo()) {
+                    if (incomeContentMarkIn.getMark().equals(barcode)) {
+                        return incomeRecContent;
+                    }
+                }
+            }
+        }
+        return null; // ничего не нашли
+    }
 }
