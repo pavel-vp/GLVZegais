@@ -192,8 +192,12 @@ public class ActIncomeRecContent extends Activity implements BarcodeReader.Barco
                 if (incomeRecContent != null) {
                     this.incomeRecContent = incomeRecContent;
                     this.lastMark = barcodeReadEvent.getBarcodeData();
-
                     checkQtyOnLastMark();
+                    if (incomeRecContent.getNomenIn() != null) {
+                        // Если товар сопоставлен - сохраняем сразу
+                        proceedAddQty(1);
+                    }
+
                     updateDisplayData();
                 }
 
