@@ -186,8 +186,11 @@ public class ActIncomeRecContent extends Activity implements BarcodeReader.Barco
                 break;
             case DATAMATRIX:
                 // Сканирование DataMatrix в карточке позиции
+                if (this.lastMark != null && incomeRecContent.getNomenIn() == null) {
+                    MessageUtils.showModalMessage("Марка уже сканирована, сканируйте ШК бутылки!");
+                    break;
+                }
                 // без сохранения предыдущего состояния - та же обработка что и в картчоке накладной
-                // перетираем последнюю марку
                 IncomeRecContent incomeRecContent = ActIncomeRec.proceedDataMatrix(incomeRec, barcodeReadEvent.getBarcodeData());
                 if (incomeRecContent != null) {
                     this.incomeRecContent = incomeRecContent;
