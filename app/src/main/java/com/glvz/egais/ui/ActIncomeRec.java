@@ -124,7 +124,7 @@ public class ActIncomeRec extends Activity implements BarcodeReader.BarcodeListe
         Integer markScanned;
         switch (barCodeType) {
             case EAN13:
-                //Сканирование ШК номенклатуры (EAN):
+                //Сканирование ШК номенклатуры (EAN): тут запрещено
                 break;
             case PDF417:
                 // Статус данной ТТН перевести в состояние “Идет приемка”
@@ -143,10 +143,10 @@ public class ActIncomeRec extends Activity implements BarcodeReader.BarcodeListe
                     // Перейти в форму "приемка позиции"
                     pickRec(incomeRecContent, 1, barcode);
                 }
-
                 break;
             case CODE128:
                 break;
+                // TODO:
 
         }
     }

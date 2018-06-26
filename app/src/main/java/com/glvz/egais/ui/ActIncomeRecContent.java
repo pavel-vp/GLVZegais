@@ -28,6 +28,7 @@ public class ActIncomeRecContent extends Activity implements BarcodeReader.Barco
 
     TextView tvAction;
     EditText etQtyAccepted;
+    Button btnAdd;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,7 +58,7 @@ public class ActIncomeRecContent extends Activity implements BarcodeReader.Barco
     }
 
     // обработчик добавления марки и/или количества
-    private void proceedAddQty(int addQty) {
+    private void proceedAddQty(double addQty) {
         if (addQty != 0) {
             incomeRecContent.setQtyAccepted(incomeRecContent.getQtyAccepted() == null ? addQty : incomeRecContent.getQtyAccepted() + addQty);
         }
@@ -95,33 +96,34 @@ public class ActIncomeRecContent extends Activity implements BarcodeReader.Barco
 
 
         tvAction = (TextView) findViewById(R.id.tvAction);
-        Button btnAdd = (Button) findViewById(R.id.btnAdd);
-        //Для немаркированной продукции кнопка доступна только если ранее была определена номенклатура 1С (по ШК) или если позиция является разливным пивом (Емкость (ЕГАИС) = 0).
-        // Для маркированной продукции - кнопка не доступна.
-        if (incomeRecContent.getPositionType() == IncomeRecContentPositionType.NONMARKED_LIQUID ||
-                (incomeRecContent.getPositionType() == IncomeRecContentPositionType.NONMARKED &&
-                        incomeRecContent.getId1c() != null &&
-                        incomeRecContent.getNomenIn() != null )
-                ) {
-            btnAdd.setEnabled(true);
-        } else {
-            btnAdd.setEnabled(false);
-        }
+        btnAdd = (Button) findViewById(R.id.btnAdd);
         btnAdd.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // TODO: обработчик нажатия ДОбавить
                 // Вычисление: [Количество принятое (надпись)] = [Количество принятое (надпись)] + [Принимаемое количество].
                 // Перед вычислением производится проверка: Количество принятое - не может быть больше количества по ТТН.
                 // Если превышает - сообщение “Принятое количество не может быть больше количества по ТТН”, вычисление не выполняется.
-                // После успешного вычисления - возврат в форму “Приход ЕГАИС”
+                try {
+                    double currQty = incomeRecContent.getQtyAccepted() == null ? 0 : incomeRecContent.getQtyAccepted();
+                    double addQty = Double.valueOf(etQtyAccepted.getText().toString());
+                    if ((currQty + addQty) > incomeRecContent.getIncomeContentIn().getQty()) {
+                        MessageUtils.showModalMessage("Принятое количество не может быть больше количества по ТТН");
+                    } else {
+                        proceedAddQty(addQty);
+                        // После успешного вычисления - возврат в форму “Приход ЕГАИС”
+                        ActIncomeRecContent.this.finish();
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    etQtyAccepted.setText("");
+                    MessageUtils.showModalMessage("Неверное количество!");
+                }
             }
         });
         Button btnClear = (Button) findViewById(R.id.btnClear);
         btnClear.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // TODO: обработчик нажатия Очистить
                 incomeRecContent.setQtyAccepted(null);
                 incomeRecContent.getIncomeRecContentMarkList().clear();
                 lastMark = null;
@@ -141,6 +143,16 @@ public class ActIncomeRecContent extends Activity implements BarcodeReader.Barco
         this.runOnUiThread(new Runnable() {
             @Override
             public void run() {
+                //Для немаркированной продукции кнопка доступна только если ранее была определена номенклатура 1С (по ШК) или если позиция является разливным пивом (Емкость (ЕГАИС) = 0).
+                // Для маркированной продукции - кнопка не доступна.
+                if (incomeRecContent.getPositionType() == IncomeRecContentPositionType.NONMARKED_LIQUID ||
+                        (incomeRecContent.getPositionType() == IncomeRecContentPositionType.NONMARKED &&
+                                incomeRecContent.getNomenIn() != null )
+                        ) {
+                    btnAdd.setEnabled(true);
+                } else {
+                    btnAdd.setEnabled(false);
+                }
                 // Текст надписи зависит от типа позиции:
                 switch (incomeRecContent.getPositionType()) {
                     case NONMARKED_LIQUID:
@@ -161,7 +173,7 @@ public class ActIncomeRecContent extends Activity implements BarcodeReader.Barco
 
     @Override
     public void onBarcodeEvent(BarcodeReadEvent barcodeReadEvent) {
-        int addQty = this.lastMark == null ? 0 : 1;
+        int addQty = this.lastMark != null ? 1 : 0;
         // Определить тип ШК
         final BarcodeObject.BarCodeType barCodeType = BarcodeObject.getBarCodeType(barcodeReadEvent);
         switch (barCodeType) {

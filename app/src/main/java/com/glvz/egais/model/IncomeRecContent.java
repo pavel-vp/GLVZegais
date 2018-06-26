@@ -27,7 +27,7 @@ public class IncomeRecContent {
                 || incomeContentIn.getCapacity().equals("0")) {
             return IncomeRecContentPositionType.NONMARKED_LIQUID;
         }
-        if (incomeContentIn.getMarked() == null || incomeContentIn.getMarked().intValue() == 0) {
+        if (incomeContentIn.getMarked() == null || incomeContentIn.getMarked() == 0) {
             return IncomeRecContentPositionType.NONMARKED;
         }
         return IncomeRecContentPositionType.MARKED;
