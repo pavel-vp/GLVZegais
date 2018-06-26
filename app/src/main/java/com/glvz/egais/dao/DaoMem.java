@@ -109,6 +109,24 @@ public class DaoMem {
     }
 
     public void writeLocalDataIncomeRec(IncomeRec incomeRec) {
+        // Синхронизируем общий статус накладной
+        // Посчитаем число реально принятых строк
+        int cntDone = 0;
+        for (IncomeRecContent incomeRecContent : incomeRec.getIncomeRecContentList()) {
+            if (incomeRecContent.getStatus() == IncomeRecContentStatus.DONE){
+                cntDone++;
+            }
+        }
+        if (incomeRec.getCntDone() != cntDone) {
+            if (incomeRec.getIncomeIn().getContent().length == cntDone) {
+                incomeRec.setStatus(IncomeRecStatus.DONE);
+            } else {
+                if (cntDone == 0 || incomeRec.getStatus() != IncomeRecStatus.REJECTED) {
+                    incomeRec.setStatus(IncomeRecStatus.INPROGRESS);
+                }
+            }
+        }
+        incomeRec.setCntDone(cntDone);
         SharedPreferences.Editor ed = sharedPreferences.edit();
         ed.putInt(KEY_CNTDONE+"_"+incomeRec.getWbRegId(), incomeRec.getCntDone());
         ed.putString(KEY_STATUS+"_"+incomeRec.getWbRegId(), incomeRec.getStatus().toString());
@@ -194,14 +212,21 @@ public class DaoMem {
 
     // найти позицию по ШК в приходе ЕГАИС
     public IncomeRecContent findIncomeRecContentByMark(IncomeRec incomeRec, String barcode) {
-        // пройтись по каждой позиции
-        for (IncomeRecContent incomeRecContent : incomeRec.getIncomeRecContentList()) {
-            // в каждой позиции пройтись по маркам в ТТН
-            for (IncomeContentIn incomeContentIn : incomeRec.getIncomeIn().getContent()) {
-                for (IncomeContentMarkIn incomeContentMarkIn : incomeContentIn.getMarkInfo()) {
-                    if (incomeContentMarkIn.getMark().equals(barcode)) {
-                        return incomeRecContent;
-                    }
+        IncomeContentIn foundIncomeContentIn = null;
+        // в каждой позиции пройтись по маркам в ТТН
+        for (IncomeContentIn incomeContentIn : incomeRec.getIncomeIn().getContent()) {
+            for (IncomeContentMarkIn incomeContentMarkIn : incomeContentIn.getMarkInfo()) {
+                if (incomeContentMarkIn.getMark().equals(barcode)) {
+                    foundIncomeContentIn = incomeContentIn;
+                }
+            }
+        }
+        // Если нашли в ТТН эту марку
+        if (foundIncomeContentIn != null) {
+            // найти эту позицию по номеру и вернуть Rec
+            for (IncomeRecContent incomeRecContent : incomeRec.getIncomeRecContentList()) {
+                if (incomeRecContent.getPosition().equals(foundIncomeContentIn.getPosition())) {
+                    return incomeRecContent;
                 }
             }
         }

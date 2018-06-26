@@ -105,6 +105,7 @@ public class ActIncomeRec extends Activity implements BarcodeReader.BarcodeListe
     public void onResume() {
         super.onResume();
         BarcodeObject.linkToListener(this);
+        updateData();
     }
 
     @Override
@@ -138,9 +139,10 @@ public class ActIncomeRec extends Activity implements BarcodeReader.BarcodeListe
                 break;
             case DATAMATRIX:
                 IncomeRecContent incomeRecContent = proceedDataMatrix(incomeRec, barcode);
-                // Перейти в форму "приемка позиции"
-                pickRec(incomeRecContent, 1, barcode);
-
+                if (incomeRecContent != null) {
+                    // Перейти в форму "приемка позиции"
+                    pickRec(incomeRecContent, 1, barcode);
+                }
 
                 break;
             case CODE128:

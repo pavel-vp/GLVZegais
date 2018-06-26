@@ -71,7 +71,7 @@ public class ExampleUnitTest {
     @Test
     public void pdf417_toAlcode() {
         String pdf = "20N00001CGUMZYCB99J1NKN31105001000056NQQMS5VP4HTF5SB46ZSQQJD8BNJP891";
-        String alcode = BarcodeObject.extractAlcode2(pdf);
+        String alcode = BarcodeObject.extractAlcode(pdf);
         System.out.println(alcode);
     }
 

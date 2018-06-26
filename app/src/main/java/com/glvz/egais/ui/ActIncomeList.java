@@ -61,5 +61,11 @@ public class ActIncomeList extends Activity  {
         startActivity(in);
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        updateList();
+    }
+
 
 }

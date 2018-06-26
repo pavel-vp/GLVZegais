@@ -67,7 +67,7 @@ public class ActIncomeRecContent extends Activity implements BarcodeReader.Barco
         if (incomeRecContent.getQtyAccepted() == null) {
             incomeRecContent.setStatus(IncomeRecContentStatus.NOT_ENTERED);
         } else {
-            if (incomeRecContent.getQtyAccepted().compareTo(incomeRecContent.getIncomeContentIn().getQty()) == 0) {
+            if (incomeRecContent.getQtyAccepted().compareTo(incomeRecContent.getIncomeContentIn().getQty()) == 0 && incomeRecContent.getNomenIn() != null) {
                 incomeRecContent.setStatus(IncomeRecContentStatus.DONE);
             } else {
                 incomeRecContent.setStatus(IncomeRecContentStatus.IN_PROGRESS);
