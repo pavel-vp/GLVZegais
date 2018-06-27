@@ -9,10 +9,7 @@ import android.widget.CheckBox;
 import android.widget.ListView;
 import com.glvz.egais.R;
 import com.glvz.egais.dao.DaoMem;
-import com.glvz.egais.model.IncomeRec;
-import com.glvz.egais.model.IncomeRecContent;
-import com.glvz.egais.model.IncomeRecContentMark;
-import com.glvz.egais.model.IncomeRecStatus;
+import com.glvz.egais.model.*;
 import com.glvz.egais.service.IncomeArrayAdapter;
 import com.glvz.egais.service.IncomeContentArrayAdapter;
 import com.glvz.egais.utils.BarcodeObject;
@@ -122,23 +119,20 @@ public class ActIncomeRec extends Activity implements BarcodeReader.BarcodeListe
         final BarcodeObject.BarCodeType barCodeType = BarcodeObject.getBarCodeType(barcodeReadEvent);
         final String barcode = barcodeReadEvent.getBarcodeData();
         Integer markScanned;
+        IncomeRecContent incomeRecContent;
         switch (barCodeType) {
             case EAN13:
                 //Сканирование ШК номенклатуры (EAN): тут запрещено
                 break;
             case PDF417:
-                // Статус данной ТТН перевести в состояние “Идет приемка”
-                incomeRec.setStatus(IncomeRecStatus.INPROGRESS);
-                DaoMem.getDaoMem().writeLocalDataIncomeRec(incomeRec);
-                // Проверить что этот ШК ранее не сканировался в данной ТТН
-                markScanned = DaoMem.getDaoMem().checkMarkScanned(incomeRec, barcode);
-                if (markScanned != null && markScanned == IncomeRecContentMark.MARK_SCANNED_AS_MARK) {
-                    MessageUtils.showModalMessage("Эта марка уже сканировалась!");
-                    break;
+                incomeRecContent = proceedPdf417(incomeRec, barcode);
+                if (incomeRecContent != null) {
+                    // Перейти в форму "приемка позиции"
+                    pickRec(incomeRecContent, 1, barcode);
                 }
                 break;
             case DATAMATRIX:
-                IncomeRecContent incomeRecContent = proceedDataMatrix(incomeRec, barcode);
+                incomeRecContent = proceedDataMatrix(incomeRec, barcode);
                 if (incomeRecContent != null) {
                     // Перейти в форму "приемка позиции"
                     pickRec(incomeRecContent, 1, barcode);
@@ -149,6 +143,61 @@ public class ActIncomeRec extends Activity implements BarcodeReader.BarcodeListe
                 // TODO:
 
         }
+    }
+
+    public static IncomeRecContent proceedPdf417(IncomeRec incomeRec, String barcode) {
+        // Проверить что этот ШК ранее не сканировался в данной ТТН
+        Integer markScanned = DaoMem.getDaoMem().checkMarkScanned(incomeRec, barcode);
+        if (markScanned != null) {
+            if (markScanned == IncomeRecContentMark.MARK_SCANNED_AS_MARK) {
+                MessageUtils.showModalMessage("Эта марка уже сканировалась!");
+                return null;
+            }
+            // Марка была сканирована - найти по ней позицию Rec
+            IncomeRecContentMark incomeRecContentMark = DaoMem.getDaoMem().findIncomeRecContentMarkByMarkScanned(incomeRec, barcode);
+            incomeRecContentMark.setMarkScannedAsType(IncomeRecContentMark.MARK_SCANNED_AS_MARK);
+            DaoMem.getDaoMem().writeLocalDataIncomeRec(incomeRec);
+            return null;
+        }
+
+        // Проверить наличие ШК марки в ТТН ЕГАИС
+        IncomeRecContent incomeRecContent = DaoMem.getDaoMem().findIncomeRecContentByMark(incomeRec, barcode);
+        if (incomeRecContent == null) {
+            // самой марки нет вообще - поищем алкокод
+            String alcocode = BarcodeObject.extractAlcode(barcode);
+            // определить количество строк в ТТН ЕГАИС с таким алкокодом и принятых не полностью.
+            List<IncomeRecContent> incomeRecContentList = DaoMem.getDaoMem().findIncomeRecContentListByAlcocode(incomeRec, alcocode);
+            if (incomeRecContentList.size() == 0 ) {
+                MessageUtils.showModalMessage("Продукция с алкокодом [показать] отсутствует в ТТН поставщика. Принимать бутылку нельзя, верните поставщику!");
+                return null;
+            }
+            if (incomeRecContentList.size() == 1 ) {
+                incomeRecContent = incomeRecContentList.get(0);
+                //определить позицию в ТТН ЕГАИС и принятое по ней количество
+                //Если [Количество по ТТН] = [Принятое количество]
+                if (incomeRecContent.getQtyAccepted() != null && incomeRecContent.getQtyAccepted().equals(incomeRecContent.getIncomeContentIn().getQty())) {
+                    MessageUtils.showModalMessage("По позиции [показать номер, алкокод, наименование ЕГАИС] уже принято полное количество [показать]. Сканированная бутылка лишняя, принимать нельзя. Верните поставщику!");
+                    return null;
+                }
+            } else {
+                // в этом списке сделать выбор по датам
+            }
+
+        } else {
+            // если позиция принята не полностью
+            if (incomeRecContent.getStatus() != IncomeRecContentStatus.DONE) {
+
+            } else {
+                //  Если полностью принято
+            }
+
+        }
+
+        // Статус данной ТТН перевести в состояние “Идет приемка”
+        incomeRec.setStatus(IncomeRecStatus.INPROGRESS);
+        DaoMem.getDaoMem().writeLocalDataIncomeRec(incomeRec);
+        return incomeRecContent;
+
     }
 
     public static IncomeRecContent proceedDataMatrix(IncomeRec incomeRec, String barcode) {

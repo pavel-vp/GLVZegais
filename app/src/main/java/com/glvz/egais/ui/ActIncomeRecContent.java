@@ -176,6 +176,7 @@ public class ActIncomeRecContent extends Activity implements BarcodeReader.Barco
         int addQty = this.lastMark != null ? 1 : 0;
         // Определить тип ШК
         final BarcodeObject.BarCodeType barCodeType = BarcodeObject.getBarCodeType(barcodeReadEvent);
+        IncomeRecContent incomeRecContentLocal;
         switch (barCodeType) {
             case EAN13:
                 //Сканирование ШК номенклатуры (EAN):
@@ -195,6 +196,29 @@ public class ActIncomeRecContent extends Activity implements BarcodeReader.Barco
                 updateDisplayData();
                 break;
             case PDF417:
+                // Сканирование Pdf417 в карточке позиции
+                if (this.lastMark != null && incomeRecContent.getNomenIn() == null) {
+                    MessageUtils.showModalMessage("Марка уже сканирована, сканируйте ШК бутылки!");
+                    break;
+                }
+                // без сохранения предыдущего состояния - та же обработка что и в картчоке накладной
+                incomeRecContentLocal = ActIncomeRec.proceedPdf417(incomeRec, barcodeReadEvent.getBarcodeData());
+                if (incomeRecContentLocal != null) {
+
+
+
+
+
+                    this.incomeRecContent = incomeRecContentLocal;
+                    this.lastMark = barcodeReadEvent.getBarcodeData();
+                    checkQtyOnLastMark();
+                    if (this.incomeRecContent.getNomenIn() != null) {
+                        // Если товар сопоставлен - сохраняем сразу
+                        proceedAddQty(1);
+                    }
+
+                    updateDisplayData();
+                }
                 break;
             case DATAMATRIX:
                 // Сканирование DataMatrix в карточке позиции
@@ -203,12 +227,12 @@ public class ActIncomeRecContent extends Activity implements BarcodeReader.Barco
                     break;
                 }
                 // без сохранения предыдущего состояния - та же обработка что и в картчоке накладной
-                IncomeRecContent incomeRecContent = ActIncomeRec.proceedDataMatrix(incomeRec, barcodeReadEvent.getBarcodeData());
-                if (incomeRecContent != null) {
-                    this.incomeRecContent = incomeRecContent;
+                incomeRecContentLocal = ActIncomeRec.proceedDataMatrix(incomeRec, barcodeReadEvent.getBarcodeData());
+                if (incomeRecContentLocal != null) {
+                    this.incomeRecContent = incomeRecContentLocal;
                     this.lastMark = barcodeReadEvent.getBarcodeData();
                     checkQtyOnLastMark();
-                    if (incomeRecContent.getNomenIn() != null) {
+                    if (this.incomeRecContent.getNomenIn() != null) {
                         // Если товар сопоставлен - сохраняем сразу
                         proceedAddQty(1);
                     }

@@ -232,4 +232,15 @@ public class DaoMem {
         }
         return null; // ничего не нашли
     }
+
+    public IncomeRecContentMark findIncomeRecContentMarkByMarkScanned(IncomeRec incomeRec, String barcode) {
+        for (IncomeRecContent incomeRecContent : incomeRec.getIncomeRecContentList()) {
+            for (IncomeRecContentMark incomeRecContentMark : incomeRecContent.getIncomeRecContentMarkList()) {
+                if (barcode.equals(incomeRecContentMark.getMarkScanned())){
+                    return incomeRecContentMark;
+                }
+            }
+        }
+        return null;
+    }
 }
