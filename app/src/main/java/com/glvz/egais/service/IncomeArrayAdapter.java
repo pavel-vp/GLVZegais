@@ -85,7 +85,7 @@ public class IncomeArrayAdapter extends ArrayAdapter<IncomeRec> {
                     tvStatus.setTextColor(Color.BLACK);
                     break;
                 case INPROGRESS:
-                    tvStatus.setTextColor(Color.YELLOW);
+                    tvStatus.setTextColor(Color.BLUE);
                     break;
                 case REJECTED:
                     tvStatus.setTextColor(Color.RED);

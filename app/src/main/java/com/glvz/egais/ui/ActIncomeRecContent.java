@@ -1,6 +1,7 @@
 package com.glvz.egais.ui;
 
 import android.app.Activity;
+import android.content.Context;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -9,17 +10,21 @@ import android.widget.TextView;
 import android.widget.Toast;
 import com.glvz.egais.R;
 import com.glvz.egais.dao.DaoMem;
+import com.glvz.egais.integration.model.IncomeContentIn;
 import com.glvz.egais.integration.model.IncomeIn;
 import com.glvz.egais.integration.model.NomenIn;
 import com.glvz.egais.model.*;
 import com.glvz.egais.service.IncomeContentArrayAdapter;
+import com.glvz.egais.service.PickBottliingDateCallback;
 import com.glvz.egais.utils.BarcodeObject;
 import com.glvz.egais.utils.MessageUtils;
 import com.honeywell.aidc.BarcodeFailureEvent;
 import com.honeywell.aidc.BarcodeReadEvent;
 import com.honeywell.aidc.BarcodeReader;
 
-public class ActIncomeRecContent extends Activity implements BarcodeReader.BarcodeListener {
+import java.util.List;
+
+public class ActIncomeRecContent extends Activity implements BarcodeReader.BarcodeListener, PickBottliingDateCallback {
 
     private String lastMark;
     private IncomeRec incomeRec;
@@ -202,22 +207,15 @@ public class ActIncomeRecContent extends Activity implements BarcodeReader.Barco
                     break;
                 }
                 // без сохранения предыдущего состояния - та же обработка что и в картчоке накладной
-                incomeRecContentLocal = ActIncomeRec.proceedPdf417(incomeRec, barcodeReadEvent.getBarcodeData());
-                if (incomeRecContentLocal != null) {
+                List<IncomeRecContent> incomeRecContentListLocal = ActIncomeRec.proceedPdf417(incomeRec, barcodeReadEvent.getBarcodeData());
+                if (incomeRecContentListLocal != null) {
 
-
-
-
-
-                    this.incomeRecContent = incomeRecContentLocal;
-                    this.lastMark = barcodeReadEvent.getBarcodeData();
-                    checkQtyOnLastMark();
-                    if (this.incomeRecContent.getNomenIn() != null) {
-                        // Если товар сопоставлен - сохраняем сразу
-                        proceedAddQty(1);
+                    if (incomeRecContentListLocal.size() == 1) {
+                        proceedWithPdf417AndBarcode(incomeRecContentListLocal.get(0), barcodeReadEvent.getBarcodeData());
+                    } else {
+                        // тоже выбор дат....
+                        ActIncomeRec.pickBottlingDate(this, incomeRec.getWbRegId(), incomeRecContentListLocal, barcodeReadEvent.getBarcodeData(), this);
                     }
-
-                    updateDisplayData();
                 }
                 break;
             case DATAMATRIX:
@@ -248,8 +246,25 @@ public class ActIncomeRecContent extends Activity implements BarcodeReader.Barco
 
     }
 
+    private void proceedWithPdf417AndBarcode(IncomeRecContent icr, String barcode) {
+        this.incomeRecContent = icr;
+        this.lastMark = barcode;
+        checkQtyOnLastMark();
+        if (this.incomeRecContent.getNomenIn() != null) {
+            // Если товар сопоставлен - сохраняем сразу
+            proceedAddQty(1);
+        }
+
+        updateDisplayData();
+    }
+
     @Override
     public void onFailureEvent(BarcodeFailureEvent barcodeFailureEvent) {
 
+    }
+
+    @Override
+    public void onCallbackPickBottlingDate(Context ctx, String wbRegId, IncomeRecContent irc, int addQty, String barcode) {
+        proceedWithPdf417AndBarcode(irc, barcode);
     }
 }

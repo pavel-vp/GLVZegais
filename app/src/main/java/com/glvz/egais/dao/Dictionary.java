@@ -8,4 +8,6 @@ public interface Dictionary {
     NomenIn findNomenByBarcode(String s);
 
     PostIn findPostById(String s);
+
+    NomenIn findNomenById(String id1c);
 }

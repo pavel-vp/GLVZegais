@@ -45,4 +45,14 @@ public class DictionaryMem implements Dictionary {
         }
         return null;
     }
+
+    @Override
+    public NomenIn findNomenById(String id1c) {
+        for (NomenIn nomenIn : listNomen) {
+            if (nomenIn.getId().equals(id1c)) {
+                return nomenIn;
+            }
+        }
+        return null;
+    }
 }

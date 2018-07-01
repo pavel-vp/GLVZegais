@@ -14,6 +14,7 @@ public class IncomeRec {
     private IncomeRecStatus status = IncomeRecStatus.NEW;
     // список строк (собранный из импортированных и локальных данных)
     private List<IncomeRecContent> incomeRecContentList = new ArrayList<>();
+    private boolean exported;
 
 
     public int getCntDone() {
@@ -62,6 +63,15 @@ public class IncomeRec {
 
     public void setIncomeRecContentList(List<IncomeRecContent> incomeRecContentList) {
         this.incomeRecContentList = incomeRecContentList;
+    }
+
+
+    public boolean isExported() {
+        return exported;
+    }
+
+    public void setExported(boolean exported) {
+        this.exported = exported;
     }
 
 

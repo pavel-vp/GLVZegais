@@ -1,14 +1,12 @@
 package com.glvz.egais.dao;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.SharedPreferences;
 import com.glvz.egais.MainApp;
 import com.glvz.egais.integration.Integration;
 import com.glvz.egais.integration.IntegrationSDCard;
 import com.glvz.egais.integration.model.*;
 import com.glvz.egais.model.*;
-import com.glvz.egais.utils.BarcodeObject;
 
 import java.util.*;
 
@@ -16,6 +14,7 @@ public class DaoMem {
 
     private static final String KEY_CNTDONE = "cntdone";
     private static final String KEY_STATUS = "status";
+    private static final String KEY_EXPORTED = "exported";
     private static final String KEY_POS_ID1C = "pos_id1c";
     private static final String KEY_POS_STATUS = "pos_status";
     private static final String KEY_POS_QTYACCEPTED = "pos_qtyaccepted";
@@ -50,11 +49,12 @@ public class DaoMem {
 
     Map<String, IncomeRec> mapIncomeRec;
     SharedPreferences sharedPreferences;
+    String shopId;
 
 
     public void init(String path, String shopId) {
         sharedPreferences = MainApp.getContext().getSharedPreferences("settings", Activity.MODE_PRIVATE);
-
+        this.shopId = shopId;
         integrationFile = new IntegrationSDCard(path);
         listS = integrationFile.loadShops();
         listP = integrationFile.loadPosts();
@@ -83,12 +83,14 @@ public class DaoMem {
     private void readLocalData(IncomeRec incomeRec) {
         incomeRec.setCntDone(sharedPreferences.getInt(KEY_CNTDONE+"_"+incomeRec.getWbRegId(), 0));
         incomeRec.setStatus(IncomeRecStatus.valueOf(sharedPreferences.getString(KEY_STATUS+"_"+incomeRec.getWbRegId(), IncomeRecStatus.NEW.toString())));
+        incomeRec.setExported(sharedPreferences.getBoolean(KEY_EXPORTED + "_" + incomeRec.getWbRegId(), false));
         // пройтись по строкам и прочитать доп.данные
         incomeRec.getIncomeRecContentList().clear();
         for (IncomeContentIn incomeContentIn : incomeRec.getIncomeIn().getContent()) {
             IncomeRecContent incomeRecContent = new IncomeRecContent(incomeContentIn.getPosition(), incomeContentIn);
             // прочитать данные по строке локальные
             incomeRecContent.setId1c(sharedPreferences.getString(KEY_POS_ID1C+"_"+incomeRec.getWbRegId()+"_"+incomeContentIn.getPosition(), null));
+            incomeRecContent.setNomenIn(dictionary.findNomenById(incomeRecContent.getId1c()));
             incomeRecContent.setStatus( IncomeRecContentStatus.valueOf(
                     sharedPreferences.getString(KEY_POS_STATUS+"_"+incomeRec.getWbRegId()+"_"+incomeContentIn.getPosition(), IncomeRecContentStatus.NOT_ENTERED.toString())));
             float qty = sharedPreferences.getFloat(KEY_POS_QTYACCEPTED+"_"+incomeRec.getWbRegId()+"_"+incomeContentIn.getPosition(), 0);
@@ -128,6 +130,7 @@ public class DaoMem {
         }
         incomeRec.setCntDone(cntDone);
         SharedPreferences.Editor ed = sharedPreferences.edit();
+        ed.putBoolean(KEY_EXPORTED+"_"+incomeRec.getWbRegId(), incomeRec.isExported());
         ed.putInt(KEY_CNTDONE+"_"+incomeRec.getWbRegId(), incomeRec.getCntDone());
         ed.putString(KEY_STATUS+"_"+incomeRec.getWbRegId(), incomeRec.getStatus().toString());
         ed.apply();
@@ -242,5 +245,12 @@ public class DaoMem {
             }
         }
         return null;
+    }
+
+    public void exportData(IncomeRec incomeRec) {
+        incomeRec.setExported(true);
+        writeLocalDataIncomeRec(incomeRec);
+        integrationFile.writeIncomeRec(shopId, incomeRec);
+
     }
 }

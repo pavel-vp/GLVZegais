@@ -71,6 +71,11 @@ public class IncomeRecContent {
 
     public void setNomenIn(NomenIn nomenIn) {
         this.nomenIn = nomenIn;
+        if (this.nomenIn == null) {
+            this.id1c = null;
+        } else {
+            this.id1c = nomenIn.getId();
+        }
     }
     public Double getQtyAccepted() {
         return qtyAccepted;

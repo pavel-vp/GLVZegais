@@ -55,6 +55,7 @@ public class ActMainMenu extends Activity {
                 ActMainMenu.this.finish();
             }
         });
+
     }
 
 

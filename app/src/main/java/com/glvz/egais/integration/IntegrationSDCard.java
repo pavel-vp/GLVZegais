@@ -1,11 +1,14 @@
 package com.glvz.egais.integration;
 
+import android.media.MediaScannerConnection;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.glvz.egais.MainApp;
 import com.glvz.egais.integration.model.IncomeIn;
 import com.glvz.egais.integration.model.NomenIn;
 import com.glvz.egais.integration.model.PostIn;
 import com.glvz.egais.integration.model.ShopIn;
+import com.glvz.egais.model.IncomeRec;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -90,6 +93,18 @@ public class IntegrationSDCard implements Integration {
         }
 
         return listIncomeIn;
+    }
+
+    @Override
+    public void writeIncomeRec(String shopId, IncomeRec incomeRec) {
+        File path = new File(basePath + "/" + SHOPS_DIR + "/" + shopId + "/" + OUT_DIR);
+            File file = new File(path, incomeRec.getWbRegId() + ".txt");
+            try {
+                objectMapper.writeValue(file, incomeRec);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        MediaScannerConnection.scanFile(MainApp.getContext(), new String[] {path.toString()}, null, null);
     }
 
 }
