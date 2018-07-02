@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- Ваша AppTheme или другие темы и стили здесь -->
+
+    <style name="AppBaseTheme" parent="android:Theme.Holo.Light"/>
+    <style name="AppTheme" parent="AppBaseTheme"/>
+
+    <!-- Кастомная AppTheme.Launcher. Устанавливает в качестве фона вашу drawable-->
+    <style name="AppTheme.Launcher">
+        <item name="android:windowBackground">@drawable/logo</item>
+    </style>
+
+</resources>
