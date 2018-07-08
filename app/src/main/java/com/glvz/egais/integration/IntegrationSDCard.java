@@ -83,12 +83,14 @@ public class IntegrationSDCard implements Integration {
     public List<IncomeIn> loadIncome(String shopId) {
         List<IncomeIn> listIncomeIn = new ArrayList<>();
         File path = new File(basePath + "/" + SHOPS_DIR + "/" + shopId + "/" + IN_DIR);
-        for (File file : path.listFiles() ) {
-            try {
-                IncomeIn incomeIn = objectMapper.readValue(file, IncomeIn.class);
-                listIncomeIn.add(incomeIn);
-            } catch (IOException e) {
-                e.printStackTrace();
+        if (path.listFiles() != null) {
+            for (File file : path.listFiles()) {
+                try {
+                    IncomeIn incomeIn = objectMapper.readValue(file, IncomeIn.class);
+                    listIncomeIn.add(incomeIn);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         }
 

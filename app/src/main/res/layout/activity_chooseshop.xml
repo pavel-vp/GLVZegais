@@ -11,7 +11,7 @@
     <TextView
             android:text="Не выбран"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" android:id="@+id/textView2"/>
+            android:layout_height="wrap_content" android:id="@+id/tvShopChosen"/>
     <Button
             android:text="Выбор магазина"
             android:layout_width="match_parent"

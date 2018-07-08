@@ -2,12 +2,16 @@ package com.glvz.egais.dao;
 
 import android.app.Activity;
 import android.content.SharedPreferences;
+import android.os.Environment;
 import com.glvz.egais.MainApp;
+import com.glvz.egais.R;
 import com.glvz.egais.integration.Integration;
 import com.glvz.egais.integration.IntegrationSDCard;
 import com.glvz.egais.integration.model.*;
 import com.glvz.egais.model.*;
+import com.glvz.egais.utils.MessageUtils;
 
+import java.io.File;
 import java.util.*;
 
 public class DaoMem {
@@ -32,6 +36,10 @@ public class DaoMem {
         return daoMem;
     }
 
+    private DaoMem() {
+        initDictionary();
+    }
+
     Integration integrationFile;
 
     Dictionary dictionary;
@@ -52,19 +60,24 @@ public class DaoMem {
     String shopId;
 
 
-    public void init(String path, String shopId) {
+    private void initDictionary() {
+        File path = new File(Environment.getExternalStorageDirectory(), MainApp.getContext().getResources().getString(R.string.path_exchange));
         sharedPreferences = MainApp.getContext().getSharedPreferences("settings", Activity.MODE_PRIVATE);
-        this.shopId = shopId;
-        integrationFile = new IntegrationSDCard(path);
+        integrationFile = new IntegrationSDCard(path.getAbsolutePath());
         listS = integrationFile.loadShops();
         listP = integrationFile.loadPosts();
         listN = integrationFile.loadNomen();
         dictionary = new DictionaryMem(listS, listP, listN);
+    }
+
+    public void initDocuments(String shopId) {
+        this.shopId = shopId;
         listIncomeIn = integrationFile.loadIncome(shopId);
         document = new DocumentMem(listIncomeIn);
 
         // Прочитать локальные данные
         mapIncomeRec = readIncomeRec();
+        MessageUtils.showModalMessage("Данные загружены");
 
     }
 
@@ -253,4 +266,9 @@ public class DaoMem {
         integrationFile.writeIncomeRec(shopId, incomeRec);
 
     }
+
+    public List<ShopIn> getListS() {
+        return listS;
+    }
+
 }
