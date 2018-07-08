@@ -20,6 +20,7 @@ import com.glvz.egais.model.*;
 import com.glvz.egais.service.IncomeArrayAdapter;
 import com.glvz.egais.service.IncomeContentArrayAdapter;
 import com.glvz.egais.service.PickBottliingDateCallback;
+import com.glvz.egais.service.TransferCallback;
 import com.glvz.egais.utils.BarcodeObject;
 import com.glvz.egais.utils.MessageUtils;
 import com.honeywell.aidc.BarcodeFailureEvent;
@@ -28,7 +29,7 @@ import com.honeywell.aidc.BarcodeReader;
 
 import java.util.*;
 
-public class ActIncomeRec extends Activity implements BarcodeReader.BarcodeListener, PickBottliingDateCallback {
+public class ActIncomeRec extends Activity implements BarcodeReader.BarcodeListener, PickBottliingDateCallback, TransferCallback {
 
     public final static String INCOMEREC_WBREGID = "WBREGID";
     public final static String INCOMERECCONTENT_POSITION = "POSITION";
@@ -121,7 +122,7 @@ public class ActIncomeRec extends Activity implements BarcodeReader.BarcodeListe
         adapter.notifyDataSetChanged();
     }
 
-    private static void pickRec(Context ctx, String wbRegId, IncomeRecContent req, Integer addQty, String barcode) {
+    private static void pickRec(Context ctx, String wbRegId, IncomeRecContent req, int addQty, String barcode) {
         // Перейти в форму одной строки позиции
         Intent in = new Intent();
         in.setClass(ctx, ActIncomeRecContent.class);
@@ -159,7 +160,7 @@ public class ActIncomeRec extends Activity implements BarcodeReader.BarcodeListe
                 //Сканирование ШК номенклатуры (EAN): тут запрещено
                 break;
             case PDF417:
-                List<IncomeRecContent> incomeRecContentList = proceedPdf417(incomeRec, barcode);
+                List<IncomeRecContent> incomeRecContentList = proceedPdf417(incomeRec, barcode, this);
                 if (incomeRecContentList != null) {
                     if (incomeRecContentList.size() == 1) {
                         // Перейти в форму "приемка позиции"
@@ -231,7 +232,7 @@ public class ActIncomeRec extends Activity implements BarcodeReader.BarcodeListe
         });
     }
 
-    public static List<IncomeRecContent> proceedPdf417(IncomeRec incomeRec, String barcode) {
+    public static List<IncomeRecContent> proceedPdf417(IncomeRec incomeRec, String barcode, TransferCallback transferCallback) {
         // Проверить что этот ШК ранее не сканировался в данной ТТН
         Integer markScanned = DaoMem.getDaoMem().checkMarkScanned(incomeRec, barcode);
         if (markScanned != null) {
@@ -286,9 +287,11 @@ public class ActIncomeRec extends Activity implements BarcodeReader.BarcodeListe
                     String markToTransfer = dataToTransfer.incomeRecContentMark.getMarkScanned();
                     //  Текущую марку привязать к текущей позиции (без изменения в ней принятого количества).
                     dataToTransfer.incomeRecContentMark.setMarkScanned(barcode);
-                    dataToTransfer.incomeRecContent.getIncomeRecContentMarkList().add(new IncomeRecContentMark(markToTransfer, IncomeRecContentMark.MARK_SCANNED_AS_MARK));
-                    DaoMem.getDaoMem().writeLocalDataIncomeRec(incomeRec);
-                    //  Завершить обработку марки  (выход на следующее сканирование).
+                    //dataToTransfer.incomeRecContent.getIncomeRecContentMarkList().add(new IncomeRecContentMark(markToTransfer, IncomeRecContentMark.MARK_SCANNED_AS_MARK));
+                    //DaoMem.getDaoMem().writeLocalDataIncomeRec(incomeRec);
+                    //  Завершить обработку марки  (выход на следующее сканирование). Перебрасываем на форму карточки той, куда перекинули марку
+                    transferCallback.doFinishTransferCallback(MainApp.getContext(), incomeRec.getWbRegId(), dataToTransfer.incomeRecContent, 1, markToTransfer);
+
                     return null;
                 } else {
                     MessageUtils.showModalMessage("Запрет приемки. Лишняя бутылка. По алкокоду [показать] все позиции приняты полностью. Верните бутылку поставщику");
@@ -304,6 +307,12 @@ public class ActIncomeRec extends Activity implements BarcodeReader.BarcodeListe
         return Collections.singletonList(incomeRecContent);
 
     }
+
+    @Override
+    public void doFinishTransferCallback(Context ctx, String wbRegId, IncomeRecContent irc, int addQty, String barcode) {
+        pickRec(ctx, wbRegId, irc, addQty, barcode);
+    }
+
 
     public static class DataToTransfer {
         IncomeRecContent incomeRecContent;

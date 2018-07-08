@@ -7,15 +7,13 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
-import android.widget.Toast;
 import com.glvz.egais.R;
 import com.glvz.egais.dao.DaoMem;
-import com.glvz.egais.integration.model.IncomeContentIn;
-import com.glvz.egais.integration.model.IncomeIn;
 import com.glvz.egais.integration.model.NomenIn;
 import com.glvz.egais.model.*;
 import com.glvz.egais.service.IncomeContentArrayAdapter;
 import com.glvz.egais.service.PickBottliingDateCallback;
+import com.glvz.egais.service.TransferCallback;
 import com.glvz.egais.utils.BarcodeObject;
 import com.glvz.egais.utils.MessageUtils;
 import com.honeywell.aidc.BarcodeFailureEvent;
@@ -24,7 +22,7 @@ import com.honeywell.aidc.BarcodeReader;
 
 import java.util.List;
 
-public class ActIncomeRecContent extends Activity implements BarcodeReader.BarcodeListener, PickBottliingDateCallback {
+public class ActIncomeRecContent extends Activity implements BarcodeReader.BarcodeListener, PickBottliingDateCallback, TransferCallback {
 
     private String lastMark;
     private IncomeRec incomeRec;
@@ -40,30 +38,48 @@ public class ActIncomeRecContent extends Activity implements BarcodeReader.Barco
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_incomereccontent);
 
+        setResources();
+
         Bundle extras = getIntent().getExtras();
         String wbRegId = extras.getString(ActIncomeRec.INCOMEREC_WBREGID);
-        this.incomeRec = DaoMem.getDaoMem().getMapIncomeRec().get(wbRegId);
+        IncomeRec ir = DaoMem.getDaoMem().getMapIncomeRec().get(wbRegId);
         String position = extras.getString(ActIncomeRec.INCOMERECCONTENT_POSITION);
-        this.incomeRecContent = DaoMem.getDaoMem().getIncomeRecContentByPosition(incomeRec, Integer.valueOf(position));
-        this.lastMark = extras.getString(ActIncomeRec.INCOMERECCONTENT_LASTMARK);
+        IncomeRecContent irc = DaoMem.getDaoMem().getIncomeRecContentByPosition(ir, Integer.valueOf(position));
+        String barcode = extras.getString(ActIncomeRec.INCOMERECCONTENT_LASTMARK);
+        int addQty = extras.getInt(ActIncomeRec.INCOMERECCONTENT_ADDQTY);
 
-        setResources();
-        checkQtyOnLastMark();
+        prepareActWithData(wbRegId, irc, addQty, barcode);
+
+    }
+
+    private void prepareActWithData(String wbRegId, IncomeRecContent irc, int addQty, String barcode) {
+        this.incomeRec = DaoMem.getDaoMem().getMapIncomeRec().get(wbRegId);
+        this.incomeRecContent = irc;
+        this.lastMark = barcode;
+
+        boolean checkMark = checkQtyOnLastMark();
+        if (checkMark && this.incomeRecContent.getNomenIn() != null && addQty != 0) {
+            // Если товар сопоставлен - сохраняем сразу
+            proceedAddQtyInternal(addQty);
+        }
         updateDisplayData();
     }
 
-    private void checkQtyOnLastMark() {
+    private boolean checkQtyOnLastMark() {
         if (this.lastMark != null) {
             // Проверить: [количество по ТТН] > [Принятое количество]
             if (incomeRecContent.getQtyAccepted() !=null &&
                     incomeRecContent.getIncomeContentIn().getQty().compareTo(incomeRecContent.getQtyAccepted()) <= 0) {
                 MessageUtils.showModalMessage( "По позиции [показать номер, алкокод, наименование ЕГАИС] уже принято полное количество [показать]. Сканированная бутылка лишняя, принимать нельзя. Верните поставщику");
+                this.lastMark = null;
+                return false;
             }
         }
+        return true;
     }
 
     // обработчик добавления марки и/или количества
-    private void proceedAddQty(double addQty) {
+    private void proceedAddQtyInternal(double addQty) {
         if (addQty != 0) {
             incomeRecContent.setQtyAccepted(incomeRecContent.getQtyAccepted() == null ? addQty : incomeRecContent.getQtyAccepted() + addQty);
         }
@@ -114,7 +130,7 @@ public class ActIncomeRecContent extends Activity implements BarcodeReader.Barco
                     if ((currQty + addQty) > incomeRecContent.getIncomeContentIn().getQty()) {
                         MessageUtils.showModalMessage("Принятое количество не может быть больше количества по ТТН");
                     } else {
-                        proceedAddQty(addQty);
+                        proceedAddQtyInternal(addQty);
                         // После успешного вычисления - возврат в форму “Приход ЕГАИС”
                         ActIncomeRecContent.this.finish();
                     }
@@ -132,22 +148,22 @@ public class ActIncomeRecContent extends Activity implements BarcodeReader.Barco
                 incomeRecContent.setQtyAccepted(null);
                 incomeRecContent.getIncomeRecContentMarkList().clear();
                 lastMark = null;
-                proceedAddQty(0);
+                proceedAddQtyInternal(0);
                 updateDisplayData();
             }
         });
         etQtyAccepted = (EditText) findViewById(R.id.etQtyAccepted);
-        if (incomeRecContent.getPositionType() == IncomeRecContentPositionType.MARKED) {
-            etQtyAccepted.setEnabled(false);
-        } else {
-            etQtyAccepted.setEnabled(true);
-        }
     }
 
     private void updateDisplayData() {
         this.runOnUiThread(new Runnable() {
             @Override
             public void run() {
+                if (incomeRecContent.getPositionType() == IncomeRecContentPositionType.MARKED) {
+                    etQtyAccepted.setEnabled(false);
+                } else {
+                    etQtyAccepted.setEnabled(true);
+                }
                 //Для немаркированной продукции кнопка доступна только если ранее была определена номенклатура 1С (по ШК) или если позиция является разливным пивом (Емкость (ЕГАИС) = 0).
                 // Для маркированной продукции - кнопка не доступна.
                 if (incomeRecContent.getPositionType() == IncomeRecContentPositionType.NONMARKED_LIQUID ||
@@ -192,11 +208,11 @@ public class ActIncomeRecContent extends Activity implements BarcodeReader.Barco
                     MessageUtils.showModalMessage("Штрихкод "+barcodeReadEvent.getBarcodeData()+" отсутствует в номенклатуре 1С. Прием этой позиции запрещен. Верните все бутылки этой позиции поставщику");
                     incomeRecContent.setNomenIn(null);
                     this.lastMark= null;
-                    proceedAddQty(0);
+                    proceedAddQtyInternal(0);
                 } else {
                     //Если ШК товара найден в номенклатуре 1С - заполнить все надписи формы из номенклатуры 1С (код, наименование, ….)
                     incomeRecContent.setNomenIn(nomenIn);
-                    proceedAddQty(addQty);
+                    proceedAddQtyInternal(addQty);
                 }
                 updateDisplayData();
                 break;
@@ -207,7 +223,7 @@ public class ActIncomeRecContent extends Activity implements BarcodeReader.Barco
                     break;
                 }
                 // без сохранения предыдущего состояния - та же обработка что и в картчоке накладной
-                List<IncomeRecContent> incomeRecContentListLocal = ActIncomeRec.proceedPdf417(incomeRec, barcodeReadEvent.getBarcodeData());
+                List<IncomeRecContent> incomeRecContentListLocal = ActIncomeRec.proceedPdf417(incomeRec, barcodeReadEvent.getBarcodeData(), this);
                 if (incomeRecContentListLocal != null) {
 
                     if (incomeRecContentListLocal.size() == 1) {
@@ -229,10 +245,10 @@ public class ActIncomeRecContent extends Activity implements BarcodeReader.Barco
                 if (incomeRecContentLocal != null) {
                     this.incomeRecContent = incomeRecContentLocal;
                     this.lastMark = barcodeReadEvent.getBarcodeData();
-                    checkQtyOnLastMark();
-                    if (this.incomeRecContent.getNomenIn() != null) {
+                    boolean resCheck = checkQtyOnLastMark();
+                    if (resCheck && this.incomeRecContent.getNomenIn() != null) {
                         // Если товар сопоставлен - сохраняем сразу
-                        proceedAddQty(1);
+                        proceedAddQtyInternal(1);
                     }
 
                     updateDisplayData();
@@ -249,10 +265,10 @@ public class ActIncomeRecContent extends Activity implements BarcodeReader.Barco
     private void proceedWithPdf417AndBarcode(IncomeRecContent icr, String barcode) {
         this.incomeRecContent = icr;
         this.lastMark = barcode;
-        checkQtyOnLastMark();
-        if (this.incomeRecContent.getNomenIn() != null) {
+        boolean resCheck = checkQtyOnLastMark();
+        if (resCheck && this.incomeRecContent.getNomenIn() != null) {
             // Если товар сопоставлен - сохраняем сразу
-            proceedAddQty(1);
+            proceedAddQtyInternal(1);
         }
 
         updateDisplayData();
@@ -266,5 +282,10 @@ public class ActIncomeRecContent extends Activity implements BarcodeReader.Barco
     @Override
     public void onCallbackPickBottlingDate(Context ctx, String wbRegId, IncomeRecContent irc, int addQty, String barcode) {
         proceedWithPdf417AndBarcode(irc, barcode);
+    }
+
+    @Override
+    public void doFinishTransferCallback(Context ctx, String wbRegId, IncomeRecContent irc, int addQty, String barcode) {
+        prepareActWithData(wbRegId, irc, addQty, barcode);
     }
 }
