@@ -18,13 +18,15 @@
                     android:layout_height="wrap_content"
                     android:textAppearance="?android:attr/textAppearanceMedium"
                     android:text="1133238876876876"
+                    android:textStyle="bold"
                     android:paddingRight="10dp"
                     android:id="@+id/tvNumnakl" />
             <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:textAppearance="?android:attr/textAppearanceMedium"
-                    android:text="от 10.05.1655555555"
+                    android:textStyle="bold"
+                    android:text="от 10.05.1655"
                     android:id="@+id/tvDateNakl" />
 
         </LinearLayout>
@@ -39,6 +41,7 @@
                     android:layout_height="wrap_content"
                     android:textAppearance="?android:attr/textAppearanceMedium"
                     android:text="ООО Родник"
+                    android:textStyle="bold"
                     android:maxLines="1"
                     android:id="@+id/tvNamepost" />
         </LinearLayout>
@@ -48,21 +51,28 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
             <TextView
-                    android:layout_width="match_parent"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:textAppearance="?android:attr/textAppearanceMedium"
                     android:text="Строк: 15/30"
-                    android:layout_weight="3"
+                    android:layout_weight="1"
                     android:id="@+id/tvCntRows" />
 
             <TextView
-                    android:layout_width="match_parent"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:textAppearance="?android:attr/textAppearanceMedium"
                     android:text="Статус:"
                     android:maxLines="1"
                     android:id="@+id/tvStatus"
-                    android:layout_weight="3" />
+                    android:layout_weight="1" />
+            <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="?android:attr/textAppearanceMedium"
+                    android:text="Эксп"
+                    android:layout_weight="1"
+                    android:id="@+id/tvExported" />
 
         </LinearLayout>
     </LinearLayout>

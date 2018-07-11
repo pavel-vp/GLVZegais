@@ -23,6 +23,7 @@ import com.glvz.egais.service.PickBottliingDateCallback;
 import com.glvz.egais.service.TransferCallback;
 import com.glvz.egais.utils.BarcodeObject;
 import com.glvz.egais.utils.MessageUtils;
+import com.glvz.egais.utils.StringUtils;
 import com.honeywell.aidc.BarcodeFailureEvent;
 import com.honeywell.aidc.BarcodeReadEvent;
 import com.honeywell.aidc.BarcodeReader;
@@ -75,8 +76,12 @@ public class ActIncomeRec extends Activity implements BarcodeReader.BarcodeListe
             case R.id.action_export:
                 DaoMem.getDaoMem().exportData(incomeRec);
                 MessageUtils.showModalMessage("Накладная выгружена!");
+                updateData();
                 return true;
             case R.id.action_reject:
+                DaoMem.getDaoMem().rejectData(incomeRec);
+                MessageUtils.showModalMessage("По всей накладной в приемке отказано!");
+                updateData();
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -193,13 +198,14 @@ public class ActIncomeRec extends Activity implements BarcodeReader.BarcodeListe
     public static void pickBottlingDate(final Context ctx, final String wbRegId, List<IncomeRecContent> incomeRecContentList, final String barcode, final PickBottliingDateCallback cb) {
         final Map<CharSequence, List<IncomeRecContent>> dates = new HashMap<>();
         for (IncomeRecContent irc : incomeRecContentList) {
-            if (irc.getIncomeContentIn().getBottlingDate() != null && !"".equals(irc.getIncomeContentIn().getBottlingDate())) {
-                List<IncomeRecContent> ircOnDate = dates.get(irc.getIncomeContentIn().getBottlingDate());
+            String bottlingDate = StringUtils.formatDateDisplay(StringUtils.jsonBottlingStringToDate(irc.getIncomeContentIn().getBottlingDate()));
+            if (bottlingDate != null && !"".equals(bottlingDate)) {
+                List<IncomeRecContent> ircOnDate = dates.get(bottlingDate);
                 if (ircOnDate == null) {
                     ircOnDate = new ArrayList<>();
-                    dates.put(irc.getIncomeContentIn().getBottlingDate(), ircOnDate);
+                    dates.put(bottlingDate, ircOnDate);
                 }
-                dates.get(irc.getIncomeContentIn().getBottlingDate()).add(irc);
+                dates.get(bottlingDate).add(irc);
             }
         }
         final CharSequence[] items = new CharSequence[dates.size()];

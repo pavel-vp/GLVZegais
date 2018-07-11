@@ -11,7 +11,9 @@ import android.widget.ArrayAdapter;
 import android.widget.TextView;
 import com.glvz.egais.R;
 import com.glvz.egais.model.IncomeRec;
+import com.glvz.egais.utils.StringUtils;
 
+import java.util.Date;
 import java.util.List;
 
 public class IncomeArrayAdapter extends ArrayAdapter<IncomeRec> {
@@ -63,6 +65,7 @@ public class IncomeArrayAdapter extends ArrayAdapter<IncomeRec> {
         TextView tvCntRows;
         TextView tvNamepost;
         TextView tvStatus;
+        TextView tvExported;
         IncomeRec incomeRec;
 
         public DocRecHolder(View v) {
@@ -72,14 +75,21 @@ public class IncomeArrayAdapter extends ArrayAdapter<IncomeRec> {
             this.tvCntRows=(TextView)v.findViewById(R.id.tvCntRows);
             this.tvNamepost=(TextView)v.findViewById(R.id.tvNamepost);
             this.tvStatus=(TextView)v.findViewById(R.id.tvStatus);
+            this.tvExported = (TextView)v.findViewById(R.id.tvExported);
             v.setTag(this);
         }
 
         public void setItem(IncomeRec incomeRec) {
             this.incomeRec = incomeRec;
             this.tvNumnakl.setText(incomeRec.getIncomeIn().getNumber());
-            this.tvDatenakl.setText("на " + incomeRec.getIncomeIn().getDate());
+            Date d = StringUtils.jsonStringToDate(incomeRec.getIncomeIn().getDate());
+            this.tvDatenakl.setText("на " + StringUtils.formatDateDisplay( d ) );
             this.tvCntRows.setText("Строк: " + incomeRec.getCntDone() + "/" + incomeRec.getIncomeIn().getContent().length);
+            if (this.incomeRec.isExported()) {
+                tvExported.setVisibility(View.VISIBLE);
+            } else {
+                tvExported.setVisibility(View.INVISIBLE);
+            }
             switch (incomeRec.getStatus()) {
                 case NEW:
                     tvStatus.setTextColor(Color.BLACK);

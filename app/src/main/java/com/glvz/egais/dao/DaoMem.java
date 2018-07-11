@@ -150,18 +150,25 @@ public class DaoMem {
         // Синхронизируем общий статус накладной
         // Посчитаем число реально принятых строк
         int cntDone = 0;
+        int cntZero = 0;
         for (IncomeRecContent incomeRecContent : incomeRec.getIncomeRecContentList()) {
             if (incomeRecContent.getStatus() == IncomeRecContentStatus.DONE){
                 cntDone++;
             }
+            if (incomeRecContent.getQtyAccepted() != null &&  incomeRecContent.getQtyAccepted().equals(Double.valueOf(0))
+                    && incomeRecContent.getNomenIn() == null){
+                cntZero++;
+            }
         }
-        if (incomeRec.getCntDone() != cntDone) {
+        // Если все записи =0, и связок с товарами нет и в статусе накл = отказ, оставим отказ
+        if (cntZero == incomeRec.getIncomeRecContentList().size()
+                && incomeRec.getStatus() == IncomeRecStatus.REJECTED) {
+            // оставим отказ
+        } else {
             if (incomeRec.getIncomeIn().getContent().length == cntDone) {
                 incomeRec.setStatus(IncomeRecStatus.DONE);
             } else {
-                if (cntDone == 0 || incomeRec.getStatus() != IncomeRecStatus.REJECTED) {
-                    incomeRec.setStatus(IncomeRecStatus.INPROGRESS);
-                }
+                incomeRec.setStatus(IncomeRecStatus.INPROGRESS);
             }
         }
         incomeRec.setCntDone(cntDone);
@@ -287,7 +294,6 @@ public class DaoMem {
         incomeRec.setExported(true);
         writeLocalDataIncomeRec(incomeRec);
         integrationFile.writeIncomeRec(shopId, incomeRec);
-
     }
 
     public List<ShopIn> getListS() {
@@ -306,5 +312,17 @@ public class DaoMem {
 
     public String getShopId() {
         return shopId;
+    }
+
+    public void rejectData(IncomeRec incomeRec) {
+        // Пройтись по всем строкам, очистить связки с товаром и проставить везде нули
+        for (IncomeRecContent irc : incomeRec.getIncomeRecContentList()) {
+            irc.setNomenIn(null);
+            irc.setQtyAccepted(Double.valueOf(0));
+            irc.setStatus(IncomeRecContentStatus.REJECTED);
+        }
+        incomeRec.setStatus(IncomeRecStatus.REJECTED);
+        writeLocalDataIncomeRec(incomeRec);
+        exportData(incomeRec);
     }
 }

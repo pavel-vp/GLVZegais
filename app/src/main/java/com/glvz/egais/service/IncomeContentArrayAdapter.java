@@ -2,6 +2,7 @@ package com.glvz.egais.service;
 
 import android.app.Activity;
 import android.content.Context;
+import android.graphics.Color;
 import android.support.annotation.NonNull;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -10,7 +11,9 @@ import android.widget.ArrayAdapter;
 import android.widget.TextView;
 import com.glvz.egais.R;
 import com.glvz.egais.model.IncomeRecContent;
+import com.glvz.egais.utils.StringUtils;
 
+import java.util.Date;
 import java.util.List;
 
 public class IncomeContentArrayAdapter extends ArrayAdapter<IncomeRecContent> {
@@ -67,7 +70,7 @@ public class IncomeContentArrayAdapter extends ArrayAdapter<IncomeRecContent> {
         TextView tvQty;
         TextView tvQtyAccepted;
 
-        IncomeRecContent incomeRec;
+        IncomeRecContent incomeRecContent;
 
         public DocRecContentHolder(View v) {
             super();
@@ -84,27 +87,44 @@ public class IncomeContentArrayAdapter extends ArrayAdapter<IncomeRecContent> {
             v.setTag(this);
         }
 
-        public void setItem(IncomeRecContent incomeRec, boolean addMark) {
-            this.incomeRec = incomeRec;
-            tvPosition.setText(incomeRec.getPosition().toString());
-            tvStatus.setText(incomeRec.getStatus().getMessage());
-            tvNameEgais.setText(incomeRec.getIncomeContentIn().getName());
-            tvCapacityEgais.setText(incomeRec.getIncomeContentIn().getCapacity());
-            tvAlcVolumeEgais.setText(incomeRec.getIncomeContentIn().getAlcVolume());
-            tvBottlingDateEgais.setText(incomeRec.getIncomeContentIn().getBottlingDate());
-            if (incomeRec.getNomenIn() != null) {
-                tvName1c.setText(incomeRec.getNomenIn().getName());
-                tvCapacity1c.setText(String.valueOf(incomeRec.getNomenIn().getCapacity()));
+        public void setItem(IncomeRecContent incomeRecContent, boolean addMark) {
+            this.incomeRecContent = incomeRecContent;
+            tvPosition.setText(incomeRecContent.getPosition().toString());
+            tvStatus.setText(incomeRecContent.getStatus().getMessage());
+            tvNameEgais.setText(incomeRecContent.getIncomeContentIn().getName());
+            tvCapacityEgais.setText(incomeRecContent.getIncomeContentIn().getCapacity());
+            tvAlcVolumeEgais.setText(incomeRecContent.getIncomeContentIn().getAlcVolume());
+            Date d = StringUtils.jsonBottlingStringToDate(incomeRecContent.getIncomeContentIn().getBottlingDate());
+            tvBottlingDateEgais.setText(StringUtils.formatDateDisplay(d));
+            if (incomeRecContent.getNomenIn() != null) {
+                tvName1c.setText(incomeRecContent.getNomenIn().getName());
+                tvCapacity1c.setText(StringUtils.formatQty(incomeRecContent.getNomenIn().getCapacity()));
             } else {
                 tvName1c.setText("");
                 tvCapacity1c.setText("");
             }
-            tvQty.setText(String.valueOf(incomeRec.getIncomeContentIn().getQty()));
-            if (incomeRec.getQtyAccepted() != null) {
-                tvQtyAccepted.setText(String.valueOf(incomeRec.getQtyAccepted() + (addMark ? 1: 0) ));
+            tvQty.setText(StringUtils.formatQty(incomeRecContent.getIncomeContentIn().getQty()));
+            if (incomeRecContent.getQtyAccepted() != null) {
+                tvQtyAccepted.setText(StringUtils.formatQty(incomeRecContent.getQtyAccepted() + (addMark ? 1: 0) ));
             } else {
                 tvQtyAccepted.setText(addMark?"1":"");
             }
+
+            switch (incomeRecContent.getStatus()) {
+                case NOT_ENTERED:
+                    tvStatus.setTextColor(Color.BLACK);
+                    break;
+                case IN_PROGRESS:
+                    tvStatus.setTextColor(Color.BLUE);
+                    break;
+                case REJECTED:
+                    tvStatus.setTextColor(Color.RED);
+                    break;
+                case DONE:
+                    tvStatus.setTextColor(Color.GREEN);
+                    break;
+            }
+
 
         }
 

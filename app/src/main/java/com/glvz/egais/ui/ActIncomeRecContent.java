@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -37,7 +38,7 @@ public class ActIncomeRecContent extends Activity implements BarcodeReader.Barco
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_incomereccontent);
-
+        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
         setResources();
 
         Bundle extras = getIntent().getExtras();
@@ -49,6 +50,7 @@ public class ActIncomeRecContent extends Activity implements BarcodeReader.Barco
         int addQty = extras.getInt(ActIncomeRec.INCOMERECCONTENT_ADDQTY);
 
         prepareActWithData(wbRegId, irc, addQty, barcode);
+
 
     }
 
@@ -89,10 +91,14 @@ public class ActIncomeRecContent extends Activity implements BarcodeReader.Barco
         if (incomeRecContent.getQtyAccepted() == null) {
             incomeRecContent.setStatus(IncomeRecContentStatus.NOT_ENTERED);
         } else {
-            if (incomeRecContent.getQtyAccepted().compareTo(incomeRecContent.getIncomeContentIn().getQty()) == 0 && incomeRecContent.getNomenIn() != null) {
-                incomeRecContent.setStatus(IncomeRecContentStatus.DONE);
+            if (incomeRecContent.getQtyAccepted().equals(Double.valueOf(0))) {
+                incomeRecContent.setStatus(IncomeRecContentStatus.REJECTED);
             } else {
-                incomeRecContent.setStatus(IncomeRecContentStatus.IN_PROGRESS);
+                if (incomeRecContent.getQtyAccepted().compareTo(incomeRecContent.getIncomeContentIn().getQty()) == 0 && incomeRecContent.getNomenIn() != null) {
+                    incomeRecContent.setStatus(IncomeRecContentStatus.DONE);
+                } else {
+                    incomeRecContent.setStatus(IncomeRecContentStatus.IN_PROGRESS);
+                }
             }
         }
         DaoMem.getDaoMem().writeLocalDataIncomeRec(incomeRec);

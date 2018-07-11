@@ -4,7 +4,8 @@ public enum IncomeRecContentStatus {
 
     NOT_ENTERED(0, "Не принятно"),
     IN_PROGRESS(1, "В приемке"),
-    DONE(2, "Принято");
+    DONE(2, "Принято"),
+    REJECTED(3, "Отказано");
 
     private int code;
     private String message;
