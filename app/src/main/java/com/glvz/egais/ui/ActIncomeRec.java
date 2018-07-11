@@ -263,7 +263,7 @@ public class ActIncomeRec extends Activity implements BarcodeReader.BarcodeListe
             // определить количество строк в ТТН ЕГАИС с таким алкокодом и принятых не полностью.
             List<IncomeRecContent> incomeRecContentList = DaoMem.getDaoMem().findIncomeRecContentListByAlcocode(incomeRec, alcocode);
             if (incomeRecContentList.size() == 0 ) {
-                MessageUtils.showModalMessage("Продукция с алкокодом [показать] отсутствует в ТТН поставщика. Принимать бутылку нельзя, верните поставщику!");
+                MessageUtils.showModalMessage("Продукция с алкокодом %s отсутствует в ТТН поставщика. Принимать бутылку нельзя, верните поставщику!", alcocode);
                 return null;
             }
             if (incomeRecContentList.size() == 1 ) {
@@ -271,7 +271,12 @@ public class ActIncomeRec extends Activity implements BarcodeReader.BarcodeListe
                 //определить позицию в ТТН ЕГАИС и принятое по ней количество
                 //Если [Количество по ТТН] = [Принятое количество]
                 if (incomeRecContent.getQtyAccepted() != null && incomeRecContent.getQtyAccepted().equals(incomeRecContent.getIncomeContentIn().getQty())) {
-                    MessageUtils.showModalMessage("По позиции [показать номер, алкокод, наименование ЕГАИС] уже принято полное количество [показать]. Сканированная бутылка лишняя, принимать нельзя. Верните поставщику!");
+                    MessageUtils.showModalMessage("По позиции номер: %d, алкокод: %s, (%s) уже принято полное количество %s. Сканированная бутылка лишняя, принимать нельзя. Верните поставщику!",
+                            incomeRecContent.getPosition(),
+                            alcocode,
+                            incomeRecContent.getIncomeContentIn().getName(),
+                            incomeRecContent.getQtyAccepted()
+                            );
                     return null;
                 }
             } else {
@@ -300,7 +305,8 @@ public class ActIncomeRec extends Activity implements BarcodeReader.BarcodeListe
 
                     return null;
                 } else {
-                    MessageUtils.showModalMessage("Запрет приемки. Лишняя бутылка. По алкокоду [показать] все позиции приняты полностью. Верните бутылку поставщику");
+                    String alcocode = BarcodeObject.extractAlcode(barcode);
+                    MessageUtils.showModalMessage("Запрет приемки. Лишняя бутылка. По алкокоду %s все позиции приняты полностью. Верните бутылку поставщику", alcocode);
                     return null;
                 }
             }

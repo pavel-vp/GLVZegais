@@ -17,6 +17,12 @@ public class MessageUtils {
                 Toast.makeText(MainApp.getContext(), msg, Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    public static void showModalMessage(final String msgFormat, Object... objects ) {
+        String msg = String.format(msgFormat, objects);
+        showModalMessage(msg);
 
     }
+
 }
