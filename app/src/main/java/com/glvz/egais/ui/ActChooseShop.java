@@ -11,7 +11,6 @@ import android.widget.TextView;
 import com.glvz.egais.R;
 import com.glvz.egais.dao.DaoMem;
 import com.glvz.egais.integration.model.ShopIn;
-import com.glvz.egais.service.ShopService;
 
 import java.util.List;
 
@@ -61,7 +60,7 @@ public class ActChooseShop extends Activity {
                             public void onClick(DialogInterface dialog, int which) {
                                 ShopIn shopIn = shopInList.get(choice[0]);
                                 // запомнить выбор
-                                ShopService.getInstance().setShopIn(shopIn);
+                                DaoMem.getDaoMem().setShopId(shopIn.getId());
                                 ActChooseShop.this.updateData();
                             }
                         }).show();
@@ -73,7 +72,7 @@ public class ActChooseShop extends Activity {
         buttonLoadDocs.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                DaoMem.getDaoMem().initDocuments(ShopService.getInstance().getShopIn().getId());
+                DaoMem.getDaoMem().initDocuments();
             }
         });
 
@@ -98,8 +97,8 @@ public class ActChooseShop extends Activity {
     }
 
     private void updateData() {
-        tvShopChosen.setText(ShopService.getInstance().getShopInName());
-        if (ShopService.getInstance().getShopIn() == null) {
+        tvShopChosen.setText(DaoMem.getDaoMem().getShopInName());
+        if (DaoMem.getDaoMem().getShopId() == null) {
             buttonLoadDocs.setEnabled(false);
             buttonMainMenu.setEnabled(false);
         } else {

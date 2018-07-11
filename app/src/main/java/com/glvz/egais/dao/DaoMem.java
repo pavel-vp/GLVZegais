@@ -16,6 +16,7 @@ import java.util.*;
 
 public class DaoMem {
 
+    private static final String KEY_SHOPID = "shopid";
     private static final String KEY_CNTDONE = "cntdone";
     private static final String KEY_STATUS = "status";
     private static final String KEY_EXPORTED = "exported";
@@ -68,10 +69,32 @@ public class DaoMem {
         listP = integrationFile.loadPosts();
         listN = integrationFile.loadNomen();
         dictionary = new DictionaryMem(listS, listP, listN);
+        String shopIdStored = sharedPreferences.getString(KEY_SHOPID, null);
+        if (shopIdStored != null) {
+            ShopIn shopInStored = findShopInById(shopIdStored);
+            if (shopIdStored != null) {
+                setShopId(shopInStored.getId());
+            }
+        }
     }
 
-    public void initDocuments(String shopId) {
+    public void setShopId(String shopId) {
         this.shopId = shopId;
+        SharedPreferences.Editor ed = sharedPreferences.edit();
+        ed.putString(KEY_SHOPID, this.shopId);
+        ed.apply();
+    }
+
+    private ShopIn findShopInById(String shopIdStored) {
+        for (ShopIn shopIn : listS) {
+            if (shopIn.getId().equals(shopIdStored)){
+                return shopIn;
+            }
+        }
+        return null;
+    }
+
+    public void initDocuments() {
         listIncomeIn = integrationFile.loadIncome(shopId);
         document = new DocumentMem(listIncomeIn);
 
@@ -271,4 +294,17 @@ public class DaoMem {
         return listS;
     }
 
+
+    public String getShopInName() {
+        ShopIn shopIn = findShopInById(this.shopId);
+        if (shopIn == null ) {
+            return "Не выбран";
+        } else {
+            return shopIn.getName();
+        }
+    }
+
+    public String getShopId() {
+        return shopId;
+    }
 }

@@ -7,7 +7,6 @@ import android.view.View;
 import android.widget.Button;
 import com.glvz.egais.R;
 import com.glvz.egais.dao.DaoMem;
-import com.glvz.egais.service.ShopService;
 import com.glvz.egais.utils.BarcodeObject;
 
 public class ActMainMenu extends Activity {
@@ -21,7 +20,7 @@ public class ActMainMenu extends Activity {
 
         setResources();
 
-        DaoMem.getDaoMem().initDocuments(ShopService.getInstance().getShopIn().getId());
+        DaoMem.getDaoMem().initDocuments();
     }
 
 
