@@ -10,6 +10,8 @@ import android.widget.EditText;
 import android.widget.TextView;
 import com.glvz.egais.R;
 import com.glvz.egais.dao.DaoMem;
+import com.glvz.egais.integration.model.IncomeContentBoxTreeIn;
+import com.glvz.egais.integration.model.IncomeContentMarkIn;
 import com.glvz.egais.integration.model.NomenIn;
 import com.glvz.egais.model.*;
 import com.glvz.egais.service.IncomeContentArrayAdapter;
@@ -21,6 +23,7 @@ import com.honeywell.aidc.BarcodeFailureEvent;
 import com.honeywell.aidc.BarcodeReadEvent;
 import com.honeywell.aidc.BarcodeReader;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class ActIncomeRecContent extends Activity implements BarcodeReader.BarcodeListener, PickBottliingDateCallback, TransferCallback {
@@ -33,6 +36,7 @@ public class ActIncomeRecContent extends Activity implements BarcodeReader.Barco
     TextView tvAction;
     EditText etQtyAccepted;
     Button btnAdd;
+    private boolean isBoxScanned = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,6 +52,7 @@ public class ActIncomeRecContent extends Activity implements BarcodeReader.Barco
         IncomeRecContent irc = DaoMem.getDaoMem().getIncomeRecContentByPosition(ir, Integer.valueOf(position));
         String barcode = extras.getString(ActIncomeRec.INCOMERECCONTENT_LASTMARK);
         int addQty = extras.getInt(ActIncomeRec.INCOMERECCONTENT_ADDQTY);
+        this.isBoxScanned = extras.getBoolean(ActIncomeRec.INCOMERECCONTENT_ISBOXSCANNED);
 
         prepareActWithData(wbRegId, irc, addQty, barcode);
 
@@ -88,11 +93,33 @@ public class ActIncomeRecContent extends Activity implements BarcodeReader.Barco
 
     // обработчик добавления марки и/или количества
     private void proceedAddQtyInternal(double addQty) {
+        // Если в режиме сканирования упаковки
+        if (this.isBoxScanned) {
+            // посчитать количесвто общее товара по этой упаковке
+            IncomeContentBoxTreeIn icb = DaoMem.getDaoMem().findIncomeContentBoxTreeIn(this.incomeRecContent, this.lastMark);
+
+            List<DaoMem.MarkInBox> resList = new ArrayList<>();
+            DaoMem.getDaoMem().getAllIncomeRecMarksByBoxBarcode(resList, this.incomeRecContent, icb, 1);
+            // пройтись по каждой из них
+            for (DaoMem.MarkInBox mb : resList) {
+                IncomeRecContentMark ircm = DaoMem.getDaoMem().findIncomeRecContentMarkByMarkScanned(this.incomeRec, mb.icm.getMark());
+                //Если добавляемой марки еще нет в списке принятых: добавить ее в список принятых, признак сканирования установить в значение уровня вложенности упаковки (см. пред. пункт), принятое количество увеличить на 1 шт.
+                if (ircm == null) {
+                    // В этот момент ШК товара уже должен быть, можем добавлять марку
+                    incomeRecContent.getIncomeRecContentMarkList().add(new IncomeRecContentMark(mb.icm.getMark(), mb.level, this.lastMark));
+                }
+                //Если добавляемая марка уже есть в списке принятых - нужно только изменить признак сканирования (установить меньшее значение из того что уже стоит по марке и уровня вложенности текущей упаковки). Принятое количество менять не надо.
+                if (ircm != null) {
+                    int currentLevel = ircm.getMarkScannedAsType();
+                    ircm.setMarkScannedAsType(Math.min(currentLevel, mb.level));
+                }
+            }
+        }
         if (addQty != 0) {
             incomeRecContent.setQtyAccepted(incomeRecContent.getQtyAccepted() == null ? addQty : incomeRecContent.getQtyAccepted() + addQty);
         }
         if (this.lastMark != null) {
-            this.incomeRecContent.getIncomeRecContentMarkList().add(new IncomeRecContentMark(this.lastMark, IncomeRecContentMark.MARK_SCANNED_AS_MARK));
+            this.incomeRecContent.getIncomeRecContentMarkList().add(new IncomeRecContentMark(this.lastMark, IncomeRecContentMark.MARK_SCANNED_AS_MARK, this.lastMark));
         }
         if (incomeRecContent.getQtyAccepted() == null) {
             incomeRecContent.setStatus(IncomeRecContentStatus.NOT_ENTERED);
@@ -197,8 +224,12 @@ public class ActIncomeRecContent extends Activity implements BarcodeReader.Barco
                     case MARKED:
                         tvAction.setText("Сканируйте ШК с бутылки, и марки со всех бутылок только этой позиции");
                 }
-
-                docRecContentHolder.setItem(incomeRecContent, lastMark != null);
+                int countToAddInFuture = 0;
+                if (ActIncomeRecContent.this.lastMark != null) {
+                    // Посчитать количество добавляемое, в случае успеха сканирования ШК ЕАН (предварительное добавленное колво)
+                    countToAddInFuture = DaoMem.getDaoMem().calculateQtyToAdd(ActIncomeRecContent.this.incomeRec, ActIncomeRecContent.this.incomeRecContent, ActIncomeRecContent.this.lastMark);
+                }
+                docRecContentHolder.setItem(incomeRecContent, countToAddInFuture);
             }
         });
     }
@@ -220,6 +251,7 @@ public class ActIncomeRecContent extends Activity implements BarcodeReader.Barco
                     MessageUtils.showModalMessage("Штрихкод "+barcodeReadEvent.getBarcodeData()+" отсутствует в номенклатуре 1С. Прием этой позиции запрещен. Верните все бутылки этой позиции поставщику");
                     incomeRecContent.setNomenIn(null);
                     this.lastMark= null;
+                    this.isBoxScanned = false;
                     proceedAddQtyInternal(0);
                 } else {
                     //Если ШК товара найден в номенклатуре 1С - заполнить все надписи формы из номенклатуры 1С (код, наименование, ….)
@@ -229,6 +261,7 @@ public class ActIncomeRecContent extends Activity implements BarcodeReader.Barco
                 updateDisplayData();
                 break;
             case PDF417:
+                this.isBoxScanned = false;
                 // Сканирование Pdf417 в карточке позиции
                 if (this.lastMark != null && incomeRecContent.getNomenIn() == null) {
                     MessageUtils.showModalMessage("Марка уже сканирована, сканируйте ШК бутылки!");
@@ -248,6 +281,7 @@ public class ActIncomeRecContent extends Activity implements BarcodeReader.Barco
                 break;
             case DATAMATRIX:
                 // Сканирование DataMatrix в карточке позиции
+                this.isBoxScanned = false;
                 if (this.lastMark != null && incomeRecContent.getNomenIn() == null) {
                     MessageUtils.showModalMessage("Марка уже сканирована, сканируйте ШК бутылки!");
                     break;
@@ -268,6 +302,8 @@ public class ActIncomeRecContent extends Activity implements BarcodeReader.Barco
 
                 break;
             case CODE128:
+                // TODO:
+                this.isBoxScanned = true;
                 break;
 
         }

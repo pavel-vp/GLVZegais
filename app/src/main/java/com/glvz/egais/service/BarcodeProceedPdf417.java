@@ -73,7 +73,7 @@ public class BarcodeProceedPdf417 extends BarcodeProceedBase {
 
     private void saveRecProceeded(IncomeRec incomeRec, NomenIn nomenIn) {
         // добавить марку в список принятых по позиции
-        this.incomeRecContentProceeded.getIncomeRecContentMarkList().add(new IncomeRecContentMark(this.lastMark, IncomeRecContentMark.MARK_SCANNED_AS_MARK));
+        this.incomeRecContentProceeded.getIncomeRecContentMarkList().add(new IncomeRecContentMark(this.lastMark, IncomeRecContentMark.MARK_SCANNED_AS_MARK, this.lastMark));
         //добавить ШК номенклатуры в позицию
         this.incomeRecContentProceeded.setNomenIn(nomenIn);
         this.incomeRecContentProceeded.setId1c(nomenIn.getId());

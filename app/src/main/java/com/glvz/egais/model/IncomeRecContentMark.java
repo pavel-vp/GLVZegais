@@ -6,10 +6,12 @@ public class IncomeRecContentMark {
 
     private String markScanned;
     private Integer markScannedAsType = null;
+    private String markScannedReal;
 
-    public IncomeRecContentMark(String markScanned, Integer markScannedAsType) {
+    public IncomeRecContentMark(String markScanned, Integer markScannedAsType, String markScannedReal) {
         this.markScanned = markScanned;
         this.markScannedAsType = markScannedAsType;
+        this.markScannedReal = markScannedReal;
     }
 
     public String getMarkScanned() {
@@ -26,6 +28,15 @@ public class IncomeRecContentMark {
 
     public void setMarkScannedAsType(Integer markScannedAsType) {
         this.markScannedAsType = markScannedAsType;
+    }
+
+
+    public String getMarkScannedReal() {
+        return markScannedReal;
+    }
+
+    public void setMarkScannedReal(String markScannedReal) {
+        this.markScannedReal = markScannedReal;
     }
 
 

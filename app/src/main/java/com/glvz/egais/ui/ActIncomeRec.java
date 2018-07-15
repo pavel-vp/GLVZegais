@@ -16,6 +16,8 @@ import android.widget.ListView;
 import com.glvz.egais.MainApp;
 import com.glvz.egais.R;
 import com.glvz.egais.dao.DaoMem;
+import com.glvz.egais.integration.model.IncomeContentMarkIn;
+import com.glvz.egais.integration.model.PostIn;
 import com.glvz.egais.model.*;
 import com.glvz.egais.service.IncomeArrayAdapter;
 import com.glvz.egais.service.IncomeContentArrayAdapter;
@@ -36,6 +38,7 @@ public class ActIncomeRec extends Activity implements BarcodeReader.BarcodeListe
     public final static String INCOMERECCONTENT_POSITION = "POSITION";
     public static final String INCOMERECCONTENT_ADDQTY = "ADDQTY";
     public static final String INCOMERECCONTENT_LASTMARK = "LASTMARK";
+    public static final String INCOMERECCONTENT_ISBOXSCANNED = "ISBOXSCANNED";
 
     private IncomeRec incomeRec;
 
@@ -106,7 +109,7 @@ public class ActIncomeRec extends Activity implements BarcodeReader.BarcodeListe
         lvContent.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                pickRec(ActIncomeRec.this, incomeRec.getWbRegId(), list.get(position), 0, null);
+                pickRec(ActIncomeRec.this, incomeRec.getWbRegId(), list.get(position), 0, null, false);
             }
         });
         adapter = new IncomeContentArrayAdapter(this, R.layout.rec_prih_position, list);
@@ -127,7 +130,7 @@ public class ActIncomeRec extends Activity implements BarcodeReader.BarcodeListe
         adapter.notifyDataSetChanged();
     }
 
-    private static void pickRec(Context ctx, String wbRegId, IncomeRecContent req, int addQty, String barcode) {
+    private static void pickRec(Context ctx, String wbRegId, IncomeRecContent req, int addQty, String barcode, boolean isBoxScanned) {
         // Перейти в форму одной строки позиции
         Intent in = new Intent();
         in.setClass(ctx, ActIncomeRecContent.class);
@@ -135,6 +138,7 @@ public class ActIncomeRec extends Activity implements BarcodeReader.BarcodeListe
         in.putExtra(ActIncomeRec.INCOMERECCONTENT_POSITION, req.getPosition().toString());
         in.putExtra(ActIncomeRec.INCOMERECCONTENT_ADDQTY, addQty);
         in.putExtra(ActIncomeRec.INCOMERECCONTENT_LASTMARK, barcode);
+        in.putExtra(ActIncomeRec.INCOMERECCONTENT_ISBOXSCANNED, isBoxScanned);
         ctx.startActivity(in);
     }
 
@@ -169,7 +173,7 @@ public class ActIncomeRec extends Activity implements BarcodeReader.BarcodeListe
                 if (incomeRecContentList != null) {
                     if (incomeRecContentList.size() == 1) {
                         // Перейти в форму "приемка позиции"
-                        pickRec(this, incomeRec.getWbRegId(), incomeRecContentList.get(0), 1, barcode);
+                        pickRec(this, incomeRec.getWbRegId(), incomeRecContentList.get(0), 1, barcode, false);
                     } else {
                         pickBottlingDate(this, incomeRec.getWbRegId(), incomeRecContentList, barcode, this);
                     }
@@ -179,19 +183,51 @@ public class ActIncomeRec extends Activity implements BarcodeReader.BarcodeListe
                 incomeRecContent = proceedDataMatrix(incomeRec, barcode);
                 if (incomeRecContent != null) {
                     // Перейти в форму "приемка позиции"
-                    pickRec(this, incomeRec.getWbRegId(), incomeRecContent, 1, barcode);
+                    pickRec(this, incomeRec.getWbRegId(), incomeRecContent, 1, barcode, false);
                 }
                 break;
             case CODE128:
+                incomeRecContent = proceedCode128(incomeRec, barcode);
+                if (incomeRecContent != null) {
+                    // Перейти в форму "приемка позиции" с установленным флагом что сканируем упаковку
+                    pickRec(this, incomeRec.getWbRegId(), incomeRecContent, 0, barcode, true);
+                }
                 break;
-                // TODO:
-
         }
+    }
+
+    private IncomeRecContent proceedCode128(IncomeRec incomeRec, String barcode) {
+
+        // проверить наличие разрешения на коробочную приемку по справочнику поставщиков.
+        // Если разрешения нет - выдать сообщение “По поставщику [наименование] приемка коробками запрещена”.
+        PostIn postIn = DaoMem.getDaoMem().getDictionary().findPostById(incomeRec.getIncomeIn().getPostID());
+        if (postIn == null || postIn.getGroupBoxEnable() == 0) {
+            MessageUtils.showModalMessage("По поставщику %s приемка коробками запрещена", postIn == null ? "" : postIn.getName());
+            return null;
+        }
+        // проверить наличие марки в структуре BoxTree
+        IncomeRecContent irc = DaoMem.getDaoMem().findIncomeRecContentByBoxBarcode(incomeRec, barcode);
+        if (irc == null) {
+            // если ШК нет - сообщение
+            MessageUtils.showModalMessage("Штрихкод упаковки %s отсутствует в ТТН ЕГАИС. Проверьте тот ли сканировали ШК либо сканируйте марки побутылочно. Если ШК упаковки и марок не проходят - верните не принятую продукцию поставщику", barcode);
+            return null;
+        }
+        // проверять по позиции - соответствует ли количество марок количеству позиции - если нет - ругатся - “Допустимо сканирование только по-марочно”
+        if (!irc.getIncomeContentIn().getQty().equals(irc.getIncomeContentIn().getMarkInfo().length)) {
+            MessageUtils.showModalMessage("Допустимо сканирование только по-марочно");
+            return null;
+        }
+
+        // определить позицию в ТТН ЕГАИС и наличие по ней ранее отсканированного ШК номенклатуры
+        // Статус данной ТТН перевести в состояние “Идет приемка”
+        incomeRec.setStatus(IncomeRecStatus.INPROGRESS);
+        DaoMem.getDaoMem().writeLocalDataIncomeRec(incomeRec);
+        return irc;
     }
 
     @Override
     public void onCallbackPickBottlingDate(Context ctx, String wbRegId, IncomeRecContent irc, int addQty, String barcode) {
-        pickRec(ctx, wbRegId, irc, addQty, barcode);
+        pickRec(ctx, wbRegId, irc, addQty, barcode, false);
     }
 
 
@@ -322,7 +358,7 @@ public class ActIncomeRec extends Activity implements BarcodeReader.BarcodeListe
 
     @Override
     public void doFinishTransferCallback(Context ctx, String wbRegId, IncomeRecContent irc, int addQty, String barcode) {
-        pickRec(ctx, wbRegId, irc, addQty, barcode);
+        pickRec(ctx, wbRegId, irc, addQty, barcode, false);
     }
 
 

@@ -26,7 +26,8 @@ public class IncomeContentIn {
     private Integer marked;
     @JsonProperty(value="MarkInfo")
     private IncomeContentMarkIn[] markInfo;
-
+    @JsonProperty(value="BoxTree")
+    private IncomeContentBoxTreeIn[] boxTree;
 
     public Integer getPosition() {
         return position;
@@ -108,6 +109,15 @@ public class IncomeContentIn {
         this.markInfo = markInfo;
     }
 
+
+    public IncomeContentBoxTreeIn[] getBoxTree() {
+        return boxTree;
+    }
+
+    public void setBoxTree(IncomeContentBoxTreeIn[] boxTree) {
+        this.boxTree = boxTree;
+    }
+
     @Override
     public String toString() {
         return "IncomeContentIn{" +
@@ -121,6 +131,7 @@ public class IncomeContentIn {
                 ", bottlingDate='" + bottlingDate + '\'' +
                 ", marked=" + marked +
                 ", markInfo=" + Arrays.toString(markInfo) +
+                ", boxTree=" + Arrays.toString(boxTree) +
                 '}';
     }
 }

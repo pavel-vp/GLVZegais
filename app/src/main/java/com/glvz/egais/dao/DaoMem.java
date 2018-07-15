@@ -26,6 +26,7 @@ public class DaoMem {
     private static final String KEY_POS_MARKSCANNED_CNT = "pos_markscanned_cnt";
     private static final String KEY_POS_MARKSCANNED = "pos_markscanned";
     private static final String KEY_POS_MARKSCANNED_ASTYPE = "pos_markscanned_astype";
+    private static final String KEY_POS_MARKSCANNEDREAL = "pos_markscannedreal";
 
 
     private static DaoMem daoMem = null;
@@ -138,7 +139,8 @@ public class DaoMem {
                 for (int i = 1; i <= cnt; i++) {
                     String mark = sharedPreferences.getString(KEY_POS_MARKSCANNED+"_"+incomeRec.getWbRegId()+"_"+incomeContentIn.getPosition()+"_" + i, null);
                     int typeAs = sharedPreferences.getInt(KEY_POS_MARKSCANNED_ASTYPE+"_"+incomeRec.getWbRegId()+"_"+incomeContentIn.getPosition()+"_" + i, 0);
-                    incomeRecContent.getIncomeRecContentMarkList().add(new IncomeRecContentMark(mark, typeAs));
+                    String realMark = sharedPreferences.getString(KEY_POS_MARKSCANNEDREAL+"_"+incomeRec.getWbRegId()+"_"+incomeContentIn.getPosition()+"_" + i, null);
+                    incomeRecContent.getIncomeRecContentMarkList().add(new IncomeRecContentMark(mark, typeAs, realMark));
                 }
             }
             incomeRec.getIncomeRecContentList().add(incomeRecContent);
@@ -197,6 +199,7 @@ public class DaoMem {
         for (IncomeRecContentMark incomeRecContentMark : incomeRecContent.getIncomeRecContentMarkList()) {
             ed.putString(KEY_POS_MARKSCANNED + "_"+wbRegId+"_"+incomeRecContent.getPosition()+"_"+idx, incomeRecContentMark.getMarkScanned());
             ed.putInt(KEY_POS_MARKSCANNED_ASTYPE + "_"+wbRegId+"_"+incomeRecContent.getPosition()+"_"+idx, incomeRecContentMark.getMarkScannedAsType());
+            ed.putString(KEY_POS_MARKSCANNEDREAL + "_"+wbRegId+"_"+incomeRecContent.getPosition()+"_"+idx, incomeRecContentMark.getMarkScannedReal());
             idx++;
         }
         ed.apply();
@@ -279,6 +282,19 @@ public class DaoMem {
         return null; // ничего не нашли
     }
 
+    // найти марку по ШК в приходе ЕГАИС
+    public IncomeContentMarkIn findIncomeContentMarkByMark(IncomeRec incomeRec, String barcode) {
+        // в каждой позиции пройтись по маркам в ТТН
+        for (IncomeContentIn incomeContentIn : incomeRec.getIncomeIn().getContent()) {
+            for (IncomeContentMarkIn incomeContentMarkIn : incomeContentIn.getMarkInfo()) {
+                if (incomeContentMarkIn.getMark().equals(barcode)) {
+                    return incomeContentMarkIn;
+                }
+            }
+        }
+        return null; // ничего не нашли
+    }
+
     public IncomeRecContentMark findIncomeRecContentMarkByMarkScanned(IncomeRec incomeRec, String barcode) {
         for (IncomeRecContent incomeRecContent : incomeRec.getIncomeRecContentList()) {
             for (IncomeRecContentMark incomeRecContentMark : incomeRecContent.getIncomeRecContentMarkList()) {
@@ -324,5 +340,75 @@ public class DaoMem {
         incomeRec.setStatus(IncomeRecStatus.REJECTED);
         writeLocalDataIncomeRec(incomeRec);
         exportData(incomeRec);
+    }
+
+    public int calculateQtyToAdd(IncomeRec incomeRec, IncomeRecContent incomeRecContent, String barcode) {
+        // посчитать количесвто общее товара по этой упаковке
+        int result = 0;
+        IncomeContentBoxTreeIn icb = DaoMem.getDaoMem().findIncomeContentBoxTreeIn(incomeRecContent, barcode);
+
+        List<DaoMem.MarkInBox> resList = new ArrayList<>();
+        DaoMem.getDaoMem().getAllIncomeRecMarksByBoxBarcode(resList, incomeRecContent, icb, 1);
+        // пройтись по каждой из них
+        for (DaoMem.MarkInBox mb : resList) {
+            IncomeRecContentMark ircm = DaoMem.getDaoMem().findIncomeRecContentMarkByMarkScanned(incomeRec, mb.icm.getMark());
+            //Если добавляемой марки еще нет в списке принятых: добавить ее в список принятых, признак сканирования установить в значение уровня вложенности упаковки (см. пред. пункт), принятое количество увеличить на 1 шт.
+            if (ircm == null) {
+                result++;
+            }
+            //Если добавляемая марка уже есть в списке принятых - нужно только изменить признак сканирования (установить меньшее значение из того что уже стоит по марке и уровня вложенности текущей упаковки). Принятое количество менять не надо.
+            if (ircm != null) {
+                // Не добавляем
+            }
+        }
+        return result;
+    }
+
+    public static class MarkInBox {
+        public IncomeContentMarkIn icm;
+        public int level;
+
+        public MarkInBox(IncomeContentMarkIn icm, int level) {
+            this.icm = icm;
+            this.level = level;
+        }
+    }
+
+    public void getAllIncomeRecMarksByBoxBarcode(List<MarkInBox> resList, IncomeRecContent irc, IncomeContentBoxTreeIn icbt, int level) {
+        // Достать все марки по этой коробке
+        for (IncomeContentMarkIn icm : irc.getIncomeContentIn().getMarkInfo()) {
+            if (icm.getBox().equals(icbt.getBox())) {
+                resList.add(new MarkInBox(icm, level));
+            }
+        }
+
+        // Вызвать рекурсивно со всеми потомками
+        for (IncomeContentBoxTreeIn icbtChild :irc.getIncomeContentIn().getBoxTree()) {
+            if (icbtChild.getParentBox().equals(icbt.getBox())) {
+                getAllIncomeRecMarksByBoxBarcode(resList, irc, icbtChild, level + 1);
+            }
+        }
+    }
+
+    public IncomeContentBoxTreeIn findIncomeContentBoxTreeIn(IncomeRecContent incomeRecContent, String box) {
+        for (IncomeContentBoxTreeIn icbt :incomeRecContent.getIncomeContentIn().getBoxTree()) {
+            if (icbt.getBox().equals(box)) {
+                return icbt;
+            }
+        }
+        return null;
+    }
+
+    public IncomeRecContent findIncomeRecContentByBoxBarcode(IncomeRec incomeRec, String box) {
+        // по всем строкам
+        for (IncomeRecContent irc :incomeRec.getIncomeRecContentList()) {
+            // по каждой строке - пройтись по BoxTree
+            for (IncomeContentBoxTreeIn icbt :irc.getIncomeContentIn().getBoxTree()) {
+                if (icbt.getBox().equals(box)) {
+                    return irc;
+                }
+            }
+        }
+        return null;
     }
 }

@@ -51,7 +51,7 @@ public class IncomeContentArrayAdapter extends ArrayAdapter<IncomeRecContent> {
         }
 
         IncomeRecContent itemdata = incomeRecContents.get(position);
-        holder.setItem(itemdata, false);
+        holder.setItem(itemdata, 0);
 
         return row;
 
@@ -87,7 +87,7 @@ public class IncomeContentArrayAdapter extends ArrayAdapter<IncomeRecContent> {
             v.setTag(this);
         }
 
-        public void setItem(IncomeRecContent incomeRecContent, boolean addMark) {
+        public void setItem(IncomeRecContent incomeRecContent, int addMark) {
             this.incomeRecContent = incomeRecContent;
             tvPosition.setText(incomeRecContent.getPosition().toString());
             tvStatus.setText(incomeRecContent.getStatus().getMessage());
@@ -105,9 +105,9 @@ public class IncomeContentArrayAdapter extends ArrayAdapter<IncomeRecContent> {
             }
             tvQty.setText(StringUtils.formatQty(incomeRecContent.getIncomeContentIn().getQty()));
             if (incomeRecContent.getQtyAccepted() != null) {
-                tvQtyAccepted.setText(StringUtils.formatQty(incomeRecContent.getQtyAccepted() + (addMark ? 1: 0) ));
+                tvQtyAccepted.setText(StringUtils.formatQty(incomeRecContent.getQtyAccepted() + addMark ));
             } else {
-                tvQtyAccepted.setText(addMark?"1":"");
+                tvQtyAccepted.setText(addMark ==0 ? "" : String.valueOf(addMark));
             }
 
             switch (incomeRecContent.getStatus()) {
