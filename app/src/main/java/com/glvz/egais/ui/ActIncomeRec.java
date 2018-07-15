@@ -190,7 +190,8 @@ public class ActIncomeRec extends Activity implements BarcodeReader.BarcodeListe
                 incomeRecContent = proceedCode128(incomeRec, barcode);
                 if (incomeRecContent != null) {
                     // Перейти в форму "приемка позиции" с установленным флагом что сканируем упаковку
-                    pickRec(this, incomeRec.getWbRegId(), incomeRecContent, 0, barcode, true);
+                    int addQty = DaoMem.getDaoMem().calculateQtyToAdd(incomeRec, incomeRecContent, barcode);
+                    pickRec(this, incomeRec.getWbRegId(), incomeRecContent, addQty, barcode, true);
                 }
                 break;
         }
@@ -213,7 +214,7 @@ public class ActIncomeRec extends Activity implements BarcodeReader.BarcodeListe
             return null;
         }
         // проверять по позиции - соответствует ли количество марок количеству позиции - если нет - ругатся - “Допустимо сканирование только по-марочно”
-        if (!irc.getIncomeContentIn().getQty().equals(irc.getIncomeContentIn().getMarkInfo().length)) {
+        if (irc.getIncomeContentIn().getQty().intValue() != irc.getIncomeContentIn().getMarkInfo().length) {
             MessageUtils.showModalMessage("Допустимо сканирование только по-марочно");
             return null;
         }

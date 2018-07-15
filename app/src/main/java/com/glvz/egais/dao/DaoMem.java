@@ -403,9 +403,11 @@ public class DaoMem {
         // по всем строкам
         for (IncomeRecContent irc :incomeRec.getIncomeRecContentList()) {
             // по каждой строке - пройтись по BoxTree
-            for (IncomeContentBoxTreeIn icbt :irc.getIncomeContentIn().getBoxTree()) {
-                if (icbt.getBox().equals(box)) {
-                    return irc;
+            if (irc.getIncomeContentIn().getBoxTree() != null) {
+                for (IncomeContentBoxTreeIn icbt : irc.getIncomeContentIn().getBoxTree()) {
+                    if (icbt.getBox().equals(box)) {
+                        return irc;
+                    }
                 }
             }
         }

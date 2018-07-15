@@ -1,6 +1,6 @@
 {
- "WBRegId": "СЕ000009806",
- "NUMBER": "СЕ000009806",
+ "WBRegId": "СЕ000009806_WTree",
+ "NUMBER": "СЕ000009806_WTree",
  "Date": "2018-05-29T14:59:52",
  "SkladID": "00-000004",
  "SkladName": "Магазин №17(Р) _К.МАРКСА",
@@ -22,7 +22,7 @@
     {"Box": "BOX01", "Mark": "MARK01-02"},
     {"Box": "", "Mark": "MARK01-03"},
     {"Box": "", "Mark": "MARK01-04"}
-   ],
+   ]
   },
   {
    "position": 2,
@@ -30,7 +30,7 @@
    "name": "Водка особая \"Глазов\"",
    "Capacity": 0.1,
    "AlcVolume": 40,
-   "QTY": 2,
+   "QTY": 3,
    "Price": 39.99,
    "BottlingDate": "2018-04-11",
    "Marked": 1,
@@ -44,7 +44,6 @@
     {"Box": "ABC-box-0001", "ParentBox": "ABC-pallet-0001"},
     {"Box": "ABC-box-0002", "ParentBox": "ABC-pallet-0001"}
    ]
-
   }
  ]
 }
