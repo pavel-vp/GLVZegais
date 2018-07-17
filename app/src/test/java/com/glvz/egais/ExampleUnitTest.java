@@ -11,7 +11,7 @@ import com.glvz.egais.utils.BarcodeObject;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.List;
+import java.util.*;
 
 import static org.junit.Assert.*;
 
@@ -74,6 +74,111 @@ public class ExampleUnitTest {
         String alcode = BarcodeObject.extractAlcode(pdf);
         System.out.println(alcode);
     }
+
+    public int findLowerNum(int[] A) {
+        Map<Integer, Integer> map = new HashMap<>();
+        for (int key : A) {
+            Integer value = map.get(key);
+            if (value == null) {
+                value = 1;
+            } else {
+                value++;
+            }
+            map.put(key, value);
+        }
+        int numCandiesToReturn = A.length / 2;
+        // first pass
+        for (Map.Entry<Integer, Integer> entry : map.entrySet()) {
+            if (entry.getValue().intValue() > 1) {
+                numCandiesToReturn = numCandiesToReturn - (entry.getValue().intValue() - 1);
+                entry.setValue(1);
+                if (numCandiesToReturn <= 0) {
+                    break;
+                }
+            }
+        }
+        if (numCandiesToReturn > 0) {
+            // second pass
+            for (Map.Entry<Integer, Integer> entry : map.entrySet()) {
+                if (entry.getValue().intValue() > 0) {
+                    numCandiesToReturn = numCandiesToReturn - 1;
+                    entry.setValue(0);
+                    if (numCandiesToReturn <= 0) {
+                        break;
+                    }
+                }
+            }
+        }
+        int result = 0;
+        // last pass
+        for (Map.Entry<Integer, Integer> entry : map.entrySet()) {
+            if (entry.getValue().intValue() > 0) {
+                result++;
+            }
+        }
+        return result;
+    }
+
+    @Test
+    public void find_test() {
+        int[] inp = new int[] {80, 80, 1000000000, 80, 80, 80, 80, 80, 80, 123456789};
+        int res = findLowerNum(inp);
+        System.out.println(res);
+    }
+
+
+    public boolean perm(String s1, String s, Set<String> resultArray) {
+        // find all permutations
+        int n = s.length();
+        if (n == 0) {
+            resultArray.add(s1);
+            // check
+            return checkWord(s1);
+        } else {
+            for (int i = 0; i < n; i++) {
+                boolean check = perm(s1 + s.charAt(i), s.substring(0, i) + s.substring(i + 1, n), resultArray);
+                if (check) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    public String generateString(String s, int lenght) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 1; i<= lenght; i++) {
+            sb.append(s);
+        }
+        return sb.toString();
+    }
+
+    private boolean checkWord(String s) {
+        return !s.contains("aaa") && !s.contains("bbb");
+    }
+
+    private String findRightResult(Set<String> array) {
+        for (String s : array) {
+            if (checkWord(s)) {
+                return s;
+            }
+        }
+        return null;
+    }
+
+    @Test
+    public void permTest() {
+        String A = generateString("a", 10);
+        String B = generateString("b", 3);
+        String result = A + B;
+        System.out.println(result);
+        Set<String> array = new HashSet<>();
+        perm("", result, array);
+        System.out.println(array);
+        String res = findRightResult(array);
+        System.out.println(res);
+    }
+
 
 
 }

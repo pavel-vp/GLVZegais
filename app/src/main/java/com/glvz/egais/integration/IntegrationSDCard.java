@@ -29,6 +29,7 @@ public class IntegrationSDCard implements Integration {
     private static final String SHOP_FILE = "shops.json";
     private static final String POST_FILE = "posts.json";
     private static final String NOMEN_FILE = "nomen.json";
+    private static final String APK_FILE = "glvzegais.apk";
 
     private ObjectMapper objectMapper = new ObjectMapper();
 
@@ -107,6 +108,13 @@ public class IntegrationSDCard implements Integration {
                 e.printStackTrace();
             }
         MediaScannerConnection.scanFile(MainApp.getContext(), new String[] {path.toString()}, null, null);
+    }
+
+    @Override
+    public File loadNewApk() {
+        File path = new File(basePath + "/" + APK_DIR);
+        File file = new File(path, APK_FILE );
+        return file;
     }
 
 }

@@ -20,6 +20,13 @@
             android:textSize="32dp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"/>
+    <TextView
+            android:id="@+id/tvVersion"
+            android:text="Версия: 0.0.1"
+            android:textAlignment="center"
+            android:textSize="12dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
 
     <Button
             android:text="Продолжить"

@@ -116,12 +116,14 @@ public class ActIncomeRecContent extends Activity implements BarcodeReader.Barco
                     ircm.setMarkScannedAsType(Math.min(currentLevel, mb.level));
                 }
             }
+        } else {
+            // При коробочном сканировании - не добавлять саму коробку
+            if (this.lastMark != null) {
+                this.incomeRecContent.getIncomeRecContentMarkList().add(new IncomeRecContentMark(this.lastMark, IncomeRecContentMark.MARK_SCANNED_AS_MARK, this.lastMark));
+            }
         }
         if (addQty != 0) {
             incomeRecContent.setQtyAccepted(incomeRecContent.getQtyAccepted() == null ? addQty : incomeRecContent.getQtyAccepted() + addQty);
-        }
-        if (this.lastMark != null) {
-            this.incomeRecContent.getIncomeRecContentMarkList().add(new IncomeRecContentMark(this.lastMark, IncomeRecContentMark.MARK_SCANNED_AS_MARK, this.lastMark));
         }
         if (incomeRecContent.getQtyAccepted() == null) {
             incomeRecContent.setStatus(IncomeRecContentStatus.NOT_ENTERED);
@@ -267,12 +269,12 @@ public class ActIncomeRecContent extends Activity implements BarcodeReader.Barco
                 updateDisplayData();
                 break;
             case PDF417:
-                this.isBoxScanned = false;
                 // Сканирование Pdf417 в карточке позиции
                 if (this.lastMark != null && incomeRecContent.getNomenIn() == null) {
                     MessageUtils.showModalMessage("Марка уже сканирована, сканируйте ШК бутылки!");
                     break;
                 }
+                this.isBoxScanned = false;
                 // без сохранения предыдущего состояния - та же обработка что и в картчоке накладной
                 List<IncomeRecContent> incomeRecContentListLocal = ActIncomeRec.proceedPdf417(incomeRec, barcodeReadEvent.getBarcodeData(), this);
                 if (incomeRecContentListLocal != null) {
@@ -287,11 +289,11 @@ public class ActIncomeRecContent extends Activity implements BarcodeReader.Barco
                 break;
             case DATAMATRIX:
                 // Сканирование DataMatrix в карточке позиции
-                this.isBoxScanned = false;
                 if (this.lastMark != null && incomeRecContent.getNomenIn() == null) {
                     MessageUtils.showModalMessage("Марка уже сканирована, сканируйте ШК бутылки!");
                     break;
                 }
+                this.isBoxScanned = false;
                 // без сохранения предыдущего состояния - та же обработка что и в картчоке накладной
                 incomeRecContentLocal = ActIncomeRec.proceedDataMatrix(incomeRec, barcodeReadEvent.getBarcodeData());
                 if (incomeRecContentLocal != null) {
@@ -308,8 +310,25 @@ public class ActIncomeRecContent extends Activity implements BarcodeReader.Barco
 
                 break;
             case CODE128:
-                // TODO:
-                this.isBoxScanned = true;
+                if (this.lastMark != null && incomeRecContent.getNomenIn() == null) {
+                    MessageUtils.showModalMessage("Марка уже сканирована, сканируйте ШК бутылки!");
+                    break;
+                }
+                // без сохранения предыдущего состояния - та же обработка что и в картчоке накладной
+                incomeRecContentLocal = ActIncomeRec.proceedCode128(incomeRec, barcodeReadEvent.getBarcodeData());
+                if (incomeRecContentLocal != null) {
+                    addQty = DaoMem.getDaoMem().calculateQtyToAdd(incomeRec, incomeRecContentLocal, barcodeReadEvent.getBarcodeData());
+
+                    this.isBoxScanned = true;
+                    this.incomeRecContent = incomeRecContentLocal;
+                    this.lastMark = barcodeReadEvent.getBarcodeData();
+                    boolean resCheck = checkQtyOnLastMark();
+                    if (resCheck && this.incomeRecContent.getNomenIn() != null) {
+                        // Если товар сопоставлен - сохраняем сразу
+                        proceedAddQtyInternal(addQty);
+                    }
+                    updateDisplayData();
+                }
                 break;
 
         }

@@ -6,6 +6,7 @@ import com.glvz.egais.integration.model.PostIn;
 import com.glvz.egais.integration.model.ShopIn;
 import com.glvz.egais.model.IncomeRec;
 
+import java.io.File;
 import java.util.List;
 
 /**
@@ -23,4 +24,5 @@ public interface Integration {
 
     void writeIncomeRec(String shopId, IncomeRec incomeRec);
 
+    File loadNewApk();
 }

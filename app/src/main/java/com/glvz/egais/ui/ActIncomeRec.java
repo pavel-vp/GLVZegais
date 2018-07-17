@@ -197,7 +197,7 @@ public class ActIncomeRec extends Activity implements BarcodeReader.BarcodeListe
         }
     }
 
-    private IncomeRecContent proceedCode128(IncomeRec incomeRec, String barcode) {
+    public static IncomeRecContent proceedCode128(IncomeRec incomeRec, String barcode) {
 
         // проверить наличие разрешения на коробочную приемку по справочнику поставщиков.
         // Если разрешения нет - выдать сообщение “По поставщику [наименование] приемка коробками запрещена”.
@@ -286,9 +286,10 @@ public class ActIncomeRec extends Activity implements BarcodeReader.BarcodeListe
             // Марка была сканирована - найти по ней позицию Rec
             IncomeRecContentMark incomeRecContentMark = DaoMem.getDaoMem().findIncomeRecContentMarkByMarkScanned(incomeRec, barcode);
             incomeRecContentMark.setMarkScannedAsType(IncomeRecContentMark.MARK_SCANNED_AS_MARK);
+            incomeRecContentMark.setMarkScannedReal(barcode);
             // TODO: возвращать управление или нет?
-            //DaoMem.getDaoMem().writeLocalDataIncomeRec(incomeRec);
-            //return null;
+            DaoMem.getDaoMem().writeLocalDataIncomeRec(incomeRec);
+            return null;
 
         }
 
@@ -404,8 +405,17 @@ public class ActIncomeRec extends Activity implements BarcodeReader.BarcodeListe
     public static IncomeRecContent proceedDataMatrix(IncomeRec incomeRec, String barcode) {
         // Проверить что этот ШК ранее не сканировался в данной ТТН
         Integer markScanned = DaoMem.getDaoMem().checkMarkScanned(incomeRec, barcode);
-        if (markScanned != null && markScanned == IncomeRecContentMark.MARK_SCANNED_AS_MARK) {
-            MessageUtils.showModalMessage("Эта марка уже сканировалась!");
+        if (markScanned != null) {
+            if (markScanned == IncomeRecContentMark.MARK_SCANNED_AS_MARK) {
+                MessageUtils.showModalMessage("Эта марка уже сканировалась!");
+                return null;
+            }
+            // Марка была сканирована - найти по ней позицию Rec
+            IncomeRecContentMark incomeRecContentMark = DaoMem.getDaoMem().findIncomeRecContentMarkByMarkScanned(incomeRec, barcode);
+            incomeRecContentMark.setMarkScannedAsType(IncomeRecContentMark.MARK_SCANNED_AS_MARK);
+            incomeRecContentMark.setMarkScannedReal(barcode);
+            // TODO: возвращать управление или нет?
+            DaoMem.getDaoMem().writeLocalDataIncomeRec(incomeRec);
             return null;
         }
         // Проверить наличие ШК марки в ТТН ЕГАИС

@@ -1,8 +1,13 @@
 package com.glvz.egais.dao;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Environment;
+import com.glvz.egais.BuildConfig;
 import com.glvz.egais.MainApp;
 import com.glvz.egais.R;
 import com.glvz.egais.integration.Integration;
@@ -45,10 +50,6 @@ public class DaoMem {
     Integration integrationFile;
 
     Dictionary dictionary;
-
-    public Document getDocument() {
-        return document;
-    }
 
     Document document;
 
@@ -362,6 +363,25 @@ public class DaoMem {
             }
         }
         return result;
+    }
+
+    public int getVersion() {
+        return BuildConfig.VERSION_CODE;
+    }
+
+    public void checkIsNeedToUpdate() {
+        // Проверить есть ли файл
+        File fileToUpdate = integrationFile.loadNewApk();
+        if (fileToUpdate.exists()) {
+            final PackageManager pm = MainApp.getContext().getPackageManager();
+            PackageInfo newInfo = pm.getPackageArchiveInfo(fileToUpdate.getAbsolutePath(), PackageManager.GET_META_DATA);
+            if (newInfo.versionCode > getVersion()) {
+                // запрос обновления
+                Intent intent = new Intent(Intent.ACTION_VIEW);
+                intent.setDataAndType(Uri.fromFile(fileToUpdate), "application/vnd.android.package-archive");
+                MainApp.getContext().startActivity(intent);
+            }
+        }
     }
 
     public static class MarkInBox {
