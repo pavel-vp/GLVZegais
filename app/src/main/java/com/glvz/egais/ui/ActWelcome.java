@@ -35,8 +35,12 @@ public class ActWelcome extends Activity {
     }
 
     @Override
-    protected void onResume() {
-        super.onResume();
-        DaoMem.getDaoMem().checkIsNeedToUpdate();
+    protected void onStart() {
+        super.onStart();
+        Intent intent = new Intent();
+        intent.setClass(ActWelcome.this, ActChooseShop.class);
+        startActivity(intent);
+        DaoMem.getDaoMem().checkIsNeedToUpdate(this);
+        ActWelcome.this.finish();
     }
 }

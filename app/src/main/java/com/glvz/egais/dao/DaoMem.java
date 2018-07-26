@@ -6,7 +6,9 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Environment;
+import android.support.v4.content.FileProvider;
 import com.glvz.egais.BuildConfig;
 import com.glvz.egais.MainApp;
 import com.glvz.egais.R;
@@ -102,7 +104,7 @@ public class DaoMem {
 
         // Прочитать локальные данные
         mapIncomeRec = readIncomeRec();
-        MessageUtils.showModalMessage("Данные загружены");
+        MessageUtils.showToastMessage("Данные загружены");
 
     }
 
@@ -369,7 +371,7 @@ public class DaoMem {
         return BuildConfig.VERSION_CODE;
     }
 
-    public void checkIsNeedToUpdate() {
+    public void checkIsNeedToUpdate(Activity activity) {
         // Проверить есть ли файл
         File fileToUpdate = integrationFile.loadNewApk();
         if (fileToUpdate.exists()) {
@@ -377,9 +379,25 @@ public class DaoMem {
             PackageInfo newInfo = pm.getPackageArchiveInfo(fileToUpdate.getAbsolutePath(), PackageManager.GET_META_DATA);
             if (newInfo.versionCode > getVersion()) {
                 // запрос обновления
-                Intent intent = new Intent(Intent.ACTION_VIEW);
-                intent.setDataAndType(Uri.fromFile(fileToUpdate), "application/vnd.android.package-archive");
-                MainApp.getContext().startActivity(intent);
+
+
+                File file = fileToUpdate;
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                    String fp = BuildConfig.APPLICATION_ID + ".provider";
+                    Uri apkUri = FileProvider.getUriForFile(activity, fp, file);
+                    Intent intent = new Intent(Intent.ACTION_INSTALL_PACKAGE);
+                    intent.setData(apkUri);
+                    intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                    activity.startActivity(intent);
+                } else {
+                    Intent intent = new Intent(Intent.ACTION_VIEW);
+
+                    intent.setDataAndType(Uri.fromFile(file),"application/vnd.android.package-archive");
+                            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    MainApp.getContext().startActivity(intent);
+                }
+
+
             }
         }
     }

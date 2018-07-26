@@ -16,7 +16,6 @@ import android.widget.ListView;
 import com.glvz.egais.MainApp;
 import com.glvz.egais.R;
 import com.glvz.egais.dao.DaoMem;
-import com.glvz.egais.integration.model.IncomeContentMarkIn;
 import com.glvz.egais.integration.model.PostIn;
 import com.glvz.egais.model.*;
 import com.glvz.egais.service.IncomeArrayAdapter;
@@ -78,12 +77,12 @@ public class ActIncomeRec extends Activity implements BarcodeReader.BarcodeListe
         switch (id) {
             case R.id.action_export:
                 DaoMem.getDaoMem().exportData(incomeRec);
-                MessageUtils.showModalMessage("Накладная выгружена!");
+                MessageUtils.showToastMessage("Накладная выгружена!");
                 updateData();
                 return true;
             case R.id.action_reject:
                 DaoMem.getDaoMem().rejectData(incomeRec);
-                MessageUtils.showModalMessage("По всей накладной в приемке отказано!");
+                MessageUtils.showToastMessage("По всей накладной в приемке отказано!");
                 updateData();
                 return true;
             default:
@@ -167,6 +166,8 @@ public class ActIncomeRec extends Activity implements BarcodeReader.BarcodeListe
         switch (barCodeType) {
             case EAN13:
                 //Сканирование ШК номенклатуры (EAN): тут запрещено
+                MessageUtils.showToastMessage("Внимание! Сканируйте марку или упаковку или выберите позицию с пивом вручную");
+                MessageUtils.playSound(R.raw.tap_position);
                 break;
             case PDF417:
                 List<IncomeRecContent> incomeRecContentList = proceedPdf417(incomeRec, barcode, this);
@@ -203,19 +204,19 @@ public class ActIncomeRec extends Activity implements BarcodeReader.BarcodeListe
         // Если разрешения нет - выдать сообщение “По поставщику [наименование] приемка коробками запрещена”.
         PostIn postIn = DaoMem.getDaoMem().getDictionary().findPostById(incomeRec.getIncomeIn().getPostID());
         if (postIn == null || postIn.getGroupBoxEnable() == 0) {
-            MessageUtils.showModalMessage("По поставщику %s приемка коробками запрещена", postIn == null ? "" : postIn.getName());
+            MessageUtils.showToastMessage("По поставщику %s приемка коробками запрещена", postIn == null ? "" : postIn.getName());
             return null;
         }
         // проверить наличие марки в структуре BoxTree
         IncomeRecContent irc = DaoMem.getDaoMem().findIncomeRecContentByBoxBarcode(incomeRec, barcode);
         if (irc == null) {
             // если ШК нет - сообщение
-            MessageUtils.showModalMessage("Штрихкод упаковки %s отсутствует в ТТН ЕГАИС. Проверьте тот ли сканировали ШК либо сканируйте марки побутылочно. Если ШК упаковки и марок не проходят - верните не принятую продукцию поставщику", barcode);
+            MessageUtils.showToastMessage("Штрихкод упаковки %s отсутствует в ТТН ЕГАИС. Проверьте тот ли сканировали ШК либо сканируйте марки побутылочно. Если ШК упаковки и марок не проходят - верните не принятую продукцию поставщику", barcode);
             return null;
         }
         // проверять по позиции - соответствует ли количество марок количеству позиции - если нет - ругатся - “Допустимо сканирование только по-марочно”
         if (irc.getIncomeContentIn().getQty().intValue() != irc.getIncomeContentIn().getMarkInfo().length) {
-            MessageUtils.showModalMessage("Допустимо сканирование только по-марочно");
+            MessageUtils.showToastMessage("Допустимо сканирование только по-марочно");
             return null;
         }
 
@@ -280,7 +281,7 @@ public class ActIncomeRec extends Activity implements BarcodeReader.BarcodeListe
         Integer markScanned = DaoMem.getDaoMem().checkMarkScanned(incomeRec, barcode);
         if (markScanned != null) {
             if (markScanned == IncomeRecContentMark.MARK_SCANNED_AS_MARK) {
-                MessageUtils.showModalMessage("Эта марка уже сканировалась!");
+                MessageUtils.showToastMessage("Эта марка уже сканировалась!");
                 return null;
             }
             // Марка была сканирована - найти по ней позицию Rec
@@ -301,7 +302,7 @@ public class ActIncomeRec extends Activity implements BarcodeReader.BarcodeListe
             // определить количество строк в ТТН ЕГАИС с таким алкокодом и принятых не полностью.
             List<IncomeRecContent> incomeRecContentList = DaoMem.getDaoMem().findIncomeRecContentListByAlcocode(incomeRec, alcocode);
             if (incomeRecContentList.size() == 0 ) {
-                MessageUtils.showModalMessage("Продукция с алкокодом %s отсутствует в ТТН поставщика. Принимать бутылку нельзя, верните поставщику!", alcocode);
+                MessageUtils.showToastMessage("Продукция с алкокодом %s отсутствует в ТТН поставщика. Принимать бутылку нельзя, верните поставщику!", alcocode);
                 return null;
             }
             if (incomeRecContentList.size() == 1 ) {
@@ -309,7 +310,7 @@ public class ActIncomeRec extends Activity implements BarcodeReader.BarcodeListe
                 //определить позицию в ТТН ЕГАИС и принятое по ней количество
                 //Если [Количество по ТТН] = [Принятое количество]
                 if (incomeRecContent.getQtyAccepted() != null && incomeRecContent.getQtyAccepted().equals(incomeRecContent.getIncomeContentIn().getQty())) {
-                    MessageUtils.showModalMessage("По позиции номер: %d, алкокод: %s, (%s) уже принято полное количество %s. Сканированная бутылка лишняя, принимать нельзя. Верните поставщику!",
+                    MessageUtils.showToastMessage("По позиции номер: %d, алкокод: %s, (%s) уже принято полное количество %s. Сканированная бутылка лишняя, принимать нельзя. Верните поставщику!",
                             incomeRecContent.getPosition(),
                             alcocode,
                             incomeRecContent.getIncomeContentIn().getName(),
@@ -344,7 +345,7 @@ public class ActIncomeRec extends Activity implements BarcodeReader.BarcodeListe
                     return null;
                 } else {
                     String alcocode = BarcodeObject.extractAlcode(barcode);
-                    MessageUtils.showModalMessage("Запрет приемки. Лишняя бутылка. По алкокоду %s все позиции приняты полностью. Верните бутылку поставщику", alcocode);
+                    MessageUtils.showToastMessage("Запрет приемки. Лишняя бутылка. По алкокоду %s все позиции приняты полностью. Верните бутылку поставщику", alcocode);
                     return null;
                 }
             }
@@ -407,7 +408,7 @@ public class ActIncomeRec extends Activity implements BarcodeReader.BarcodeListe
         Integer markScanned = DaoMem.getDaoMem().checkMarkScanned(incomeRec, barcode);
         if (markScanned != null) {
             if (markScanned == IncomeRecContentMark.MARK_SCANNED_AS_MARK) {
-                MessageUtils.showModalMessage("Эта марка уже сканировалась!");
+                MessageUtils.showToastMessage("Эта марка уже сканировалась!");
                 return null;
             }
             // Марка была сканирована - найти по ней позицию Rec
@@ -421,7 +422,7 @@ public class ActIncomeRec extends Activity implements BarcodeReader.BarcodeListe
         // Проверить наличие ШК марки в ТТН ЕГАИС
         IncomeRecContent incomeRecContent = DaoMem.getDaoMem().findIncomeRecContentByMark(incomeRec, barcode);
         if (incomeRecContent == null) {
-            MessageUtils.showModalMessage("Прием бутылки запрещен: марка отсутствует в ТТН от поставщика. Верните бутылку поставщику, принимать ее нельзя!");
+            MessageUtils.showToastMessage("Прием бутылки запрещен: марка отсутствует в ТТН от поставщика. Верните бутылку поставщику, принимать ее нельзя!");
             return null;
         }
         // Статус данной ТТН перевести в состояние “Идет приемка”

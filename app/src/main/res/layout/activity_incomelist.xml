@@ -4,6 +4,13 @@
               android:layout_width="match_parent"
               android:layout_height="match_parent">
 
+    <TextView
+            android:text="Выберите накладную для работы"
+            android:textColor="@color/colorWarningLabel"
+            android:background="@drawable/im_black"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            />
     <ListView
             android:layout_width="match_parent"
             android:layout_height="match_parent"

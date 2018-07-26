@@ -25,7 +25,10 @@
         <TextView
                 android:text="Сканируйте марку (или ШК коробки), или выберите позицию с пивом"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content" android:id="@+id/tvCaption"/>
+                android:layout_height="wrap_content"
+                android:background="@drawable/im_black"
+                android:textColor="@color/colorWarningLabel"
+                android:id="@+id/tvCaption"/>
         <CheckBox
                 android:text="Только не принятые"
                 android:layout_width="match_parent"

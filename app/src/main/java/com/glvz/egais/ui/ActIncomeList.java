@@ -10,12 +10,17 @@ import com.glvz.egais.R;
 import com.glvz.egais.dao.DaoMem;
 import com.glvz.egais.model.IncomeRec;
 import com.glvz.egais.service.IncomeArrayAdapter;
+import com.glvz.egais.utils.BarcodeObject;
+import com.glvz.egais.utils.MessageUtils;
+import com.honeywell.aidc.BarcodeFailureEvent;
+import com.honeywell.aidc.BarcodeReadEvent;
+import com.honeywell.aidc.BarcodeReader;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-public class ActIncomeList extends Activity  {
+public class ActIncomeList extends Activity implements BarcodeReader.BarcodeListener {
 
     ListView lv;
     volatile List<IncomeRec> list = new ArrayList<>();
@@ -65,7 +70,22 @@ public class ActIncomeList extends Activity  {
     public void onResume() {
         super.onResume();
         updateList();
+        BarcodeObject.linkToListener(this);
     }
 
+    @Override
+    public void onPause() {
+        super.onPause();
+        BarcodeObject.unLinkFromListener(this);
+    }
 
+    @Override
+    public void onBarcodeEvent(BarcodeReadEvent barcodeReadEvent) {
+        MessageUtils.playSound(R.raw.choose_nakl_from_list);
+    }
+
+    @Override
+    public void onFailureEvent(BarcodeFailureEvent barcodeFailureEvent) {
+
+    }
 }

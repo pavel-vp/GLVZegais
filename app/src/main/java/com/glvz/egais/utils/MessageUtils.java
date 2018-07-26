@@ -1,7 +1,9 @@
 package com.glvz.egais.utils;
 
 import android.app.Activity;
-import android.content.Context;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
+import android.media.MediaPlayer;
 import android.os.Handler;
 import android.widget.Toast;
 import com.glvz.egais.MainApp;
@@ -10,19 +12,51 @@ public class MessageUtils {
 
     private static final Handler handler = new Handler(MainApp.getContext().getMainLooper());
 
-    public static void showModalMessage(final String msg) {
+    public static void showToastMessage(final String msg) {
         handler.post(new Runnable() {
             @Override
             public void run() {
-                Toast.makeText(MainApp.getContext(), msg, Toast.LENGTH_SHORT).show();
+                Toast.makeText(MainApp.getContext(), msg, Toast.LENGTH_LONG).show();
             }
         });
     }
 
-    public static void showModalMessage(final String msgFormat, Object... objects ) {
+    public static void showToastMessage(final String msgFormat, Object... objects ) {
         String msg = String.format(msgFormat, objects);
-        showModalMessage(msg);
+        showToastMessage(msg);
 
+    }
+
+
+    public static void showModalMessage(String title, String msg) {
+        // показываем ошибку
+        AlertDialog.Builder builder = new AlertDialog.Builder(MainApp.getContext());
+        builder.setTitle(title)
+                .setMessage(msg)
+                .setCancelable(false)
+                .setNegativeButton("Ок",
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                dialog.cancel();
+/*                                if (finish) {
+                                    ctx.finish();
+                                }*/
+                            }
+                        });
+        AlertDialog alert = builder.create();
+        alert.show();
+    }
+
+
+    public static void playSound(int idSound){
+        MediaPlayer mPlayer = MediaPlayer.create(MainApp.getContext(), idSound);
+        mPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+            @Override
+            public void onCompletion(MediaPlayer mp) {
+                mp.release();
+            }
+        });
+        mPlayer.start();
     }
 
 }
