@@ -349,20 +349,23 @@ public class DaoMem {
         // посчитать количесвто общее товара по этой упаковке
         int result = 0;
         IncomeContentBoxTreeIn icb = DaoMem.getDaoMem().findIncomeContentBoxTreeIn(incomeRecContent, barcode);
-
-        List<DaoMem.MarkInBox> resList = new ArrayList<>();
-        DaoMem.getDaoMem().getAllIncomeRecMarksByBoxBarcode(resList, incomeRecContent, icb, 1);
-        // пройтись по каждой из них
-        for (DaoMem.MarkInBox mb : resList) {
-            IncomeRecContentMark ircm = DaoMem.getDaoMem().findIncomeRecContentMarkByMarkScanned(incomeRec, mb.icm.getMark());
-            //Если добавляемой марки еще нет в списке принятых: добавить ее в список принятых, признак сканирования установить в значение уровня вложенности упаковки (см. пред. пункт), принятое количество увеличить на 1 шт.
-            if (ircm == null) {
-                result++;
+        if (icb != null) { // если коробка
+            List<DaoMem.MarkInBox> resList = new ArrayList<>();
+            DaoMem.getDaoMem().getAllIncomeRecMarksByBoxBarcode(resList, incomeRecContent, icb, 1);
+            // пройтись по каждой из них
+            for (DaoMem.MarkInBox mb : resList) {
+                IncomeRecContentMark ircm = DaoMem.getDaoMem().findIncomeRecContentMarkByMarkScanned(incomeRec, mb.icm.getMark());
+                //Если добавляемой марки еще нет в списке принятых: добавить ее в список принятых, признак сканирования установить в значение уровня вложенности упаковки (см. пред. пункт), принятое количество увеличить на 1 шт.
+                if (ircm == null) {
+                    result++;
+                }
+                //Если добавляемая марка уже есть в списке принятых - нужно только изменить признак сканирования (установить меньшее значение из того что уже стоит по марке и уровня вложенности текущей упаковки). Принятое количество менять не надо.
+                if (ircm != null) {
+                    // Не добавляем
+                }
             }
-            //Если добавляемая марка уже есть в списке принятых - нужно только изменить признак сканирования (установить меньшее значение из того что уже стоит по марке и уровня вложенности текущей упаковки). Принятое количество менять не надо.
-            if (ircm != null) {
-                // Не добавляем
-            }
+        } else {
+            result = barcode == null ? 0 : 1; // все проверки должны быть выполнены до
         }
         return result;
     }
