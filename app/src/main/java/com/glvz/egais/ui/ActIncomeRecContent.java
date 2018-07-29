@@ -20,6 +20,7 @@ import com.glvz.egais.service.PickBottliingDateCallback;
 import com.glvz.egais.service.TransferCallback;
 import com.glvz.egais.utils.BarcodeObject;
 import com.glvz.egais.utils.MessageUtils;
+import com.glvz.egais.utils.StringUtils;
 import com.honeywell.aidc.BarcodeFailureEvent;
 import com.honeywell.aidc.BarcodeReadEvent;
 import com.honeywell.aidc.BarcodeReader;
@@ -292,6 +293,23 @@ public class ActIncomeRecContent extends Activity implements BarcodeReader.Barco
                     this.isBoxScanned = false;
                     proceedAddQtyInternal(0);
                 } else {
+                    //При сопоставлении с номенклатурой 1С проверять соответствие емкостей ЕГАИС и 1С
+                    if (!StringUtils.formatQty(incomeRecContent.getIncomeContentIn().getCapacity()).equals(StringUtils.formatQty(nomenIn.getCapacity()))) {
+                        MessageUtils.showModalMessage(this, "ВНИМАНИЕ!","Емкость номенклатуры 1С не соответствует ЕГАИС.\n" +
+                                "Номенклатура:\n" +
+                                        "Наименование: %s\n" +
+                                        "Код: %s\n" +
+                                "Штрихкод: %s\n" +
+                                "Емкость 1С: %s\n" +
+                                "Емкость ЕГАИС: %s",
+                                nomenIn.getName(),
+                                nomenIn.getId(), barcodeReadEvent.getBarcodeData(),
+                                StringUtils.formatQty(nomenIn.getCapacity()),
+                                StringUtils.formatQty(incomeRecContent.getIncomeContentIn().getCapacity())
+                                );
+                        break;
+                    }
+
                     //Если ШК товара найден в номенклатуре 1С - заполнить все надписи формы из номенклатуры 1С (код, наименование, ….)
                     incomeRecContent.setNomenIn(nomenIn);
                     proceedAddQtyInternal(addQty);
