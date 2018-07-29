@@ -101,7 +101,7 @@ public class IntegrationSDCard implements Integration {
     @Override
     public void writeIncomeRec(String shopId, IncomeRec incomeRec) {
         File path = new File(basePath + "/" + SHOPS_DIR + "/" + shopId + "/" + OUT_DIR);
-            File file = new File(path, incomeRec.getWbRegId() + ".txt");
+            File file = new File(path, incomeRec.getWbRegId() + ".json");
             try {
                 objectMapper.writeValue(file, incomeRec);
             } catch (IOException e) {
