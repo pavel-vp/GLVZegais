@@ -54,6 +54,12 @@ public class IncomeArrayAdapter extends ArrayAdapter<IncomeRec> {
         IncomeRec itemdata = incomeRecList.get(position);
         holder.setItem(itemdata);
 
+        if (position % 2 == 1) {
+            row.setBackgroundColor(Color.LTGRAY);
+        } else {
+            row.setBackgroundColor(Color.WHITE);
+        }
+
         return row;
 
     }

@@ -7,6 +7,7 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import com.glvz.egais.R;
 import com.glvz.egais.dao.DaoMem;
@@ -34,6 +35,7 @@ public class ActIncomeRecContent extends Activity implements BarcodeReader.Barco
 
     TextView tvAction;
     EditText etQtyAccepted;
+    LinearLayout llAccepted;
     Button btnAdd;
     private boolean isBoxScanned = false;
     private boolean isOpenByScan = false;
@@ -205,6 +207,7 @@ public class ActIncomeRecContent extends Activity implements BarcodeReader.Barco
             }
         });
         etQtyAccepted = (EditText) findViewById(R.id.etQtyAccepted);
+        llAccepted = (LinearLayout) findViewById(R.id.llAccepted);
     }
 
     private void updateDisplayData() {
@@ -213,8 +216,10 @@ public class ActIncomeRecContent extends Activity implements BarcodeReader.Barco
             public void run() {
                 if (incomeRecContent.getPositionType() == IncomeRecContentPositionType.MARKED) {
                     etQtyAccepted.setEnabled(false);
+                    llAccepted.setVisibility(View.GONE);
                 } else {
                     etQtyAccepted.setEnabled(true);
+                    llAccepted.setVisibility(View.VISIBLE);
                 }
                 //Для немаркированной продукции кнопка доступна только если ранее была определена номенклатура 1С (по ШК) или если позиция является разливным пивом (Емкость (ЕГАИС) = 0).
                 // Для маркированной продукции - кнопка не доступна.

@@ -53,6 +53,12 @@ public class IncomeContentArrayAdapter extends ArrayAdapter<IncomeRecContent> {
         IncomeRecContent itemdata = incomeRecContents.get(position);
         holder.setItem(itemdata, 0);
 
+        if (position % 2 == 1) {
+            row.setBackgroundColor(Color.LTGRAY);
+        } else {
+            row.setBackgroundColor(Color.WHITE);
+        }
+
         return row;
 
     }
@@ -92,7 +98,7 @@ public class IncomeContentArrayAdapter extends ArrayAdapter<IncomeRecContent> {
             tvPosition.setText(incomeRecContent.getPosition().toString());
             tvStatus.setText(incomeRecContent.getStatus().getMessage());
             tvNameEgais.setText(incomeRecContent.getIncomeContentIn().getName());
-            tvCapacityEgais.setText(incomeRecContent.getIncomeContentIn().getCapacity());
+            tvCapacityEgais.setText(StringUtils.formatQty(incomeRecContent.getIncomeContentIn().getCapacity()));
             tvAlcVolumeEgais.setText(incomeRecContent.getIncomeContentIn().getAlcVolume());
             Date d = StringUtils.jsonBottlingStringToDate(incomeRecContent.getIncomeContentIn().getBottlingDate());
             tvBottlingDateEgais.setText(StringUtils.formatDateDisplay(d));

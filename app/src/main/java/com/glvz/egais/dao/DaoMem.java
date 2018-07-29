@@ -322,7 +322,7 @@ public class DaoMem {
         incomeRec.setExported(true);
         writeLocalDataIncomeRec(incomeRec);
         integrationFile.writeIncomeRec(shopId, incomeRec);
-        return false;
+        return true;
     }
 
     public List<ShopIn> getListS() {

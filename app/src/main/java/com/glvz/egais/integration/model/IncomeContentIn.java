@@ -13,7 +13,7 @@ public class IncomeContentIn {
     @JsonProperty(value="name")
     private String name;
     @JsonProperty(value="Capacity")
-    private String capacity;
+    private Double capacity;
     @JsonProperty(value="AlcVolume")
     private String alcVolume;
     @JsonProperty(value="QTY")
@@ -53,11 +53,11 @@ public class IncomeContentIn {
         this.name = name;
     }
 
-    public String getCapacity() {
+    public Double getCapacity() {
         return capacity;
     }
 
-    public void setCapacity(String capacity) {
+    public void setCapacity(Double capacity) {
         this.capacity = capacity;
     }
 
