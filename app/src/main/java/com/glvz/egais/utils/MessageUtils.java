@@ -12,6 +12,7 @@ public class MessageUtils {
 
     private static final Handler handler = new Handler(MainApp.getContext().getMainLooper());
 
+///////////////////////////////
     public static void showToastMessage(final String msg) {
         handler.post(new Runnable() {
             @Override
@@ -25,7 +26,7 @@ public class MessageUtils {
         String msg = String.format(msgFormat, objects);
         showToastMessage(msg);
     }
-
+//////////////////////////////////
     public static void showModalMessage(final Activity activity, final String title, final String msg) {
         handler.post(new Runnable() {
             @Override
@@ -52,8 +53,31 @@ public class MessageUtils {
 
     public static void showModalMessage(final Activity activity, final String title, final String msgFormat, Object... objects ) {
         String msg = String.format(msgFormat, objects);
-        showModalMessage(activity, title, msgFormat);
+        showModalMessage(activity, title, msg);
     }
+
+////////////////////////////
+
+    public static void ShowModalAndConfirm(final Activity activity, String title, String msg,
+                                            DialogInterface.OnClickListener listenerOk) {
+        // показываем ошибку
+        AlertDialog.Builder builder = new AlertDialog.Builder(activity);
+        builder.setTitle(title)
+                .setMessage(msg)
+                .setCancelable(false)
+                .setPositiveButton("Да", listenerOk)
+                .setNegativeButton("Нет",null);
+        AlertDialog alert = builder.create();
+        alert.show();
+    }
+
+    public static void ShowModalAndConfirm(final Activity activity, final String title, final String msgFormat,
+                                           DialogInterface.OnClickListener listenerOk, Object... objects ) {
+        String msg = String.format(msgFormat, objects);
+        ShowModalAndConfirm(activity, title, msg, listenerOk);
+    }
+
+////////////////////
 
     public static void playSound(int idSound){
         MediaPlayer mPlayer = MediaPlayer.create(MainApp.getContext(), idSound);

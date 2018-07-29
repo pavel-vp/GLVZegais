@@ -86,9 +86,15 @@ public class ActIncomeRec extends Activity implements BarcodeReader.BarcodeListe
                 }
                 return true;
             case R.id.action_reject:
-                DaoMem.getDaoMem().rejectData(incomeRec);
-                MessageUtils.showToastMessage("По всей накладной в приемке отказано!");
-                updateData();
+                MessageUtils.ShowModalAndConfirm(this, "Внимание!", "Отказать приемку по все накладной? Все данные о приеме будут удалены.",
+                        new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                DaoMem.getDaoMem().rejectData(incomeRec);
+                                MessageUtils.showToastMessage("По всей накладной в приемке отказано!");
+                                updateData();
+                            }
+                });
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
