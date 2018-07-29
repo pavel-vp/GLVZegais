@@ -332,6 +332,12 @@ public class ActIncomeRecContent extends Activity implements BarcodeReader.Barco
                     MessageUtils.showToastMessage("Марка уже сканирована, сканируйте ШК бутылки!");
                     break;
                 }
+                // Проверить сканирован ли этот ШК коробки уже
+                IncomeRecContentMark scannedMark = DaoMem.getDaoMem().findIncomeRecContentScannedMarkBox(incomeRec, barcodeReadEvent.getBarcodeData());
+                if (scannedMark != null) {
+                    MessageUtils.showToastMessage("Марка коробки уже сканирована!");
+                }
+
                 // без сохранения предыдущего состояния - та же обработка что и в картчоке накладной
                 incomeRecContentLocal = ActIncomeRec.proceedCode128(incomeRec, barcodeReadEvent.getBarcodeData());
                 if (incomeRecContentLocal != null) {
@@ -348,7 +354,6 @@ public class ActIncomeRecContent extends Activity implements BarcodeReader.Barco
                     updateDisplayData();
                 }
                 break;
-
         }
 
     }

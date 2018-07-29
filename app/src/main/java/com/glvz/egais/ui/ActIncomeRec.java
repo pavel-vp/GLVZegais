@@ -194,6 +194,12 @@ public class ActIncomeRec extends Activity implements BarcodeReader.BarcodeListe
                 }
                 break;
             case CODE128:
+                // Проверить сканирован ли этот ШК коробки уже
+                IncomeRecContentMark scannedMark = DaoMem.getDaoMem().findIncomeRecContentScannedMarkBox(incomeRec, barcodeReadEvent.getBarcodeData());
+                if (scannedMark != null) {
+                    MessageUtils.showToastMessage("Марка коробки уже сканирована!");
+                }
+
                 incomeRecContent = proceedCode128(incomeRec, barcode);
                 if (incomeRecContent != null) {
                     // Перейти в форму "приемка позиции" с установленным флагом что сканируем упаковку
