@@ -2,6 +2,7 @@ package com.glvz.egais.ui;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.view.View;
 import android.view.WindowManager;
@@ -198,12 +199,19 @@ public class ActIncomeRecContent extends Activity implements BarcodeReader.Barco
         btnClear.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                incomeRecContent.setQtyAccepted(null);
-                incomeRecContent.getIncomeRecContentMarkList().clear();
-                lastMark = null;
-                isBoxScanned = false;
-                proceedAddQtyInternal(0);
-                updateDisplayData();
+                MessageUtils.ShowModalAndConfirm(ActIncomeRecContent.this, "Внимание!", "Очистить данные по позиции?",
+                        new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                incomeRecContent.setQtyAccepted(null);
+                                incomeRecContent.getIncomeRecContentMarkList().clear();
+                                lastMark = null;
+                                isBoxScanned = false;
+                                proceedAddQtyInternal(0);
+                                updateDisplayData();
+                            }
+                        });
+
             }
         });
         etQtyAccepted = (EditText) findViewById(R.id.etQtyAccepted);
