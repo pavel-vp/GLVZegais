@@ -338,6 +338,7 @@ public class DaoMem {
         for (IncomeRecContent irc : incomeRec.getIncomeRecContentList()) {
             irc.setNomenIn(null);
             irc.setQtyAccepted(Double.valueOf(0));
+            irc.getIncomeRecContentMarkList().clear();
             irc.setStatus(IncomeRecContentStatus.REJECTED);
         }
         incomeRec.setStatus(IncomeRecStatus.REJECTED);

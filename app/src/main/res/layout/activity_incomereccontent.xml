@@ -23,7 +23,8 @@
                         android:text="Введите Принимаемое количество в декалитрах и нажмите Добавить"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:textAppearance="?android:attr/textAppearanceMedium"
+                        android:textColor="@color/colorWarningLabel"
+                        android:background="@drawable/im_black"
                         android:id="@+id/tvAction"/>
 
 

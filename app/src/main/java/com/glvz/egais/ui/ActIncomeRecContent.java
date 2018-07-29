@@ -36,6 +36,7 @@ public class ActIncomeRecContent extends Activity implements BarcodeReader.Barco
     EditText etQtyAccepted;
     Button btnAdd;
     private boolean isBoxScanned = false;
+    private boolean isOpenByScan = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,6 +53,7 @@ public class ActIncomeRecContent extends Activity implements BarcodeReader.Barco
         String barcode = extras.getString(ActIncomeRec.INCOMERECCONTENT_LASTMARK);
         int addQty = extras.getInt(ActIncomeRec.INCOMERECCONTENT_ADDQTY);
         this.isBoxScanned = extras.getBoolean(ActIncomeRec.INCOMERECCONTENT_ISBOXSCANNED);
+        this.isOpenByScan = extras.getBoolean(ActIncomeRec.INCOMERECCONTENT_ISOPENBYSCAN);
 
         prepareActWithData(wbRegId, irc, addQty, barcode);
 
@@ -63,7 +65,7 @@ public class ActIncomeRecContent extends Activity implements BarcodeReader.Barco
         this.incomeRecContent = irc;
         this.lastMark = barcode;
 
-        boolean checkMark = checkQtyOnLastMark();
+        boolean checkMark = addQty > 0 && checkQtyOnLastMark();
         if (checkMark && this.incomeRecContent.getNomenIn() != null && (addQty != 0 )) {
             // Если товар сопоставлен - сохраняем сразу
             proceedAddQtyInternal(addQty);
@@ -141,7 +143,7 @@ public class ActIncomeRecContent extends Activity implements BarcodeReader.Barco
         if (addQty == 1) {
             MessageUtils.playSound(R.raw.bottle_one);
         }
-        if (addQty >= 1) {
+        if (addQty > 1) {
             MessageUtils.playSound(R.raw.bottle_many);
         }
 
@@ -233,7 +235,11 @@ public class ActIncomeRecContent extends Activity implements BarcodeReader.Barco
                         tvAction.setText("Сканируйте ШК с бутылки, введите Принимаемое количество и нажмите Добавить");
                         break;
                     case MARKED:
-                        tvAction.setText("Сканируйте ШК с бутылки, и марки со всех бутылок только этой позиции");
+                        if (incomeRecContent.getNomenIn() == null) {
+                            tvAction.setText("Сканируйте ШК");
+                        } else {
+                            tvAction.setText("Сканируйте марки со всех бутылок этой позиции");
+                        }
                 }
                 int countToAddInFuture = 0;
                 if (ActIncomeRecContent.this.lastMark != null) {
@@ -257,12 +263,16 @@ public class ActIncomeRecContent extends Activity implements BarcodeReader.Barco
         IncomeRecContent incomeRecContentLocal;
         switch (barCodeType) {
             case EAN13:
+                if (!this.isOpenByScan) {
+                    MessageUtils.showModalMessage(this,"ВНИМАНИЕ!","Устанавливать связь со ШК можно только после сканирования марки");
+                    break;
+                }
                 //Сканирование ШК номенклатуры (EAN):
                 // Проверить наличие ШК в справочнике номенклатуры 1С.
                 NomenIn nomenIn = DaoMem.getDaoMem().getDictionary().findNomenByBarcode(barcodeReadEvent.getBarcodeData());
                 //Если в номенклатуре нет такого ШК - запрет приемки: звуковой сигнал и сообщение “Штрихкод [указать номер] отсутствует в номенклатуре 1С. Прием этой позиции запрещен. Верните все бутылки этой позиции поставщику”. Запретить ввод значения в поле “Принимаемое количество”
                 if (nomenIn == null) {
-                    MessageUtils.showModalMessage("ВНИМАНИЕ!","Штрихкод "+barcodeReadEvent.getBarcodeData()+" отсутствует в номенклатуре 1С. Прием этой позиции запрещен. Верните все бутылки этой позиции поставщику");
+                    MessageUtils.showModalMessage(this, "ВНИМАНИЕ!","Штрихкод "+barcodeReadEvent.getBarcodeData()+" отсутствует в номенклатуре 1С. Прием этой позиции запрещен. Верните все бутылки этой позиции поставщику");
                     MessageUtils.playSound(R.raw.no_ean);
                     incomeRecContent.setNomenIn(null);
                     this.lastMark= null;
@@ -283,14 +293,14 @@ public class ActIncomeRecContent extends Activity implements BarcodeReader.Barco
                 }
                 this.isBoxScanned = false;
                 // без сохранения предыдущего состояния - та же обработка что и в картчоке накладной
-                List<IncomeRecContent> incomeRecContentListLocal = ActIncomeRec.proceedPdf417(incomeRec, barcodeReadEvent.getBarcodeData(), this);
-                if (incomeRecContentListLocal != null) {
+                ActIncomeRec.ActionOnScanPDF417Wrapper actionOnScanPDF417Wrapper = ActIncomeRec.proceedPdf417(incomeRec, barcodeReadEvent.getBarcodeData(), this);
+                if (actionOnScanPDF417Wrapper != null) {
 
-                    if (incomeRecContentListLocal.size() == 1) {
-                        proceedWithPdf417AndBarcode(incomeRecContentListLocal.get(0), barcodeReadEvent.getBarcodeData());
+                    if (actionOnScanPDF417Wrapper.ircList.size() == 1) {
+                        proceedWithPdf417AndBarcode(actionOnScanPDF417Wrapper.ircList.get(0), actionOnScanPDF417Wrapper.addQty, actionOnScanPDF417Wrapper.addQty == 0 ? null : barcodeReadEvent.getBarcodeData());
                     } else {
                         // тоже выбор дат....
-                        ActIncomeRec.pickBottlingDate(this, incomeRec.getWbRegId(), incomeRecContentListLocal, barcodeReadEvent.getBarcodeData(), this);
+                        ActIncomeRec.pickBottlingDate(this, incomeRec.getWbRegId(), actionOnScanPDF417Wrapper.ircList, barcodeReadEvent.getBarcodeData(), this);
                     }
                 }
                 break;
@@ -302,17 +312,18 @@ public class ActIncomeRecContent extends Activity implements BarcodeReader.Barco
                 }
                 this.isBoxScanned = false;
                 // без сохранения предыдущего состояния - та же обработка что и в картчоке накладной
-                incomeRecContentLocal = ActIncomeRec.proceedDataMatrix(incomeRec, barcodeReadEvent.getBarcodeData());
-                if (incomeRecContentLocal != null) {
-                    this.incomeRecContent = incomeRecContentLocal;
+                ActIncomeRec.ActionOnScanDataMatrixWrapper actionOnScanDataMatrixWrapper = ActIncomeRec.proceedDataMatrix(incomeRec, barcodeReadEvent.getBarcodeData());
+                if (actionOnScanDataMatrixWrapper != null) {
+                    this.incomeRecContent = actionOnScanDataMatrixWrapper.irc;
                     this.lastMark = barcodeReadEvent.getBarcodeData();
                     boolean resCheck = checkQtyOnLastMark();
                     if (resCheck && this.incomeRecContent.getNomenIn() != null) {
                         // Если товар сопоставлен - сохраняем сразу
-                        proceedAddQtyInternal(1);
+                        proceedAddQtyInternal(actionOnScanDataMatrixWrapper.addQty);
                     }
 
                     updateDisplayData();
+                    this.isOpenByScan = true;
                 }
 
                 break;
@@ -342,16 +353,17 @@ public class ActIncomeRecContent extends Activity implements BarcodeReader.Barco
 
     }
 
-    private void proceedWithPdf417AndBarcode(IncomeRecContent icr, String barcode) {
+    private void proceedWithPdf417AndBarcode(IncomeRecContent icr, Integer addQty, String barcode) {
         this.incomeRecContent = icr;
         this.lastMark = barcode;
-        boolean resCheck = checkQtyOnLastMark();
+        boolean resCheck = addQty > 0 && checkQtyOnLastMark();
         if (resCheck && this.incomeRecContent.getNomenIn() != null) {
             // Если товар сопоставлен - сохраняем сразу
-            proceedAddQtyInternal(1);
+            proceedAddQtyInternal(addQty);
         }
 
         updateDisplayData();
+        this.isOpenByScan = true;
     }
 
     @Override
@@ -361,7 +373,7 @@ public class ActIncomeRecContent extends Activity implements BarcodeReader.Barco
 
     @Override
     public void onCallbackPickBottlingDate(Context ctx, String wbRegId, IncomeRecContent irc, int addQty, String barcode) {
-        proceedWithPdf417AndBarcode(irc, barcode);
+        proceedWithPdf417AndBarcode(irc, addQty, barcode);
     }
 
     @Override

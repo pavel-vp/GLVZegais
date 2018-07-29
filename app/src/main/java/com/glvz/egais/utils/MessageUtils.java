@@ -28,23 +28,28 @@ public class MessageUtils {
     }
 
 
-    public static void showModalMessage(String title, String msg) {
-        // показываем ошибку
-        AlertDialog.Builder builder = new AlertDialog.Builder(MainApp.getContext());
-        builder.setTitle(title)
-                .setMessage(msg)
-                .setCancelable(false)
-                .setNegativeButton("Ок",
-                        new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int id) {
-                                dialog.cancel();
+    public static void showModalMessage(final Activity activity, final String title, final String msg) {
+        handler.post(new Runnable() {
+            @Override
+            public void run() {
+                // показываем ошибку
+                AlertDialog.Builder builder = new AlertDialog.Builder(activity);
+                builder.setTitle(title)
+                        .setMessage(msg)
+                        .setCancelable(false)
+                        .setNegativeButton("Ок",
+                                new DialogInterface.OnClickListener() {
+                                    public void onClick(DialogInterface dialog, int id) {
+                                        dialog.cancel();
 /*                                if (finish) {
                                     ctx.finish();
                                 }*/
-                            }
-                        });
-        AlertDialog alert = builder.create();
-        alert.show();
+                                    }
+                                });
+                AlertDialog alert = builder.create();
+                alert.show();
+            }
+        });
     }
 
 
