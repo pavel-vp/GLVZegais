@@ -24,9 +24,7 @@ public class MessageUtils {
     public static void showToastMessage(final String msgFormat, Object... objects ) {
         String msg = String.format(msgFormat, objects);
         showToastMessage(msg);
-
     }
-
 
     public static void showModalMessage(final Activity activity, final String title, final String msg) {
         handler.post(new Runnable() {
@@ -52,6 +50,10 @@ public class MessageUtils {
         });
     }
 
+    public static void showModalMessage(final Activity activity, final String title, final String msgFormat, Object... objects ) {
+        String msg = String.format(msgFormat, objects);
+        showModalMessage(activity, title, msgFormat);
+    }
 
     public static void playSound(int idSound){
         MediaPlayer mPlayer = MediaPlayer.create(MainApp.getContext(), idSound);

@@ -77,9 +77,13 @@ public class ActIncomeRec extends Activity implements BarcodeReader.BarcodeListe
         // Операции для выбранного пункта меню
         switch (id) {
             case R.id.action_export:
-                DaoMem.getDaoMem().exportData(incomeRec);
-                MessageUtils.showToastMessage("Накладная выгружена!");
-                updateData();
+                boolean success = DaoMem.getDaoMem().exportData(incomeRec);
+                if (success) {
+                    MessageUtils.showToastMessage("Накладная выгружена!");
+                    updateData();
+                } else {
+                    MessageUtils.showModalMessage(this, "Внимание!", "Имеются строки не сопоставленные с номенклатурой 1С, но принятым количеством. Необходимо сопоставить номенклатуру или отказаться от приемки позиции");
+                }
                 return true;
             case R.id.action_reject:
                 DaoMem.getDaoMem().rejectData(incomeRec);
@@ -172,7 +176,7 @@ public class ActIncomeRec extends Activity implements BarcodeReader.BarcodeListe
                 MessageUtils.playSound(R.raw.tap_position);
                 break;
             case PDF417:
-                ActionOnScanPDF417Wrapper actionOnScanPDF417Wrapper = proceedPdf417(incomeRec, barcode, this);
+                ActionOnScanPDF417Wrapper actionOnScanPDF417Wrapper = proceedPdf417(this, incomeRec, barcode, this);
                 if (actionOnScanPDF417Wrapper.ircList != null) {
                     if (actionOnScanPDF417Wrapper.ircList.size() == 1) {
                         // Перейти в форму "приемка позиции"
@@ -288,7 +292,7 @@ public class ActIncomeRec extends Activity implements BarcodeReader.BarcodeListe
         }
     }
 
-    public static ActionOnScanPDF417Wrapper proceedPdf417(IncomeRec incomeRec, String barcode, TransferCallback transferCallback) {
+    public static ActionOnScanPDF417Wrapper proceedPdf417(Activity activity, IncomeRec incomeRec, String barcode, TransferCallback transferCallback) {
         // Проверить что этот ШК ранее не сканировался в данной ТТН
         Integer markScanned = DaoMem.getDaoMem().checkMarkScanned(incomeRec, barcode);
         if (markScanned != null) {
@@ -321,7 +325,7 @@ public class ActIncomeRec extends Activity implements BarcodeReader.BarcodeListe
                 //определить позицию в ТТН ЕГАИС и принятое по ней количество
                 //Если [Количество по ТТН] = [Принятое количество]
                 if (incomeRecContent.getQtyAccepted() != null && incomeRecContent.getQtyAccepted().equals(incomeRecContent.getIncomeContentIn().getQty())) {
-                    MessageUtils.showToastMessage("По позиции номер: %d, алкокод: %s, (%s) уже принято полное количество %s. Сканированная бутылка лишняя, принимать нельзя. Верните поставщику!",
+                    MessageUtils.showModalMessage(activity,"Внимание","По позиции номер: %d, алкокод: %s, (%s) уже принято полное количество %s. Сканированная бутылка лишняя, принимать нельзя. Верните поставщику!",
                             incomeRecContent.getPosition(),
                             alcocode,
                             incomeRecContent.getIncomeContentIn().getName(),

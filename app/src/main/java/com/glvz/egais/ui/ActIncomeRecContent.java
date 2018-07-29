@@ -80,7 +80,7 @@ public class ActIncomeRecContent extends Activity implements BarcodeReader.Barco
                     incomeRecContent.getIncomeContentIn().getQty().compareTo(incomeRecContent.getQtyAccepted()) <= 0) {
                 if (!this.isBoxScanned) {
                     String alcocode = BarcodeObject.extractAlcode(this.lastMark);
-                    MessageUtils.showToastMessage("По позиции номер: %d, алкокод: %s, (%s) уже принято полное количество %s. Сканированная бутылка лишняя, принимать нельзя. Верните поставщику!",
+                    MessageUtils.showModalMessage(this, "Внимание!","По позиции номер: %d, алкокод: %s, (%s) уже принято полное количество %s. Сканированная бутылка лишняя, принимать нельзя. Верните поставщику!",
                             incomeRecContent.getPosition(),
                             alcocode,
                             incomeRecContent.getIncomeContentIn().getName(),
@@ -293,7 +293,7 @@ public class ActIncomeRecContent extends Activity implements BarcodeReader.Barco
                 }
                 this.isBoxScanned = false;
                 // без сохранения предыдущего состояния - та же обработка что и в картчоке накладной
-                ActIncomeRec.ActionOnScanPDF417Wrapper actionOnScanPDF417Wrapper = ActIncomeRec.proceedPdf417(incomeRec, barcodeReadEvent.getBarcodeData(), this);
+                ActIncomeRec.ActionOnScanPDF417Wrapper actionOnScanPDF417Wrapper = ActIncomeRec.proceedPdf417(this, incomeRec, barcodeReadEvent.getBarcodeData(), this);
                 if (actionOnScanPDF417Wrapper != null) {
 
                     if (actionOnScanPDF417Wrapper.ircList.size() == 1) {

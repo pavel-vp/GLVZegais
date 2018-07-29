@@ -309,10 +309,20 @@ public class DaoMem {
         return null;
     }
 
-    public void exportData(IncomeRec incomeRec) {
+    public boolean exportData(IncomeRec incomeRec) {
+        // Операция выгрузки: перед выгрузкой проверить что нет товарных строк с количеством больше нуля и не сопоставленной
+        //номенклатурой. При наличии таких строк выгрузку не делать, показать сообщение "Имеются строки не сопоставленные
+        //с номенклатурой 1С, но принятым количеством. Необходимо сопоставить номенклатуру или отказаться от приемки
+        //позиции."
+        for (IncomeRecContent irc : incomeRec.getIncomeRecContentList()) {
+            if (irc.getQtyAccepted() != null && irc.getQtyAccepted().doubleValue() > 0 && irc.getNomenIn() == null) {
+                return false;
+            }
+        }
         incomeRec.setExported(true);
         writeLocalDataIncomeRec(incomeRec);
         integrationFile.writeIncomeRec(shopId, incomeRec);
+        return false;
     }
 
     public List<ShopIn> getListS() {
