@@ -17,6 +17,7 @@ import com.glvz.egais.integration.IntegrationSDCard;
 import com.glvz.egais.integration.model.*;
 import com.glvz.egais.model.*;
 import com.glvz.egais.utils.MessageUtils;
+import com.glvz.egais.utils.StringUtils;
 
 import java.io.File;
 import java.util.*;
@@ -209,8 +210,29 @@ public class DaoMem {
     }
 
 
-    public Collection<IncomeRec> getIncomeRecList() {
-        return mapIncomeRec.values();
+    public Collection<IncomeRec> getIncomeRecListOrdered() {
+
+        List<IncomeRec> list = new ArrayList<>();
+        list.addAll(mapIncomeRec.values());
+
+        Collections.sort(list, new Comparator<IncomeRec>() {
+            @Override
+            public int compare(IncomeRec lhs, IncomeRec rhs) {
+
+
+                Date d1 = StringUtils.jsonStringToDate(lhs.getIncomeIn().getDate());
+                Date d2 = StringUtils.jsonStringToDate(rhs.getIncomeIn().getDate());
+
+                if (d1.before(d2)) return 1;
+                if (d1.after(d2)) return -1;
+
+                int res = lhs.getIncomeIn().getPostName().compareTo(rhs.getIncomeIn().getPostName());
+                if (res != 0) return res;
+
+                return lhs.getIncomeIn().getNumber().compareTo(rhs.getIncomeIn().getNumber());
+            }
+        });
+        return list;
     }
 
     public Map<String, IncomeRec> getMapIncomeRec() {

@@ -52,7 +52,7 @@ public class ActIncomeList extends Activity implements BarcodeReader.BarcodeList
 
     private void updateList() {
         // Прочитать список накладных
-        Collection<IncomeRec> newList = DaoMem.getDaoMem().getIncomeRecList();
+        Collection<IncomeRec> newList = DaoMem.getDaoMem().getIncomeRecListOrdered();
         list.clear();
         list.addAll(newList);
         adapter.notifyDataSetChanged();
