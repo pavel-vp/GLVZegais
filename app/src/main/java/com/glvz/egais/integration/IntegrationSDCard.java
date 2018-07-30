@@ -4,10 +4,7 @@ import android.media.MediaScannerConnection;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.glvz.egais.MainApp;
-import com.glvz.egais.integration.model.IncomeIn;
-import com.glvz.egais.integration.model.NomenIn;
-import com.glvz.egais.integration.model.PostIn;
-import com.glvz.egais.integration.model.ShopIn;
+import com.glvz.egais.integration.model.*;
 import com.glvz.egais.model.IncomeRec;
 
 import java.io.*;
@@ -29,6 +26,7 @@ public class IntegrationSDCard implements Integration {
     private static final String SHOP_FILE = "shops.json";
     private static final String POST_FILE = "posts.json";
     private static final String NOMEN_FILE = "nomen.json";
+    private static final String USER_FILE = "users.json";
     private static final String APK_FILE = "glvzegais.apk";
 
     private ObjectMapper objectMapper = new ObjectMapper();
@@ -78,6 +76,20 @@ public class IntegrationSDCard implements Integration {
         }
 
         return listNomen;
+    }
+
+    @Override
+    public List<UserIn> loadUsers() {
+        File pathToFile = new File(basePath + "/" + DIC_DIR, USER_FILE);
+        List<UserIn> listUser = new ArrayList<>();
+        try {
+            listUser = objectMapper.readValue(pathToFile, new TypeReference<ArrayList<UserIn>>(){});
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return listUser;
     }
 
     @Override

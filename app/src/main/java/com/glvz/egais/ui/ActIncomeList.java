@@ -86,6 +86,7 @@ public class ActIncomeList extends Activity implements BarcodeReader.BarcodeList
 
     @Override
     public void onFailureEvent(BarcodeFailureEvent barcodeFailureEvent) {
+        System.out.println(barcodeFailureEvent);
 
     }
 }

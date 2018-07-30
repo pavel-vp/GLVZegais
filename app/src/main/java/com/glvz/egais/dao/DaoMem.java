@@ -58,22 +58,26 @@ public class DaoMem {
 
     List<ShopIn> listS;
     List<PostIn> listP;
+    List<UserIn> listU;
     List<NomenIn> listN;
     List<IncomeIn> listIncomeIn;
 
     Map<String, IncomeRec> mapIncomeRec;
     SharedPreferences sharedPreferences;
-    String shopId;
+
+    private UserIn userIn;
+    private String shopId;
 
 
     private void initDictionary() {
         File path = new File(Environment.getExternalStorageDirectory(), MainApp.getContext().getResources().getString(R.string.path_exchange));
         sharedPreferences = MainApp.getContext().getSharedPreferences("settings", Activity.MODE_PRIVATE);
         integrationFile = new IntegrationSDCard(path.getAbsolutePath());
+        listU = integrationFile.loadUsers();
         listS = integrationFile.loadShops();
         listP = integrationFile.loadPosts();
         listN = integrationFile.loadNomen();
-        dictionary = new DictionaryMem(listS, listP, listN);
+        dictionary = new DictionaryMem(listU, listS, listP, listN);
         String shopIdStored = sharedPreferences.getString(KEY_SHOPID, null);
         if (shopIdStored != null) {
             ShopIn shopInStored = findShopInById(shopIdStored);
@@ -351,6 +355,10 @@ public class DaoMem {
         return listS;
     }
 
+    public List<UserIn> getListU() {
+        return listU;
+    }
+
 
     public String getShopInName() {
         ShopIn shopIn = findShopInById(this.shopId);
@@ -498,4 +506,18 @@ public class DaoMem {
         }
         return null;
     }
+
+    public UserIn getUserIn() {
+        return userIn;
+    }
+
+    public void setUserIn(UserIn userIn) {
+        this.userIn = userIn;
+        if (userIn.getUsersPodrs() != null && userIn.getUsersPodrs().length == 1) {
+            this.setShopId(userIn.getUsersPodrs()[0]);
+        } else{
+            this.setShopId(null);
+        }
+    }
+
 }

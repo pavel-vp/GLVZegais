@@ -1,9 +1,6 @@
 package com.glvz.egais.integration;
 
-import com.glvz.egais.integration.model.IncomeIn;
-import com.glvz.egais.integration.model.NomenIn;
-import com.glvz.egais.integration.model.PostIn;
-import com.glvz.egais.integration.model.ShopIn;
+import com.glvz.egais.integration.model.*;
 import com.glvz.egais.model.IncomeRec;
 
 import java.io.File;
@@ -19,6 +16,8 @@ public interface Integration {
     List<PostIn> loadPosts();
 
     List<NomenIn> loadNomen();
+
+    List<UserIn> loadUsers();
 
     List<IncomeIn> loadIncome(String shopId);
 

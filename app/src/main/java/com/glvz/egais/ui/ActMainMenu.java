@@ -16,7 +16,6 @@ public class ActMainMenu extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_mainmenu);
-        BarcodeObject.create(this);
 
         setResources();
 

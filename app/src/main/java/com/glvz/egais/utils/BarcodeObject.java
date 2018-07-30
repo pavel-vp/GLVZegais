@@ -18,7 +18,11 @@ public class BarcodeObject {
     }
 
 
-    public static void create(Context context) {
+    public interface CallbackAfterCreateBarcodeReader {
+        void afterCreate();
+    }
+
+    public static void create(Context context, final CallbackAfterCreateBarcodeReader callbackAfterCreateBarcodeReader) {
         // create the AidcManager providing a Context and a
         // CreatedCallback implementation.
         AidcManager.create(context, new AidcManager.CreatedCallback() {
@@ -27,6 +31,7 @@ public class BarcodeObject {
             public void onCreated(AidcManager aidcManager) {
                 manager = aidcManager;
                 barcodeReader = manager.createBarcodeReader();
+                callbackAfterCreateBarcodeReader.afterCreate();
             }
         });
 

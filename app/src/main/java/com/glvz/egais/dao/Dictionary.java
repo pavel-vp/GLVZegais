@@ -3,6 +3,7 @@ package com.glvz.egais.dao;
 import com.glvz.egais.integration.model.NomenIn;
 import com.glvz.egais.integration.model.PostIn;
 import com.glvz.egais.integration.model.ShopIn;
+import com.glvz.egais.integration.model.UserIn;
 
 import java.util.List;
 
@@ -14,4 +15,7 @@ public interface Dictionary {
 
     NomenIn findNomenById(String id1c);
 
+    UserIn findUserByBarcode(String barcodeData);
+
+    List<ShopIn> getShopListByUser(UserIn userIn);
 }

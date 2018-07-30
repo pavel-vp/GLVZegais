@@ -17,6 +17,7 @@ import java.util.List;
 public class ActChooseShop extends Activity {
 
     private TextView tvShopChosen;
+    private TextView tvUser;
     private Button buttonLoadDocs;
     private Button buttonMainMenu;
 
@@ -27,17 +28,24 @@ public class ActChooseShop extends Activity {
         setContentView(R.layout.activity_chooseshop);
         setResources();
         updateData();
+        // Если магазин у пользователя один - то он должен быть уже выбран - пропускаем эту форму
+        if (DaoMem.getDaoMem().getUserIn().getUsersPodrs() != null && DaoMem.getDaoMem().getUserIn().getUsersPodrs().length == 1) {
+            proceedMainMenu();
+        }
+
     }
 
     private void setResources() {
 
         tvShopChosen = (TextView) findViewById(R.id.tvShopChosen);
+        tvUser = (TextView) findViewById(R.id.tvUser);
+        tvUser.setText(DaoMem.getDaoMem().getUserIn().getName());
 
         Button buttonChoose = (Button) findViewById(R.id.buttonChoose);
         buttonChoose.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                final List<ShopIn> shopInList = DaoMem.getDaoMem().getListS();
+                final List<ShopIn> shopInList = DaoMem.getDaoMem().getDictionary().getShopListByUser(DaoMem.getDaoMem().getUserIn());
 
                 final CharSequence[] items = new CharSequence[shopInList.size()];
                 int i = 0;
@@ -80,10 +88,7 @@ public class ActChooseShop extends Activity {
         buttonMainMenu.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent();
-                intent.setClass(ActChooseShop.this, ActMainMenu.class);
-                startActivity(intent);
-               // ActChooseShop.this.finish();
+                proceedMainMenu();
             }
         });
 
@@ -96,6 +101,13 @@ public class ActChooseShop extends Activity {
         });
     }
 
+    private void proceedMainMenu() {
+        Intent intent = new Intent();
+        intent.setClass(ActChooseShop.this, ActMainMenu.class);
+        startActivity(intent);
+        // ActChooseShop.this.finish();
+    }
+
     private void updateData() {
         tvShopChosen.setText(DaoMem.getDaoMem().getShopInName());
         if (DaoMem.getDaoMem().getShopId() == null) {
@@ -105,6 +117,11 @@ public class ActChooseShop extends Activity {
             buttonLoadDocs.setEnabled(true);
             buttonMainMenu.setEnabled(true);
         }
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
     }
 
 

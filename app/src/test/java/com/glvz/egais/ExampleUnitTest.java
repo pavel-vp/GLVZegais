@@ -26,10 +26,11 @@ public class ExampleUnitTest {
     @Before
     public void setup() {
         integrationFile = new IntegrationSDCard("/home/pasha/soft/mobile-me/Android/GLVZegais/GLVZ");
+        List<UserIn> listU = integrationFile.loadUsers();
         List<ShopIn> listS = integrationFile.loadShops();
         List<PostIn> listP = integrationFile.loadPosts();
         List<NomenIn> listN = integrationFile.loadNomen();
-        dictionary = new DictionaryMem(listS, listP, listN);
+        dictionary = new DictionaryMem(listU, listS, listP, listN);
         List<IncomeIn> listIncomeIn = integrationFile.loadIncome("00-000083") ;
         document = new DocumentMem(listIncomeIn);
     }

@@ -28,11 +28,13 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"/>
 
-    <Button
-            android:text="Продолжить"
+
+    <TextView
+            android:id="@+id/tvWarn"
+            android:text="Сканируйте Штрихкод бейджа сотрудника"
             android:textAlignment="center"
-            android:textSize="24dp"
-            android:id="@+id/buttonProceed"
+            android:paddingTop="10dp"
+            android:textSize="20dp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"/>
 
