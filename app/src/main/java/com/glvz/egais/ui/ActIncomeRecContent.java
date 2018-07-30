@@ -260,7 +260,7 @@ public class ActIncomeRecContent extends Activity implements BarcodeReader.Barco
                     // Посчитать количество добавляемое, в случае успеха сканирования ШК ЕАН (предварительное добавленное колво)
                     countToAddInFuture = DaoMem.getDaoMem().calculateQtyToAdd(ActIncomeRecContent.this.incomeRec, ActIncomeRecContent.this.incomeRecContent, ActIncomeRecContent.this.lastMark);
                 }
-                docRecContentHolder.setItem(incomeRecContent, countToAddInFuture);
+                docRecContentHolder.setItem(incomeRecContent, countToAddInFuture, IncomeContentArrayAdapter.RECCONTENT_MODE);
             }
         });
     }

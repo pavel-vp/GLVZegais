@@ -6,4 +6,6 @@
     <color name="magic_flame">#00ffffff</color>
     <color name="button_text">#ffffff</color>
     <color name="colorWarningLabel">#CCFC00</color>
+    <color name="colorHeaderRec">#CCFFA0</color>
+
 </resources>

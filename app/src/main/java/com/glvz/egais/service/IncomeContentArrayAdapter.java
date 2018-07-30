@@ -8,6 +8,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import com.glvz.egais.R;
 import com.glvz.egais.model.IncomeRecContent;
@@ -17,6 +18,9 @@ import java.util.Date;
 import java.util.List;
 
 public class IncomeContentArrayAdapter extends ArrayAdapter<IncomeRecContent> {
+
+    public static final int RECLIST_MODE = 1;
+    public static final int RECCONTENT_MODE = 2;
 
     List<IncomeRecContent> incomeRecContents;
     final Context context;
@@ -51,7 +55,7 @@ public class IncomeContentArrayAdapter extends ArrayAdapter<IncomeRecContent> {
         }
 
         IncomeRecContent itemdata = incomeRecContents.get(position);
-        holder.setItem(itemdata, 0);
+        holder.setItem(itemdata, 0, RECLIST_MODE);
 
         if (position % 2 == 1) {
             row.setBackgroundColor(Color.LTGRAY);
@@ -65,6 +69,8 @@ public class IncomeContentArrayAdapter extends ArrayAdapter<IncomeRecContent> {
 
     public static class DocRecContentHolder{
 
+        LinearLayout llPosition;
+        LinearLayout llEgaisPart;
         TextView tvPosition;
         TextView tvStatus;
         TextView tvNameEgais;
@@ -80,6 +86,8 @@ public class IncomeContentArrayAdapter extends ArrayAdapter<IncomeRecContent> {
 
         public DocRecContentHolder(View v) {
             super();
+            llPosition = (LinearLayout)v.findViewById(R.id.llPosition);
+            llEgaisPart = (LinearLayout)v.findViewById(R.id.llEgaisPart);
             tvPosition = (TextView)v.findViewById(R.id.tvPosition);
             tvStatus = (TextView)v.findViewById(R.id.tvStatus);
             tvNameEgais = (TextView)v.findViewById(R.id.tvNameEgais);
@@ -93,10 +101,16 @@ public class IncomeContentArrayAdapter extends ArrayAdapter<IncomeRecContent> {
             v.setTag(this);
         }
 
-        public void setItem(IncomeRecContent incomeRecContent, int addMark) {
+        public void setItem(IncomeRecContent incomeRecContent, int addMark, int mode) {
             this.incomeRecContent = incomeRecContent;
-            tvPosition.setText(incomeRecContent.getPosition().toString());
-            tvStatus.setText(incomeRecContent.getStatus().getMessage());
+            if (mode == RECLIST_MODE) {
+                llPosition.setVisibility(View.GONE);
+            } else {
+                llEgaisPart.setBackgroundColor(Color.LTGRAY);
+                llPosition.setVisibility(View.VISIBLE);
+                tvPosition.setText(incomeRecContent.getPosition().toString());
+                tvStatus.setText(incomeRecContent.getStatus().getMessage());
+            }
             tvNameEgais.setText(incomeRecContent.getIncomeContentIn().getName());
             tvCapacityEgais.setText(StringUtils.formatQty(incomeRecContent.getIncomeContentIn().getCapacity()));
             tvAlcVolumeEgais.setText(incomeRecContent.getIncomeContentIn().getAlcVolume());

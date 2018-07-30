@@ -4,8 +4,16 @@
               android:layout_width="match_parent"
               android:layout_height="match_parent">
 
+    <TextView
+            android:text="Сканируйте марку (или ШК коробки), или выберите позицию с пивом"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/im_black"
+            android:textColor="@color/colorWarningLabel"
+            android:id="@+id/tvCaption"/>
     <LinearLayout
                   android:orientation="vertical"
+                  android:background="@color/colorHeaderRec"
                   android:layout_width="match_parent"
                   android:layout_height="wrap_content">
 
@@ -15,20 +23,7 @@
                  layout="@layout/rec_prih"
                  android:id="@+id/inclRecPrih"
                 />
-    </LinearLayout>
 
-    <LinearLayout
-            android:orientation="vertical"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-
-        <TextView
-                android:text="Сканируйте марку (или ШК коробки), или выберите позицию с пивом"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:background="@drawable/im_black"
-                android:textColor="@color/colorWarningLabel"
-                android:id="@+id/tvCaption"/>
         <CheckBox
                 android:text="Только не принятые"
                 android:layout_width="match_parent"

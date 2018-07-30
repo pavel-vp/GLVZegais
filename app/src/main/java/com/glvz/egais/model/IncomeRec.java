@@ -30,8 +30,10 @@ public class IncomeRec {
     }
 
     public void setStatus(IncomeRecStatus status) {
+        if (status != this.status) {
+            this.exported = false;
+        }
         this.status = status;
-        this.exported = false;
     }
 
 
