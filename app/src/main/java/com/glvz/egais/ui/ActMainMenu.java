@@ -23,12 +23,6 @@ public class ActMainMenu extends Activity {
     }
 
 
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        BarcodeObject.delete();
-    }
-
     private void setResources() {
 
         Button buttonIncome = (Button) findViewById(R.id.buttonIncome);

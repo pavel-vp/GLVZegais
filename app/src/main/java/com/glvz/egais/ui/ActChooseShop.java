@@ -11,6 +11,7 @@ import android.widget.TextView;
 import com.glvz.egais.R;
 import com.glvz.egais.dao.DaoMem;
 import com.glvz.egais.integration.model.ShopIn;
+import com.glvz.egais.utils.BarcodeObject;
 
 import java.util.List;
 
@@ -34,6 +35,13 @@ public class ActChooseShop extends Activity {
         }
 
     }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        BarcodeObject.delete();
+    }
+
 
     private void setResources() {
 
