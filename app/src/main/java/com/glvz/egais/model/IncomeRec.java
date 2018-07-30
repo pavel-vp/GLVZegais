@@ -31,6 +31,7 @@ public class IncomeRec {
 
     public void setStatus(IncomeRecStatus status) {
         this.status = status;
+        this.exported = false;
     }
 
 
