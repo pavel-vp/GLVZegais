@@ -8,7 +8,7 @@ import java.util.List;
 
 public class IncomeRecContent {
     // ссылка наисходный имопртированную позицию документа
-    private Integer position;
+    private String position;
     private IncomeContentIn incomeContentIn;
     // данные заполненные локально на терминале
     private IncomeRecContentStatus status = IncomeRecContentStatus.NOT_ENTERED;
@@ -17,7 +17,7 @@ public class IncomeRecContent {
     private Double qtyAccepted;
     private List<IncomeRecContentMark> incomeRecContentMarkList = new ArrayList<>(); // список сканированных марок
 
-    public IncomeRecContent(Integer position, IncomeContentIn incomeContentIn) {
+    public IncomeRecContent(String position, IncomeContentIn incomeContentIn) {
         this.position = position;
         this.incomeContentIn = incomeContentIn;
     }
@@ -33,11 +33,11 @@ public class IncomeRecContent {
         return IncomeRecContentPositionType.MARKED;
     }
 
-    public Integer getPosition() {
+    public String getPosition() {
         return position;
     }
 
-    public void setPosition(Integer position) {
+    public void setPosition(String position) {
         this.position = position;
     }
 

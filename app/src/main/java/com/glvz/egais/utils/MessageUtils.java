@@ -58,17 +58,22 @@ public class MessageUtils {
 
 ////////////////////////////
 
-    public static void ShowModalAndConfirm(final Activity activity, String title, String msg,
-                                            DialogInterface.OnClickListener listenerOk) {
-        // показываем ошибку
-        AlertDialog.Builder builder = new AlertDialog.Builder(activity);
-        builder.setTitle(title)
-                .setMessage(msg)
-                .setCancelable(false)
-                .setPositiveButton("Да", listenerOk)
-                .setNegativeButton("Нет",null);
-        AlertDialog alert = builder.create();
-        alert.show();
+    public static void ShowModalAndConfirm(final Activity activity, final String title, final String msg,
+                                           final DialogInterface.OnClickListener listenerOk) {
+        handler.post(new Runnable() {
+            @Override
+            public void run() {
+                // показываем ошибку
+                AlertDialog.Builder builder = new AlertDialog.Builder(activity);
+                builder.setTitle(title)
+                        .setMessage(msg)
+                        .setCancelable(false)
+                        .setPositiveButton("Да", listenerOk)
+                        .setNegativeButton("Нет", null);
+                AlertDialog alert = builder.create();
+                alert.show();
+            }
+        });
     }
 
     public static void ShowModalAndConfirm(final Activity activity, final String title, final String msgFormat,

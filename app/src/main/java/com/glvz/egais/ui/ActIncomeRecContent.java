@@ -53,7 +53,7 @@ public class ActIncomeRecContent extends Activity implements BarcodeReader.Barco
         String wbRegId = extras.getString(ActIncomeRec.INCOMEREC_WBREGID);
         IncomeRec ir = DaoMem.getDaoMem().getMapIncomeRec().get(wbRegId);
         String position = extras.getString(ActIncomeRec.INCOMERECCONTENT_POSITION);
-        IncomeRecContent irc = DaoMem.getDaoMem().getIncomeRecContentByPosition(ir, Integer.valueOf(position));
+        IncomeRecContent irc = DaoMem.getDaoMem().getIncomeRecContentByPosition(ir, position);
         String barcode = extras.getString(ActIncomeRec.INCOMERECCONTENT_LASTMARK);
         int addQty = extras.getInt(ActIncomeRec.INCOMERECCONTENT_ADDQTY);
         this.isBoxScanned = extras.getBoolean(ActIncomeRec.INCOMERECCONTENT_ISBOXSCANNED);
@@ -75,6 +75,9 @@ public class ActIncomeRecContent extends Activity implements BarcodeReader.Barco
             proceedAddQtyInternal(addQty);
         }
         updateDisplayData();
+        if (this.isOpenByScan && this.incomeRecContent.getNomenIn() == null) {
+            MessageUtils.playSound(R.raw.scan_ean);
+        }
     }
 
     private boolean checkQtyOnLastMark() {
@@ -283,7 +286,7 @@ public class ActIncomeRecContent extends Activity implements BarcodeReader.Barco
                 }
                 //Сканирование ШК номенклатуры (EAN):
                 // Проверить наличие ШК в справочнике номенклатуры 1С.
-                NomenIn nomenIn = DaoMem.getDaoMem().getDictionary().findNomenByBarcode(barcodeReadEvent.getBarcodeData());
+                final NomenIn nomenIn = DaoMem.getDaoMem().getDictionary().findNomenByBarcode(barcodeReadEvent.getBarcodeData());
                 //Если в номенклатуре нет такого ШК - запрет приемки: звуковой сигнал и сообщение “Штрихкод [указать номер] отсутствует в номенклатуре 1С. Прием этой позиции запрещен. Верните все бутылки этой позиции поставщику”. Запретить ввод значения в поле “Принимаемое количество”
                 if (nomenIn == null) {
                     MessageUtils.showModalMessage(this, "ВНИМАНИЕ!","Штрихкод "+barcodeReadEvent.getBarcodeData()+" отсутствует в номенклатуре 1С. Прием этой позиции запрещен. Верните все бутылки этой позиции поставщику");
@@ -308,11 +311,40 @@ public class ActIncomeRecContent extends Activity implements BarcodeReader.Barco
                                 StringUtils.formatQty(incomeRecContent.getIncomeContentIn().getCapacity())
                                 );
                         break;
+                    } else {
+                        // Если новый товар 1с отличается от того что был - запросить подтверждение
+                        if (incomeRecContent.getNomenIn() != null && !incomeRecContent.getNomenIn().getId().equals(nomenIn.getId())) {
+                            final int finalAddQty = addQty;
+                            MessageUtils.ShowModalAndConfirm(this, "ВНИМАНИЕ!", "Сопоставить с товаром?\n " +
+                                            "ЕГАИС:\n" +
+                                            "Наименование: %s\n" +
+                                            "Емкость: %s\n" +
+                                            "Крепость: %s\n" +
+                                            "1C:\n" +
+                                            "Наименование: %s\n" +
+                                            "Емкость: %s\n" +
+                                            "Крепость: %s",
+                                    new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int which) {
+                                            incomeRecContent.setNomenIn(nomenIn);
+                                            proceedAddQtyInternal(finalAddQty);
+                                            updateDisplayData();
+                                        }
+                                    },
+                                    incomeRecContent.getIncomeContentIn().getName(),
+                                    StringUtils.formatQty(incomeRecContent.getIncomeContentIn().getCapacity()),
+                                    StringUtils.formatQty(incomeRecContent.getIncomeContentIn().getAlcVolume()),
+                                            nomenIn.getName(),
+                                            StringUtils.formatQty(nomenIn.getCapacity()),
+                                            StringUtils.formatQty(nomenIn.getAlcVolume())
+                            );
+                        } else {
+                            // Если ШК товара найден в номенклатуре 1С - заполнить все надписи формы из номенклатуры 1С (код, наименование, ….)
+                            incomeRecContent.setNomenIn(nomenIn);
+                            proceedAddQtyInternal(addQty);
+                        }
                     }
-
-                    //Если ШК товара найден в номенклатуре 1С - заполнить все надписи формы из номенклатуры 1С (код, наименование, ….)
-                    incomeRecContent.setNomenIn(nomenIn);
-                    proceedAddQtyInternal(addQty);
                 }
                 updateDisplayData();
                 break;
@@ -355,6 +387,9 @@ public class ActIncomeRecContent extends Activity implements BarcodeReader.Barco
 
                     updateDisplayData();
                     this.isOpenByScan = true;
+                    if (this.incomeRecContent.getNomenIn() == null) {
+                        MessageUtils.playSound(R.raw.scan_ean);
+                    }
                 }
 
                 break;
@@ -383,6 +418,9 @@ public class ActIncomeRecContent extends Activity implements BarcodeReader.Barco
                         proceedAddQtyInternal(addQty);
                     }
                     updateDisplayData();
+                    if (this.incomeRecContent.getNomenIn() == null) {
+                        MessageUtils.playSound(R.raw.scan_ean);
+                    }
                 }
                 break;
         }
@@ -400,6 +438,9 @@ public class ActIncomeRecContent extends Activity implements BarcodeReader.Barco
 
         updateDisplayData();
         this.isOpenByScan = true;
+        if (this.incomeRecContent.getNomenIn() == null) {
+            MessageUtils.playSound(R.raw.scan_ean);
+        }
     }
 
     @Override

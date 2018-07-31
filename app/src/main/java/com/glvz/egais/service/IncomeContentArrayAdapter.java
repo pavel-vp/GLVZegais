@@ -113,7 +113,7 @@ public class IncomeContentArrayAdapter extends ArrayAdapter<IncomeRecContent> {
             }
             tvNameEgais.setText(incomeRecContent.getIncomeContentIn().getName());
             tvCapacityEgais.setText(StringUtils.formatQty(incomeRecContent.getIncomeContentIn().getCapacity()));
-            tvAlcVolumeEgais.setText(incomeRecContent.getIncomeContentIn().getAlcVolume());
+            tvAlcVolumeEgais.setText(StringUtils.formatQty(incomeRecContent.getIncomeContentIn().getAlcVolume()));
             Date d = StringUtils.jsonBottlingStringToDate(incomeRecContent.getIncomeContentIn().getBottlingDate());
             tvBottlingDateEgais.setText(StringUtils.formatDateDisplay(d));
             if (incomeRecContent.getNomenIn() != null) {

@@ -247,9 +247,9 @@ public class DaoMem {
         return mapIncomeRec.get(wbRegId).getIncomeRecContentList();
     }
 
-    public IncomeRecContent getIncomeRecContentByPosition(IncomeRec incomeRec, Integer position) {
+    public IncomeRecContent getIncomeRecContentByPosition(IncomeRec incomeRec, String position) {
         for (IncomeRecContent incomeRecContent : incomeRec.getIncomeRecContentList()) {
-            if (incomeRecContent.getPosition().intValue() == position.intValue()) {
+            if (incomeRecContent.getPosition().equals(position)) {
                 return incomeRecContent;
             }
         }
@@ -487,7 +487,7 @@ public class DaoMem {
         }
 
         // Вызвать рекурсивно со всеми потомками
-        for (IncomeContentBoxTreeIn icbtChild :irc.getIncomeContentIn().getBoxTree()) {
+        for (IncomeContentBoxTreeIn icbtChild : irc.getIncomeContentIn().getBoxTree()) {
             if (icbtChild.getParentBox().equals(icbt.getBox())) {
                 getAllIncomeRecMarksByBoxBarcode(resList, irc, icbtChild, level + 1);
             }
@@ -495,9 +495,11 @@ public class DaoMem {
     }
 
     public IncomeContentBoxTreeIn findIncomeContentBoxTreeIn(IncomeRecContent incomeRecContent, String box) {
-        for (IncomeContentBoxTreeIn icbt :incomeRecContent.getIncomeContentIn().getBoxTree()) {
-            if (icbt.getBox().equals(box)) {
-                return icbt;
+        if (incomeRecContent.getIncomeContentIn().getBoxTree() != null) {
+            for (IncomeContentBoxTreeIn icbt : incomeRecContent.getIncomeContentIn().getBoxTree()) {
+                if (icbt.getBox().equals(box)) {
+                    return icbt;
+                }
             }
         }
         return null;

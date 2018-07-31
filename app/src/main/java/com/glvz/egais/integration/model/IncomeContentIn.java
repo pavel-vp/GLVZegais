@@ -7,7 +7,7 @@ import java.util.Arrays;
 public class IncomeContentIn {
 
     @JsonProperty(value="position")
-    private Integer position;
+    private String position;
     @JsonProperty(value="alccode")
     private String alccode;
     @JsonProperty(value="name")
@@ -15,7 +15,7 @@ public class IncomeContentIn {
     @JsonProperty(value="Capacity")
     private Double capacity;
     @JsonProperty(value="AlcVolume")
-    private String alcVolume;
+    private Double alcVolume;
     @JsonProperty(value="QTY")
     private Double qty;
     @JsonProperty(value="Price")
@@ -29,11 +29,11 @@ public class IncomeContentIn {
     @JsonProperty(value="BoxTree")
     private IncomeContentBoxTreeIn[] boxTree;
 
-    public Integer getPosition() {
+    public String getPosition() {
         return position;
     }
 
-    public void setPosition(Integer position) {
+    public void setPosition(String position) {
         this.position = position;
     }
 
@@ -61,11 +61,11 @@ public class IncomeContentIn {
         this.capacity = capacity;
     }
 
-    public String getAlcVolume() {
+    public Double getAlcVolume() {
         return alcVolume;
     }
 
-    public void setAlcVolume(String alcVolume) {
+    public void setAlcVolume(Double alcVolume) {
         this.alcVolume = alcVolume;
     }
 
