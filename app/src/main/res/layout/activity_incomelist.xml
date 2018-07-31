@@ -8,6 +8,8 @@
             android:text="Выберите накладную для работы"
             android:textColor="@color/colorWarningLabel"
             android:background="@drawable/im_black"
+            android:gravity="center"
+            android:textSize="18dp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             />

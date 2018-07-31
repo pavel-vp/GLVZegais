@@ -21,6 +21,8 @@
 
                 <TextView
                         android:text="Введите Принимаемое количество в декалитрах и нажмите Добавить"
+                        android:gravity="center"
+                        android:textSize="18dp"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:textColor="@color/colorWarningLabel"

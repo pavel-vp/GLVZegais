@@ -6,7 +6,9 @@
 
     <TextView
             android:text="Сканируйте марку (или ШК коробки), или выберите позицию с пивом"
+            android:gravity="center"
             android:layout_width="match_parent"
+            android:textSize="18dp"
             android:layout_height="wrap_content"
             android:background="@drawable/im_black"
             android:textColor="@color/colorWarningLabel"

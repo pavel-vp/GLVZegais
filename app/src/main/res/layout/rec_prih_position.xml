@@ -8,6 +8,10 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="2dp"
+            android:background="#7a7a7a" />
 
         <LinearLayout
                 android:orientation="horizontal"

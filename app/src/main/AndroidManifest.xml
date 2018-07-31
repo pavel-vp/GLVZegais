@@ -36,7 +36,8 @@
                     android:resource="@xml/paths"/>
         </provider>
 
-        <activity android:name=".ui.ActWelcome">
+        <activity android:name=".ui.ActWelcome"
+                  android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
 
@@ -44,11 +45,11 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".ui.ActChooseShop"/>
-        <activity android:name=".ui.ActMainMenu"/>
-        <activity android:name=".ui.ActIncomeList"/>
-        <activity android:name=".ui.ActIncomeRec"/>
-        <activity android:name=".ui.ActIncomeRecContent"/>
+        <activity android:name=".ui.ActChooseShop" android:screenOrientation="portrait"/>
+        <activity android:name=".ui.ActMainMenu" android:screenOrientation="portrait"/>
+        <activity android:name=".ui.ActIncomeList" android:screenOrientation="portrait"/>
+        <activity android:name=".ui.ActIncomeRec" android:screenOrientation="portrait"/>
+        <activity android:name=".ui.ActIncomeRecContent" android:screenOrientation="portrait"/>
 
 
     </application>

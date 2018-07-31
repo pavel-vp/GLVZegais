@@ -107,7 +107,7 @@ public class IncomeArrayAdapter extends ArrayAdapter<IncomeRec> {
                     tvStatus.setTextColor(Color.RED);
                     break;
                 case DONE:
-                    tvStatus.setTextColor(Color.GREEN);
+                    tvStatus.setTextColor(Color.rgb(0,200,0));
                     break;
             }
             this.tvStatus.setText("Статус: " + incomeRec.getStatus().getMessage());

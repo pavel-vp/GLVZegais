@@ -12,7 +12,10 @@
     <TextView
             android:text="Выберите магазин"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" android:id="@+id/textView"/>
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:textSize="18dp"
+            android:id="@+id/textView"/>
     <TextView
             android:text="Не выбран"
             android:layout_width="match_parent"
