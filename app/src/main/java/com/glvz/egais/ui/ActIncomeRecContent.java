@@ -280,7 +280,7 @@ public class ActIncomeRecContent extends Activity implements BarcodeReader.Barco
         IncomeRecContent incomeRecContentLocal;
         switch (barCodeType) {
             case EAN13:
-                if (!this.isOpenByScan) {
+                if (!this.isOpenByScan && incomeRecContent.getPositionType() == IncomeRecContentPositionType.MARKED) {
                     MessageUtils.showModalMessage(this,"ВНИМАНИЕ!","Устанавливать связь со ШК можно только после сканирования марки");
                     break;
                 }
