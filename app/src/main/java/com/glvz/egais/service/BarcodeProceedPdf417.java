@@ -45,7 +45,7 @@ public class BarcodeProceedPdf417 extends BarcodeProceedBase {
                 // Проверить наличие на позиции ШК номенклатуры
                 if (incomeRecContent.getNomenIn() != null) {
                     // ШК Есть
-                    saveRecProceeded(incomeRec, incomeRecContent.getNomenIn());
+                    saveRecProceeded(incomeRec, incomeRecContent.getNomenIn(), incomeRecContent.getBarcode());
                 } else {
                     // пока не сохраняем
                 }
@@ -64,18 +64,18 @@ public class BarcodeProceedPdf417 extends BarcodeProceedBase {
             NomenIn nomenIn = DaoMem.getDaoMem().getDictionary().findNomenByBarcode(barcodeNomen);
             if (nomenIn == null)
                 throw new IllegalStateException("Товар с таким ШК не найден!");
-            saveRecProceeded(incomeRec, nomenIn);
+            saveRecProceeded(incomeRec, nomenIn, barcodeNomen);
         } else {
             throw new IllegalStateException("Сначала нужно сканировать марку!");
         }
         return true;
     }
 
-    private void saveRecProceeded(IncomeRec incomeRec, NomenIn nomenIn) {
+    private void saveRecProceeded(IncomeRec incomeRec, NomenIn nomenIn, String barcodeNomen) {
         // добавить марку в список принятых по позиции
         this.incomeRecContentProceeded.getIncomeRecContentMarkList().add(new IncomeRecContentMark(this.lastMark, IncomeRecContentMark.MARK_SCANNED_AS_MARK, this.lastMark));
         //добавить ШК номенклатуры в позицию
-        this.incomeRecContentProceeded.setNomenIn(nomenIn);
+        this.incomeRecContentProceeded.setNomenIn(nomenIn, barcodeNomen);
         this.incomeRecContentProceeded.setId1c(nomenIn.getId());
         //добавить в Принятое количество 1 шт.
         this.incomeRecContentProceeded.setQtyAccepted(this.incomeRecContentProceeded.getQtyAccepted() + 1);

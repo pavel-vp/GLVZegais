@@ -270,7 +270,7 @@ public class ActIncomeRecContent extends Activity implements BarcodeReader.Barco
 
 
     @Override
-    public void onBarcodeEvent(BarcodeReadEvent barcodeReadEvent) {
+    public void onBarcodeEvent(final BarcodeReadEvent barcodeReadEvent) {
         int addQty = this.lastMark != null ? 1 : 0;
         if (this.isBoxScanned && this.lastMark !=null) {
             addQty = DaoMem.getDaoMem().calculateQtyToAdd(this.incomeRec, this.incomeRecContent, this.lastMark);
@@ -291,7 +291,7 @@ public class ActIncomeRecContent extends Activity implements BarcodeReader.Barco
                 if (nomenIn == null) {
                     MessageUtils.showModalMessage(this, "ВНИМАНИЕ!","Штрихкод "+barcodeReadEvent.getBarcodeData()+" отсутствует в номенклатуре 1С. Прием этой позиции запрещен. Верните все бутылки этой позиции поставщику");
                     MessageUtils.playSound(R.raw.no_ean);
-                    incomeRecContent.setNomenIn(null);
+                    incomeRecContent.setNomenIn(null, null);
                     this.lastMark= null;
                     this.isBoxScanned = false;
                     proceedAddQtyInternal(0);
@@ -327,7 +327,7 @@ public class ActIncomeRecContent extends Activity implements BarcodeReader.Barco
                                     new DialogInterface.OnClickListener() {
                                         @Override
                                         public void onClick(DialogInterface dialog, int which) {
-                                            incomeRecContent.setNomenIn(nomenIn);
+                                            incomeRecContent.setNomenIn(nomenIn, barcodeReadEvent.getBarcodeData());
                                             proceedAddQtyInternal(finalAddQty);
                                             updateDisplayData();
                                         }
@@ -341,7 +341,7 @@ public class ActIncomeRecContent extends Activity implements BarcodeReader.Barco
                             );
                         } else {
                             // Если ШК товара найден в номенклатуре 1С - заполнить все надписи формы из номенклатуры 1С (код, наименование, ….)
-                            incomeRecContent.setNomenIn(nomenIn);
+                            incomeRecContent.setNomenIn(nomenIn, barcodeReadEvent.getBarcodeData());
                             proceedAddQtyInternal(addQty);
                         }
                     }

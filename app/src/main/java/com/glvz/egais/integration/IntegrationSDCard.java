@@ -3,6 +3,7 @@ package com.glvz.egais.integration;
 import android.media.MediaScannerConnection;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.glvz.egais.MainApp;
 import com.glvz.egais.integration.model.*;
 import com.glvz.egais.model.IncomeRec;
@@ -34,6 +35,7 @@ public class IntegrationSDCard implements Integration {
 
     public IntegrationSDCard(String basePath) {
         this.basePath = basePath;
+        objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
     }
 
     @Override
@@ -113,9 +115,10 @@ public class IntegrationSDCard implements Integration {
     @Override
     public void writeIncomeRec(String shopId, IncomeRec incomeRec) {
         File path = new File(basePath + "/" + SHOPS_DIR + "/" + shopId + "/" + OUT_DIR);
-            File file = new File(path, incomeRec.getWbRegId() + ".json");
+            File file = new File(path, incomeRec.getWbRegId() + "_out.json");
             try {
-                objectMapper.writeValue(file, incomeRec);
+                IncomeRecOutput out = incomeRec.formatAsOutput();
+                objectMapper.writeValue(file, out);
             } catch (IOException e) {
                 e.printStackTrace();
             }

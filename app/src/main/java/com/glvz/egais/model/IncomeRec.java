@@ -1,6 +1,7 @@
 package com.glvz.egais.model;
 
-import com.glvz.egais.integration.model.IncomeIn;
+import com.glvz.egais.dao.DaoMem;
+import com.glvz.egais.integration.model.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -77,6 +78,44 @@ public class IncomeRec {
         this.exported = exported;
     }
 
+
+    public IncomeRecOutput formatAsOutput() {
+        IncomeRecOutput rec = new IncomeRecOutput();
+        rec.setWbRegId(this.incomeIn.getWbRegId());
+        rec.setNumber(this.incomeIn.getNumber());
+        rec.setDate(this.incomeIn.getDate());
+        rec.setSkladID(this.incomeIn.getSkladID());
+        rec.setSkladName(this.incomeIn.getSkladName());
+        rec.setPostID(this.incomeIn.getPostID());
+        rec.setPostName(this.incomeIn.getPostName());
+        rec.setContent(new IncomeRecContentOutput[this.incomeIn.getContent().length]);
+        int idx = 0;
+        for (IncomeContentIn contentIn : this.incomeIn.getContent()) {
+            IncomeRecContentOutput contentOutput = new IncomeRecContentOutput();
+            contentOutput.setPosition(contentIn.getPosition());
+            contentOutput.setName(contentIn.getName());
+            contentOutput.setAlccode(contentIn.getAlccode());
+            contentOutput.setQty(contentIn.getQty());
+
+            IncomeRecContent recContent = DaoMem.getDaoMem().getIncomeRecContentByPosition(this, contentIn.getPosition());
+            contentOutput.setBarCode(recContent.getBarcode());
+            contentOutput.setQtyFact(recContent.getQtyAccepted());
+
+            contentOutput.setMarks(new IncomeContentMarkIn[recContent.getIncomeRecContentMarkList().size()]);
+            int idx2 = 0;
+            for (IncomeRecContentMark mark : recContent.getIncomeRecContentMarkList()) {
+                IncomeContentMarkIn markOutput = new IncomeContentMarkIn();
+                markOutput.setMark(mark.getMarkScanned());
+                markOutput.setBox(mark.getMarkScannedReal());
+                contentOutput.getMarks()[idx2] = markOutput;
+                idx2++;
+            }
+            contentOutput.setBoxTree(contentIn.getBoxTree());
+            rec.getContent()[idx] = contentOutput;
+            idx++;
+        }
+        return rec;
+    }
 
     @Override
     public String toString() {

@@ -14,6 +14,7 @@ public class IncomeRecContent {
     private IncomeRecContentStatus status = IncomeRecContentStatus.NOT_ENTERED;
     private String id1c; // кодсопоставленной записи 1с
     private NomenIn nomenIn; // ссылка на запись в 1с (сопоставленную)
+    private String barcode;
     private Double qtyAccepted;
     private List<IncomeRecContentMark> incomeRecContentMarkList = new ArrayList<>(); // список сканированных марок
 
@@ -69,8 +70,9 @@ public class IncomeRecContent {
         return nomenIn;
     }
 
-    public void setNomenIn(NomenIn nomenIn) {
+    public void setNomenIn(NomenIn nomenIn, String barcodeData) {
         this.nomenIn = nomenIn;
+        this.barcode = barcodeData;
         if (this.nomenIn == null) {
             this.id1c = null;
         } else {
@@ -93,6 +95,15 @@ public class IncomeRecContent {
     public void setIncomeRecContentMarkList(List<IncomeRecContentMark> incomeRecContentMarkList) {
         this.incomeRecContentMarkList = incomeRecContentMarkList;
     }
+
+    public String getBarcode() {
+        return barcode;
+    }
+
+    public void setBarcode(String barcode) {
+        this.barcode = barcode;
+    }
+
 
 
 }

@@ -29,6 +29,7 @@ public class DaoMem {
     private static final String KEY_STATUS = "status";
     private static final String KEY_EXPORTED = "exported";
     private static final String KEY_POS_ID1C = "pos_id1c";
+    private static final String KEY_POS_BARCODE = "pos_barcode";
     private static final String KEY_POS_STATUS = "pos_status";
     private static final String KEY_POS_QTYACCEPTED = "pos_qtyaccepted";
     private static final String KEY_POS_MARKSCANNED_CNT = "pos_markscanned_cnt";
@@ -135,7 +136,8 @@ public class DaoMem {
             IncomeRecContent incomeRecContent = new IncomeRecContent(incomeContentIn.getPosition(), incomeContentIn);
             // прочитать данные по строке локальные
             incomeRecContent.setId1c(sharedPreferences.getString(KEY_POS_ID1C+"_"+incomeRec.getWbRegId()+"_"+incomeContentIn.getPosition(), null));
-            incomeRecContent.setNomenIn(dictionary.findNomenById(incomeRecContent.getId1c()));
+            String barcode = sharedPreferences.getString(KEY_POS_BARCODE+"_"+incomeRec.getWbRegId()+"_"+incomeContentIn.getPosition(), null);
+            incomeRecContent.setNomenIn(dictionary.findNomenById(incomeRecContent.getId1c()), barcode);
             incomeRecContent.setStatus( IncomeRecContentStatus.valueOf(
                     sharedPreferences.getString(KEY_POS_STATUS+"_"+incomeRec.getWbRegId()+"_"+incomeContentIn.getPosition(), IncomeRecContentStatus.NOT_ENTERED.toString())));
             float qty = sharedPreferences.getFloat(KEY_POS_QTYACCEPTED+"_"+incomeRec.getWbRegId()+"_"+incomeContentIn.getPosition(), 0);
@@ -196,6 +198,7 @@ public class DaoMem {
     public void writeLocalDataIncomeRecContent(String wbRegId, IncomeRecContent incomeRecContent) {
         SharedPreferences.Editor ed = sharedPreferences.edit();
         ed.putString(KEY_POS_ID1C+"_"+wbRegId+"_"+incomeRecContent.getPosition(), incomeRecContent.getId1c());
+        ed.putString(KEY_POS_BARCODE+"_"+wbRegId+"_"+incomeRecContent.getPosition(), incomeRecContent.getBarcode());
         ed.putString(KEY_POS_STATUS+"_"+wbRegId+"_"+incomeRecContent.getPosition(), incomeRecContent.getStatus().toString());
         float qty = 0;
         if (incomeRecContent.getQtyAccepted() != null) {
@@ -376,7 +379,7 @@ public class DaoMem {
     public void rejectData(IncomeRec incomeRec) {
         // Пройтись по всем строкам, очистить связки с товаром и проставить везде нули
         for (IncomeRecContent irc : incomeRec.getIncomeRecContentList()) {
-            irc.setNomenIn(null);
+            irc.setNomenIn(null, null);
             irc.setQtyAccepted(Double.valueOf(0));
             irc.getIncomeRecContentMarkList().clear();
             irc.setStatus(IncomeRecContentStatus.REJECTED);
