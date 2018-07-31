@@ -39,7 +39,7 @@ public class ActChooseShop extends Activity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        BarcodeObject.delete();
+        //BarcodeObject.delete();
     }
 
 

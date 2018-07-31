@@ -48,7 +48,7 @@ public class ActWelcome extends Activity implements BarcodeReader.BarcodeListene
     @Override
     public void onResume() {
         super.onResume();
-        BarcodeObject.linkToListener(this);
+        //BarcodeObject.linkToListener(this);
     }
 
     @Override
