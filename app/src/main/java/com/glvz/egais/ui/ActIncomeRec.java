@@ -317,7 +317,7 @@ public class ActIncomeRec extends Activity implements BarcodeReader.BarcodeListe
             incomeRecContentMark.setMarkScannedReal(barcode);
             // возвращать управление - переходим в карточку позиции
             DaoMem.getDaoMem().writeLocalDataIncomeRec(incomeRec);
-            IncomeRecContent irc = DaoMem.getDaoMem().findIncomeRecContentByMark(incomeRec, barcode);
+            IncomeRecContent irc = DaoMem.getDaoMem().findIncomeRecContentByMarkScanned(incomeRec, barcode);
             return new ActionOnScanPDF417Wrapper(Collections.singletonList(irc), 0); // Просто возвращаем
         }
 
@@ -453,7 +453,7 @@ public class ActIncomeRec extends Activity implements BarcodeReader.BarcodeListe
             incomeRecContentMark.setMarkScannedReal(barcode);
             // переходим в карточку
             DaoMem.getDaoMem().writeLocalDataIncomeRec(incomeRec);
-            IncomeRecContent irc = DaoMem.getDaoMem().findIncomeRecContentByMark(incomeRec, barcode);
+            IncomeRecContent irc = DaoMem.getDaoMem().findIncomeRecContentByMarkScanned(incomeRec, barcode);
             return new ActionOnScanDataMatrixWrapper(irc,0);
         }
         // Проверить наличие ШК марки в ТТН ЕГАИС

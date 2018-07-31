@@ -457,6 +457,17 @@ public class DaoMem {
         return null;
     }
 
+    public IncomeRecContent findIncomeRecContentByMarkScanned(IncomeRec incomeRec, String barcode) {
+        for (IncomeRecContent incomeRecContent : incomeRec.getIncomeRecContentList()) {
+            for (IncomeRecContentMark incomeRecContentMark : incomeRecContent.getIncomeRecContentMarkList()) {
+                if (barcode.equals(incomeRecContentMark.getMarkScanned()) || barcode.equals(incomeRecContentMark.getMarkScannedReal())){
+                    return incomeRecContent;
+                }
+            }
+        }
+        return null;
+    }
+
     public static class MarkInBox {
         public IncomeContentMarkIn icm;
         public int level;
