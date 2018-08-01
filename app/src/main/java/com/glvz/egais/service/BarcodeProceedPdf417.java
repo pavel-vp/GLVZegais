@@ -24,7 +24,7 @@ public class BarcodeProceedPdf417 extends BarcodeProceedBase {
         // алкокод
         String alcCode = BarcodeObject.extractAlcode(mark);
         // Найти этот алкокод в накладной
-        List<IncomeRecContent> incomeRecContentList = DaoMem.getDaoMem().findIncomeRecContentListByAlcocode(incomeRec, alcCode);
+        List<IncomeRecContent> incomeRecContentList = DaoMem.getDaoMem().findIncomeRecContentListByAlcocodeNotDone(incomeRec, alcCode);
         if (incomeRecContentList.size() == 0)
             throw new IllegalStateException("Не нашли алкокод накладной!");
 

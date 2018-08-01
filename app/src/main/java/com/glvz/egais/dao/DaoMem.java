@@ -278,16 +278,27 @@ public class DaoMem {
         return null; // ничего не нашли - не сканирован
     }
 
-    // Найти позиции по алкокоду (может быть несколько)
-    public List<IncomeRecContent> findIncomeRecContentListByAlcocode(IncomeRec incomeRec, String alcocode) {
+    // Найти непринятные позиции по алкокоду (может быть несколько)
+    public List<IncomeRecContent> findIncomeRecContentListByAlcocodeNotDone(IncomeRec incomeRec, String alcocode) {
         List<IncomeRecContent> result = new ArrayList<>();
         // пройтись по каждой позиции
         for (IncomeRecContent incomeRecContent : incomeRec.getIncomeRecContentList()) {
             //
-            if (alcocode != null && alcocode.equals(incomeRecContent.getIncomeContentIn().getAlccode()) ) {
+            if (alcocode != null && alcocode.equals(incomeRecContent.getIncomeContentIn().getAlccode())
+                    && (incomeRecContent.getQtyAccepted() == null || incomeRecContent.getQtyAccepted() < incomeRecContent.getIncomeContentIn().getQty() ) ) {
                 result.add(incomeRecContent);
             }
         }
+        // Если позиций в списке более 1 - попытаться свернуть по датам
+        if (result.size() > 1) {
+            Map<String, IncomeRecContent> mapDate = new HashMap<>();
+            for (IncomeRecContent irc : result) {
+                mapDate.put(irc.getIncomeContentIn().getBottlingDate(), irc);
+            }
+            result.clear();
+            result.addAll(mapDate.values());
+        }
+
         return result;
     }
 

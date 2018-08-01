@@ -327,7 +327,7 @@ public class ActIncomeRec extends Activity implements BarcodeReader.BarcodeListe
             // самой марки нет вообще - поищем алкокод
             String alcocode = BarcodeObject.extractAlcode(barcode);
             // определить количество строк в ТТН ЕГАИС с таким алкокодом и принятых не полностью.
-            List<IncomeRecContent> incomeRecContentList = DaoMem.getDaoMem().findIncomeRecContentListByAlcocode(incomeRec, alcocode);
+            List<IncomeRecContent> incomeRecContentList = DaoMem.getDaoMem().findIncomeRecContentListByAlcocodeNotDone(incomeRec, alcocode);
             if (incomeRecContentList.size() == 0 ) {
                 MessageUtils.showToastMessage("Продукция с алкокодом %s отсутствует в ТТН поставщика. Принимать бутылку нельзя, верните поставщику!", alcocode);
                 return null;
@@ -337,7 +337,7 @@ public class ActIncomeRec extends Activity implements BarcodeReader.BarcodeListe
                 //определить позицию в ТТН ЕГАИС и принятое по ней количество
                 //Если [Количество по ТТН] = [Принятое количество]
                 if (incomeRecContent.getQtyAccepted() != null && incomeRecContent.getQtyAccepted().equals(incomeRecContent.getIncomeContentIn().getQty())) {
-                    MessageUtils.showModalMessage(activity,"Внимание","По позиции номер: %d, алкокод: %s, (%s) уже принято полное количество %s. Сканированная бутылка лишняя, принимать нельзя. Верните поставщику!",
+                    MessageUtils.showModalMessage(activity,"Внимание","По позиции номер: %s, алкокод: %s, (%s) уже принято полное количество %s. Сканированная бутылка лишняя, принимать нельзя. Верните поставщику!",
                             incomeRecContent.getPosition(),
                             alcocode,
                             incomeRecContent.getIncomeContentIn().getName(),
@@ -418,7 +418,7 @@ public class ActIncomeRec extends Activity implements BarcodeReader.BarcodeListe
             return null;
 
         String alcocode = BarcodeObject.extractAlcode(barcode);
-        List<IncomeRecContent> incomeRecContentList = DaoMem.getDaoMem().findIncomeRecContentListByAlcocode(incomeRec, alcocode);
+        List<IncomeRecContent> incomeRecContentList = DaoMem.getDaoMem().findIncomeRecContentListByAlcocodeNotDone(incomeRec, alcocode);
         // пройтись по списку, найти запись (не оригинальную), которая еще не принята
         for (IncomeRecContent irc : incomeRecContentList) {
             if (!irc.getPosition().equals(originalIncomeRecContent.getPosition()) // Не эта позиция

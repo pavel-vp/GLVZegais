@@ -87,7 +87,7 @@ public class ActIncomeRecContent extends Activity implements BarcodeReader.Barco
                     incomeRecContent.getIncomeContentIn().getQty().compareTo(incomeRecContent.getQtyAccepted()) <= 0) {
                 if (!this.isBoxScanned) {
                     String alcocode = BarcodeObject.extractAlcode(this.lastMark);
-                    MessageUtils.showModalMessage(this, "Внимание!","По позиции номер: %d, алкокод: %s, (%s) уже принято полное количество %s. Сканированная бутылка лишняя, принимать нельзя. Верните поставщику!",
+                    MessageUtils.showModalMessage(this, "Внимание!","По позиции номер: %s, алкокод: %s, (%s) уже принято полное количество %s. Сканированная бутылка лишняя, принимать нельзя. Верните поставщику!",
                             incomeRecContent.getPosition(),
                             alcocode,
                             incomeRecContent.getIncomeContentIn().getName(),
