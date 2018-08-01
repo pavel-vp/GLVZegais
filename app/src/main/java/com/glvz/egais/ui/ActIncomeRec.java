@@ -364,6 +364,7 @@ public class ActIncomeRec extends Activity implements BarcodeReader.BarcodeListe
                     String markToTransfer = dataToTransfer.incomeRecContentMark.getMarkScanned();
                     //  Текущую марку привязать к текущей позиции (без изменения в ней принятого количества).
                     dataToTransfer.incomeRecContentMark.setMarkScanned(barcode);
+                    dataToTransfer.incomeRecContentMark.setMarkScannedReal(barcode);
                     //dataToTransfer.incomeRecContent.getIncomeRecContentMarkList().add(new IncomeRecContentMark(markToTransfer, IncomeRecContentMark.MARK_SCANNED_AS_MARK));
                     //DaoMem.getDaoMem().writeLocalDataIncomeRec(incomeRec);
                     //  Завершить обработку марки  (выход на следующее сканирование). Перебрасываем на форму карточки той, куда перекинули марку
