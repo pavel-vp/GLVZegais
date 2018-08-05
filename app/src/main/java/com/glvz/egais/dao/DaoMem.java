@@ -426,17 +426,13 @@ public class DaoMem {
         return result;
     }
 
-    public int getVersion() {
-        return BuildConfig.VERSION_CODE;
-    }
-
     public void checkIsNeedToUpdate(Activity activity) {
         // Проверить есть ли файл
         File fileToUpdate = integrationFile.loadNewApk();
         if (fileToUpdate.exists()) {
             final PackageManager pm = MainApp.getContext().getPackageManager();
             PackageInfo newInfo = pm.getPackageArchiveInfo(fileToUpdate.getAbsolutePath(), PackageManager.GET_META_DATA);
-            if (newInfo.versionCode > getVersion()) {
+            if (newInfo.versionCode > BuildConfig.VERSION_CODE) {
                 // запрос обновления
 
 
