@@ -92,6 +92,8 @@ public class ActIncomeRec extends Activity implements BarcodeReader.BarcodeListe
                             public void onClick(DialogInterface dialog, int which) {
                                 DaoMem.getDaoMem().rejectData(incomeRec);
                                 MessageUtils.showToastMessage("По всей накладной в приемке отказано!");
+                                cbFilter.setChecked(false);
+                                DaoMem.getDaoMem().writeFilterOnIncomeRec(incomeRec, cbFilter.isChecked());
                                 updateData();
                             }
                 });
@@ -110,9 +112,12 @@ public class ActIncomeRec extends Activity implements BarcodeReader.BarcodeListe
         cbFilter.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                DaoMem.getDaoMem().writeFilterOnIncomeRec(incomeRec, cbFilter.isChecked());
                 ActIncomeRec.this.updateData();
             }
         });
+        cbFilter.setChecked(DaoMem.getDaoMem().readFilterOnIncomeRec(incomeRec));
+
 
         lvContent = (ListView) findViewById(R.id.lvContent);
 

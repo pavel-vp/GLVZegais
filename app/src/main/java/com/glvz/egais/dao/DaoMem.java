@@ -28,6 +28,7 @@ public class DaoMem {
     private static final String KEY_CNTDONE = "cntdone";
     private static final String KEY_STATUS = "status";
     private static final String KEY_EXPORTED = "exported";
+    private static final String KEY_FILTER = "incomefilter";
     private static final String KEY_POS_ID1C = "pos_id1c";
     private static final String KEY_POS_BARCODE = "pos_barcode";
     private static final String KEY_POS_STATUS = "pos_status";
@@ -480,6 +481,17 @@ public class DaoMem {
             }
         }
         return null;
+    }
+
+    public boolean readFilterOnIncomeRec(IncomeRec incomeRec) {
+        boolean filter = sharedPreferences.getBoolean(KEY_FILTER+"_"+incomeRec.getWbRegId(), true);
+        return filter;
+    }
+
+    public void writeFilterOnIncomeRec(IncomeRec incomeRec, boolean checked) {
+        SharedPreferences.Editor ed = sharedPreferences.edit();
+        ed.putBoolean(KEY_FILTER+"_"+incomeRec.getWbRegId(), checked);
+        ed.apply();
     }
 
     public static class MarkInBox {
