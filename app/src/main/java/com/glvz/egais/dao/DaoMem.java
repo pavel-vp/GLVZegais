@@ -494,6 +494,15 @@ public class DaoMem {
         ed.apply();
     }
 
+    public boolean checkIncomeRecZeroQtyFact(IncomeRec incomeRec) {
+        for (IncomeRecContent irc : incomeRec.getIncomeRecContentList()) {
+            if (irc.getQtyAccepted() != null && irc.getQtyAccepted() > 0) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     public static class MarkInBox {
         public IncomeContentMarkIn icm;
         public int level;

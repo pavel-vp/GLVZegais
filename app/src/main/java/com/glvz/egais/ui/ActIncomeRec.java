@@ -77,6 +77,13 @@ public class ActIncomeRec extends Activity implements BarcodeReader.BarcodeListe
         // Операции для выбранного пункта меню
         switch (id) {
             case R.id.action_export:
+                // Если накладная новая или количесвто факт по всем строкам - 0, то поставить статус отказа
+                if (incomeRec.getStatus() == IncomeRecStatus.NEW ||
+                        DaoMem.getDaoMem().checkIncomeRecZeroQtyFact(incomeRec)) {
+                    DaoMem.getDaoMem().rejectData(incomeRec);
+                    cbFilter.setChecked(false);
+                    DaoMem.getDaoMem().writeFilterOnIncomeRec(incomeRec, cbFilter.isChecked());
+                }
                 boolean success = DaoMem.getDaoMem().exportData(incomeRec);
                 if (success) {
                     MessageUtils.showToastMessage("Накладная выгружена!");
