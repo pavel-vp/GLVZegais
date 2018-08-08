@@ -19,6 +19,8 @@ public interface Integration {
 
     List<UserIn> loadUsers();
 
+    void initDirectories(String shopId);
+
     List<IncomeIn> loadIncome(String shopId);
 
     void writeIncomeRec(String shopId, IncomeRec incomeRec);

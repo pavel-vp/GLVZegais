@@ -95,6 +95,15 @@ public class IntegrationSDCard implements Integration {
     }
 
     @Override
+    public void initDirectories(String shopId) {
+        File path = new File(basePath + "/" + SHOPS_DIR + "/" + shopId + "/" + IN_DIR);
+        path.mkdirs();
+        path = new File(basePath + "/" + SHOPS_DIR + "/" + shopId + "/" + OUT_DIR);
+        path.mkdirs();
+
+    }
+
+    @Override
     public List<IncomeIn> loadIncome(String shopId) {
         List<IncomeIn> listIncomeIn = new ArrayList<>();
         File path = new File(basePath + "/" + SHOPS_DIR + "/" + shopId + "/" + IN_DIR);
@@ -115,7 +124,7 @@ public class IntegrationSDCard implements Integration {
     @Override
     public void writeIncomeRec(String shopId, IncomeRec incomeRec) {
         File path = new File(basePath + "/" + SHOPS_DIR + "/" + shopId + "/" + OUT_DIR);
-            File file = new File(path, incomeRec.getWbRegId() + "_out.json");
+        File file = new File(path, incomeRec.getWbRegId() + "_out.json");
             try {
                 IncomeRecOutput out = incomeRec.formatAsOutput();
                 objectMapper.writeValue(file, out);

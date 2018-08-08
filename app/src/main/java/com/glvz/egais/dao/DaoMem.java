@@ -106,6 +106,7 @@ public class DaoMem {
     }
 
     public void initDocuments() {
+        integrationFile.initDirectories(shopId);
         listIncomeIn = integrationFile.loadIncome(shopId);
         document = new DocumentMem(listIncomeIn);
 
