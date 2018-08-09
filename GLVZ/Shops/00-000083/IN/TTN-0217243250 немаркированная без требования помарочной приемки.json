@@ -1,0 +1,53 @@
+{
+ "WBRegId": "TTN-0217243250",
+ "NUMBER": "ЯО00006768",
+ "Date": "2018-07-23T00:00:00",
+ "SkladID": "00-000168",
+ "SkladName": "Магазин №22 (Р) Репина",
+ "PostID": "030000308696",
+ "PostName": "ООО Янтарь Опт",
+ "Content": [
+  {
+   "position": "1",
+   "alccode": "0034316000001826791",
+   "name": "Пивной напиток фильтрованный непастеризованный \"Трифон Kriek\"",
+   "Capacity": 0.5,
+   "AlcVolume": 4.5,
+   "QTY": 20,
+   "Price": 49.7,
+   "BottlingDate": "2018-04-30",
+   "Marked": 0,
+   "QTYDirectInput": 1,
+   "MarkInfo": [],
+   "BoxTree": []
+  },
+  {
+   "position": "2",
+   "alccode": "0034316000001234363",
+   "name": "Пиво светлое \"Вятич Бочковое\"",
+   "Capacity": 1.5,
+   "AlcVolume": 4.5,
+   "QTY": 30,
+   "Price": 94.7,
+   "BottlingDate": "2018-05-22",
+   "Marked": 0,
+   "QTYDirectInput": 1,
+   "MarkInfo": [],
+   "BoxTree": []
+  },
+  {
+   "position": "3",
+   "alccode": "0034316000001234052",
+   "name": "Пиво светлое \"Вятич классическое\"",
+   "Capacity": 1.5,
+   "AlcVolume": 4.9,
+   "QTY": 30,
+   "Price": 84.2,
+   "BottlingDate": "2018-07-01",
+   "Marked": 0,
+   "QTYDirectInput": 1,
+   "MarkInfo": [],
+   "BoxTree": []
+  }
+ ]
+}

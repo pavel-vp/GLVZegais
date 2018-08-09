@@ -255,7 +255,14 @@ public class ActIncomeRecContent extends Activity implements BarcodeReader.Barco
                         if (incomeRecContent.getNomenIn() == null) {
                             tvAction.setText("Сканируйте ШК");
                         } else {
-                            tvAction.setText("Сканируйте марки со всех бутылок этой позиции");
+                            if (incomeRecContent.getIncomeContentIn().getQtyDirectInput() == 1) {
+                                tvAction.setText("Введите принимаемое количество");
+                                etQtyAccepted.setEnabled(true);
+                                llAccepted.setVisibility(View.VISIBLE);
+                                btnAdd.setEnabled(true);
+                            } else {
+                                tvAction.setText("Сканируйте марки со всех бутылок этой позиции");
+                            }
                         }
                 }
                 int countToAddInFuture = 0;

@@ -24,6 +24,8 @@ public class IncomeContentIn {
     private String bottlingDate;
     @JsonProperty(value="Marked")
     private Integer marked;
+    @JsonProperty(value="QTYDirectInput")
+    private Integer qtyDirectInput;
     @JsonProperty(value="MarkInfo")
     private IncomeContentMarkIn[] markInfo;
     @JsonProperty(value="BoxTree")
@@ -118,18 +120,28 @@ public class IncomeContentIn {
         this.boxTree = boxTree;
     }
 
+
+    public Integer getQtyDirectInput() {
+        return qtyDirectInput;
+    }
+
+    public void setQtyDirectInput(Integer qtyDirectInput) {
+        this.qtyDirectInput = qtyDirectInput;
+    }
+
     @Override
     public String toString() {
         return "IncomeContentIn{" +
-                "position=" + position +
+                "position='" + position + '\'' +
                 ", alccode='" + alccode + '\'' +
                 ", name='" + name + '\'' +
-                ", capacity='" + capacity + '\'' +
-                ", alcVolume='" + alcVolume + '\'' +
+                ", capacity=" + capacity +
+                ", alcVolume=" + alcVolume +
                 ", qty=" + qty +
                 ", price=" + price +
                 ", bottlingDate='" + bottlingDate + '\'' +
                 ", marked=" + marked +
+                ", qtyDirectInput=" + qtyDirectInput +
                 ", markInfo=" + Arrays.toString(markInfo) +
                 ", boxTree=" + Arrays.toString(boxTree) +
                 '}';

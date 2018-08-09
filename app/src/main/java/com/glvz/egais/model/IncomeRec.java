@@ -100,6 +100,7 @@ public class IncomeRec {
             IncomeRecContent recContent = DaoMem.getDaoMem().getIncomeRecContentByPosition(this, contentIn.getPosition());
             contentOutput.setBarCode(recContent.getBarcode());
             contentOutput.setQtyFact(recContent.getQtyAccepted());
+            contentOutput.setQtyDirectInput(recContent.getIncomeContentIn().getQtyDirectInput());
 
             contentOutput.setMarks(new IncomeContentMarkIn[recContent.getIncomeRecContentMarkList().size()]);
             int idx2 = 0;

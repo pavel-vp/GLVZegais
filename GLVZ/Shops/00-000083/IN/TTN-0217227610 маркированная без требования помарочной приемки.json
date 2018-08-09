@@ -1,7 +1,7 @@
 {
  "WBRegId": "TTN-0217227610_1",
- "NUMBER": "СЕ000014264_1",
- "Date": "2018-07-23T12:05:09",
+ "NUMBER": "00000030541_1",
+ "Date": "2018-07-23T00:00:00",
  "SkladID": "00-000168",
  "SkladName": "Магазин №22 (Р) Репина",
  "PostID": "010000004469",
@@ -13,28 +13,16 @@
    "name": "Водка особая \"Глазов\"",
    "Capacity": 0.5,
    "AlcVolume": 40,
-   "QTY": 2,
+   "QTY": 120,
    "Price": 173,
    "BottlingDate": "2018-07-13",
    "Marked": 1,
+   "QTYDirectInput": 1,
    "MarkInfo": [],
    "BoxTree": []
   },
   {
    "position": "002",
-   "alccode": "0011813000001189001",
-   "name": "Водка особая \"Глазов\"",
-   "Capacity": 0.5,
-   "AlcVolume": 40,
-   "QTY": 1,
-   "Price": 173,
-   "BottlingDate": "2018-07-13",
-   "Marked": 1,
-   "MarkInfo": [],
-   "BoxTree": []
-  },
-  {
-   "position": "003",
    "alccode": "0011813000001188942",
    "name": "Водка \"Глазовская классическая\"",
    "Capacity": 0.5,
@@ -43,11 +31,12 @@
    "Price": 175.77,
    "BottlingDate": "2018-07-03",
    "Marked": 1,
+   "QTYDirectInput": 1,
    "MarkInfo": [],
    "BoxTree": []
   },
   {
-   "position": "004",
+   "position": "003",
    "alccode": "0011813000001189042",
    "name": "Водка \"Калашников\"",
    "Capacity": 0.7,
@@ -56,6 +45,7 @@
    "Price": 250,
    "BottlingDate": "2018-05-21",
    "Marked": 1,
+   "QTYDirectInput": 1,
    "MarkInfo": [],
    "BoxTree": []
   }

@@ -17,6 +17,8 @@ public class IncomeRecContentOutput implements Serializable {
     private Double qtyFact;
     @JsonProperty(value="BarCode")
     private String barCode;
+    @JsonProperty(value="QTYDirectInput")
+    private Integer qtyDirectInput;
     @JsonProperty(value="Marks")
     private IncomeContentMarkIn[] marks;
     @JsonProperty(value="BoxTree")
@@ -85,4 +87,13 @@ public class IncomeRecContentOutput implements Serializable {
     public void setBoxTree(IncomeContentBoxTreeIn[] boxTree) {
         this.boxTree = boxTree;
     }
+
+    public Integer getQtyDirectInput() {
+        return qtyDirectInput;
+    }
+
+    public void setQtyDirectInput(Integer qtyDirectInput) {
+        this.qtyDirectInput = qtyDirectInput;
+    }
+
 }
