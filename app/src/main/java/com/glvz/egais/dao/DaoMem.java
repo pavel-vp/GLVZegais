@@ -422,7 +422,7 @@ public class DaoMem {
                 }
             }
         } else {
-            result = barcode == null ? 0 : 1; // все проверки должны быть выполнены до
+            result = (barcode == null) || incomeRecContent.getIncomeContentIn().getQtyDirectInput() == 1 ? 0 : 1; // все проверки должны быть выполнены до
         }
         return result;
     }
