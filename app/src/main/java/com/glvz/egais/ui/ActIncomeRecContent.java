@@ -337,6 +337,9 @@ public class ActIncomeRecContent extends Activity implements BarcodeReader.Barco
                                             incomeRecContent.setNomenIn(nomenIn, barcodeReadEvent.getBarcodeData());
                                             proceedAddQtyInternal(finalAddQty);
                                             updateDisplayData();
+                                            if (incomeRecContent.getIncomeContentIn().getQtyDirectInput() == 1) {
+                                                MessageUtils.playSound(R.raw.enter_qty);
+                                            }
                                         }
                                     },
                                     incomeRecContent.getIncomeContentIn().getName(),
@@ -350,6 +353,9 @@ public class ActIncomeRecContent extends Activity implements BarcodeReader.Barco
                             // Если ШК товара найден в номенклатуре 1С - заполнить все надписи формы из номенклатуры 1С (код, наименование, ….)
                             incomeRecContent.setNomenIn(nomenIn, barcodeReadEvent.getBarcodeData());
                             proceedAddQtyInternal(addQty);
+                            if (incomeRecContent.getIncomeContentIn().getQtyDirectInput() == 1) {
+                                MessageUtils.playSound(R.raw.enter_qty);
+                            }
                         }
                     }
                 }
