@@ -70,7 +70,13 @@ public class ActIncomeRecContent extends Activity implements BarcodeReader.Barco
         this.lastMark = barcode;
 
         boolean checkMark = addQty > 0 && checkQtyOnLastMark();
-        if (checkMark && this.incomeRecContent.getNomenIn() != null && (addQty != 0 )) {
+        if (this.incomeRecContent.getNomenIn() != null)  {
+            if (this.incomeRecContent.getIncomeContentIn().getQtyDirectInput() == 1) {
+                addQty = 0;
+                MessageUtils.playSound(R.raw.enter_qty);
+            }
+        }
+        if (checkMark && this.incomeRecContent.getNomenIn() != null  ) {
             // Если товар сопоставлен - сохраняем сразу
             proceedAddQtyInternal(addQty);
         }
@@ -321,7 +327,7 @@ public class ActIncomeRecContent extends Activity implements BarcodeReader.Barco
                     } else {
                         // Если новый товар 1с отличается от того что был - запросить подтверждение
                         if (incomeRecContent.getNomenIn() != null && !incomeRecContent.getNomenIn().getId().equals(nomenIn.getId())) {
-                            final int finalAddQty = addQty;
+                            final int[] finalAddQty = {addQty};
                             MessageUtils.ShowModalAndConfirm(this, "ВНИМАНИЕ!", "Сопоставить с товаром?\n " +
                                             "ЕГАИС:\n" +
                                             "Наименование: %s\n" +
@@ -335,11 +341,12 @@ public class ActIncomeRecContent extends Activity implements BarcodeReader.Barco
                                         @Override
                                         public void onClick(DialogInterface dialog, int which) {
                                             incomeRecContent.setNomenIn(nomenIn, barcodeReadEvent.getBarcodeData());
-                                            proceedAddQtyInternal(finalAddQty);
-                                            updateDisplayData();
                                             if (incomeRecContent.getIncomeContentIn().getQtyDirectInput() == 1) {
                                                 MessageUtils.playSound(R.raw.enter_qty);
+                                                finalAddQty[0] = 0;
                                             }
+                                            proceedAddQtyInternal(finalAddQty[0]);
+                                            updateDisplayData();
                                         }
                                     },
                                     incomeRecContent.getIncomeContentIn().getName(),
@@ -352,10 +359,11 @@ public class ActIncomeRecContent extends Activity implements BarcodeReader.Barco
                         } else {
                             // Если ШК товара найден в номенклатуре 1С - заполнить все надписи формы из номенклатуры 1С (код, наименование, ….)
                             incomeRecContent.setNomenIn(nomenIn, barcodeReadEvent.getBarcodeData());
-                            proceedAddQtyInternal(addQty);
                             if (incomeRecContent.getIncomeContentIn().getQtyDirectInput() == 1) {
                                 MessageUtils.playSound(R.raw.enter_qty);
+                                addQty = 0;
                             }
+                            proceedAddQtyInternal(addQty);
                         }
                     }
                 }
@@ -446,6 +454,9 @@ public class ActIncomeRecContent extends Activity implements BarcodeReader.Barco
         boolean resCheck = addQty > 0 && checkQtyOnLastMark();
         if (resCheck && this.incomeRecContent.getNomenIn() != null) {
             // Если товар сопоставлен - сохраняем сразу
+            if (this.incomeRecContent.getIncomeContentIn().getQtyDirectInput() == 1) {
+                addQty = 0;
+            }
             proceedAddQtyInternal(addQty);
         }
 
@@ -453,6 +464,10 @@ public class ActIncomeRecContent extends Activity implements BarcodeReader.Barco
         this.isOpenByScan = true;
         if (this.incomeRecContent.getNomenIn() == null) {
             MessageUtils.playSound(R.raw.scan_ean);
+        } else {
+            if (this.incomeRecContent.getIncomeContentIn().getQtyDirectInput() == 1) {
+                MessageUtils.playSound(R.raw.enter_qty);
+            }
         }
     }
 

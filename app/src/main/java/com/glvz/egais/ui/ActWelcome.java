@@ -97,8 +97,8 @@ public class ActWelcome extends Activity implements BarcodeReader.BarcodeListene
 
     @Override
     public void onPause() {
-        super.onPause();
         BarcodeObject.unLinkFromListener(this);
+        super.onPause();
     }
 
     @Override
