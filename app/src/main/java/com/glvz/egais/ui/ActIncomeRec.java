@@ -348,7 +348,8 @@ public class ActIncomeRec extends Activity implements BarcodeReader.BarcodeListe
                 incomeRecContent = incomeRecContentList.get(0);
                 //определить позицию в ТТН ЕГАИС и принятое по ней количество
                 //Если [Количество по ТТН] = [Принятое количество]
-                if (incomeRecContent.getQtyAccepted() != null && incomeRecContent.getQtyAccepted().equals(incomeRecContent.getIncomeContentIn().getQty())) {
+                if (incomeRecContent.getQtyAccepted() != null && incomeRecContent.getQtyAccepted().equals(incomeRecContent.getIncomeContentIn().getQty()) &&
+                        incomeRecContent.getIncomeContentIn().getQtyDirectInput() == 0) {
                     MessageUtils.showModalMessage(activity,"Внимание","По позиции номер: %s, алкокод: %s, (%s) уже принято полное количество %s. Сканированная бутылка лишняя, принимать нельзя. Верните поставщику!",
                             incomeRecContent.getPosition(),
                             alcocode,
