@@ -26,4 +26,6 @@ public interface Integration {
     void writeIncomeRec(String shopId, IncomeRec incomeRec);
 
     File loadNewApk();
+
+    void clearOldData(int numDaysOld);
 }

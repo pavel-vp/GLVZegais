@@ -7,9 +7,13 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.glvz.egais.MainApp;
 import com.glvz.egais.integration.model.*;
 import com.glvz.egais.model.IncomeRec;
+import com.glvz.egais.utils.StringUtils;
 
 import java.io.*;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -139,6 +143,64 @@ public class IntegrationSDCard implements Integration {
         File path = new File(basePath + "/" + APK_DIR);
         File file = new File(path, APK_FILE );
         return file;
+    }
+
+    private void listf(String directoryName, List<File> files) {
+        File directory = new File(directoryName);
+
+        // Get all the files from a directory.
+        File[] fList = directory.listFiles();
+        if(fList != null) {
+            for (File file : fList) {
+                if (file.isFile()) {
+                    files.add(file);
+                } else if (file.isDirectory()) {
+                    listf(file.getAbsolutePath(), files);
+                }
+            }
+        }
+    }
+
+    @Override
+    public void clearOldData(int numDaysOld) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.add(Calendar.DAY_OF_MONTH, - numDaysOld);
+        // Взять все файлы из директории
+        List<File> files = new ArrayList<>();
+        listf(basePath + "/" + SHOPS_DIR, files);
+        for (File file : files) {
+            boolean toDelete = false;
+            // Если это приход
+            if (file.getAbsolutePath().contains("/" + IN_DIR + "/")) {
+                try {
+                    IncomeIn incomeIn = objectMapper.readValue(file, IncomeIn.class);
+                    Date d = StringUtils.jsonStringToDate(incomeIn.getDate());
+                    if (d.before(calendar.getTime())) {
+                        toDelete = true;
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    toDelete = true;
+                }
+            }
+            // Если это экспорт
+            if (file.getAbsolutePath().contains("/" + OUT_DIR + "/")) {
+                try {
+                    IncomeRecOutput incomeRecOutput = objectMapper.readValue(file, IncomeRecOutput.class);
+                    Date d = StringUtils.jsonStringToDate(incomeRecOutput.getDate());
+                    if (d.before(calendar.getTime())) {
+                        toDelete = true;
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    toDelete = true;
+                }
+            }
+            if (toDelete) {
+                file.delete();
+            }
+        }
+
     }
 
 }
