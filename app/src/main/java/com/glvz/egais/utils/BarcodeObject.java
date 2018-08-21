@@ -9,9 +9,32 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
-public class BarcodeObject {
+public class BarcodeObject implements BarcodeReader.BarcodeListener {
+
+    private static BarcodeObject barcodeObject;
+
+    public static BarcodeObject getInstance() {
+        if (barcodeObject == null) {
+            barcodeObject = new BarcodeObject();
+        }
+        return barcodeObject;
+    }
+
     private static BarcodeReader barcodeReader;
     private static AidcManager manager;
+    private static BarcodeReader.BarcodeListener currentListener;
+
+    @Override
+    public void onBarcodeEvent(BarcodeReadEvent barcodeReadEvent) {
+        if (currentListener != null) {
+            currentListener.onBarcodeEvent(barcodeReadEvent);
+        }
+    }
+
+    @Override
+    public void onFailureEvent(BarcodeFailureEvent barcodeFailureEvent) {
+
+    }
 
     public enum BarCodeType {
         EAN13, PDF417, DATAMATRIX, CODE128, UNSUPPORTED
@@ -22,7 +45,7 @@ public class BarcodeObject {
         void afterCreate();
     }
 
-    public static void create(Context context, final CallbackAfterCreateBarcodeReader callbackAfterCreateBarcodeReader) {
+    public static void create(Context context) {
         // create the AidcManager providing a Context and a
         // CreatedCallback implementation.
         AidcManager.create(context, new AidcManager.CreatedCallback() {
@@ -31,7 +54,7 @@ public class BarcodeObject {
             public void onCreated(AidcManager aidcManager) {
                 manager = aidcManager;
                 barcodeReader = manager.createBarcodeReader();
-                callbackAfterCreateBarcodeReader.afterCreate();
+                linkToListener(getInstance());
             }
         });
 
@@ -153,5 +176,10 @@ public class BarcodeObject {
         }
         return String.format("%019d", result);
     }
+
+    public static void setCurrentListener(BarcodeReader.BarcodeListener listener) {
+        currentListener = listener;
+    }
+
 
 }

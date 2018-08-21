@@ -70,13 +70,13 @@ public class ActIncomeList extends Activity implements BarcodeReader.BarcodeList
     public void onResume() {
         super.onResume();
         updateList();
-        BarcodeObject.linkToListener(this);
+        BarcodeObject.setCurrentListener(this);
     }
 
     @Override
     public void onPause() {
         super.onPause();
-        BarcodeObject.unLinkFromListener(this);
+        BarcodeObject.setCurrentListener(null);
     }
 
     @Override

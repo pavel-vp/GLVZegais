@@ -44,6 +44,7 @@
         <activity android:name=".ui.ActIncomeList" android:screenOrientation="portrait"/>
         <activity android:name=".ui.ActIncomeRec" android:screenOrientation="portrait"/>
         <activity android:name=".ui.ActIncomeRecContent" android:screenOrientation="portrait"/>
+        <activity android:name=".ui.ActDummy" android:screenOrientation="portrait"/>
 
 
     </application>

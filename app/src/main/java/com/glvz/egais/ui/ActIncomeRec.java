@@ -168,14 +168,14 @@ public class ActIncomeRec extends Activity implements BarcodeReader.BarcodeListe
     @Override
     public void onResume() {
         super.onResume();
-        BarcodeObject.linkToListener(this);
+        BarcodeObject.setCurrentListener(this);
         updateData();
     }
 
     @Override
     public void onPause() {
         super.onPause();
-        BarcodeObject.unLinkFromListener(this);
+        BarcodeObject.setCurrentListener(null);
     }
 
 

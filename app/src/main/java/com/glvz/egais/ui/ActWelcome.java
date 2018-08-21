@@ -21,7 +21,7 @@ import com.honeywell.aidc.BarcodeFailureEvent;
 import com.honeywell.aidc.BarcodeReadEvent;
 import com.honeywell.aidc.BarcodeReader;
 
-public class ActWelcome extends Activity implements BarcodeReader.BarcodeListener, BarcodeObject.CallbackAfterCreateBarcodeReader {
+public class ActWelcome extends Activity implements BarcodeReader.BarcodeListener {
 
 
     private static final int GLVZ_PERMISSIONS_REQUEST = 1;
@@ -31,9 +31,10 @@ public class ActWelcome extends Activity implements BarcodeReader.BarcodeListene
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        BarcodeObject.create(this, this);
+        BarcodeObject.create(this);
         setContentView(R.layout.activity_welcome);
         setResources();
+        System.out.println( DaoMem.getDaoMem().getUserIn());
     }
 
     private void setResources() {
@@ -46,7 +47,7 @@ public class ActWelcome extends Activity implements BarcodeReader.BarcodeListene
         Intent intent = new Intent();
         intent.setClass(ActWelcome.this, ActChooseShop.class);
         startActivity(intent);
-        ActWelcome.this.finish();
+        //ActWelcome.this.finish();
     }
 
     @Override
@@ -92,12 +93,14 @@ public class ActWelcome extends Activity implements BarcodeReader.BarcodeListene
     @Override
     public void onResume() {
         super.onResume();
-        BarcodeObject.linkToListener(this);
+//        BarcodeObject.linkToListener(this);
+        BarcodeObject.setCurrentListener(this);
     }
 
     @Override
     public void onPause() {
-        BarcodeObject.unLinkFromListener(this);
+//        BarcodeObject.unLinkFromListener(this);
+        BarcodeObject.setCurrentListener(null);
         super.onPause();
     }
 
@@ -119,8 +122,4 @@ public class ActWelcome extends Activity implements BarcodeReader.BarcodeListene
 
     }
 
-    @Override
-    public void afterCreate() {
-        BarcodeObject.linkToListener(this);
-    }
 }
