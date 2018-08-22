@@ -27,5 +27,5 @@ public interface Integration {
 
     File loadNewApk();
 
-    void clearOldData(int numDaysOld);
+    List<IncomeIn> clearOldData(int numDaysOld);
 }

@@ -75,7 +75,8 @@ public class DaoMem {
         File path = new File(Environment.getExternalStorageDirectory(), MainApp.getContext().getResources().getString(R.string.path_exchange));
         sharedPreferences = MainApp.getContext().getSharedPreferences("settings", Activity.MODE_PRIVATE);
         integrationFile = new IntegrationSDCard(path.getAbsolutePath());
-        integrationFile.clearOldData(Integer.valueOf(MainApp.getContext().getResources().getString(R.string.num_days_old)));
+        List<IncomeIn> allRemainRecs = integrationFile.clearOldData(Integer.valueOf(MainApp.getContext().getResources().getString(R.string.num_days_old)));
+        clearStoredDataNotInList(allRemainRecs);
         listU = integrationFile.loadUsers();
         listS = integrationFile.loadShops();
         listP = integrationFile.loadPosts();
@@ -129,10 +130,35 @@ public class DaoMem {
         return map;
     }
 
+    private void clearStoredDataNotInList(List<IncomeIn> incomeInList) {
+        Map<String, ?> allPrefs = sharedPreferences.getAll();
+        for (IncomeIn ir : incomeInList) {
+            Iterator<? extends Map.Entry<String, ?>> iter = allPrefs.entrySet().iterator();
+            while(iter.hasNext()) {
+                Map.Entry<String,?> entry  = iter.next();
+                if (entry.getKey().contains("_" + ir.getWbRegId() + "_")) {
+                    // Удалить
+                    iter.remove();
+                }
+            }
+        }
+
+        // Оставшиеся удаляем
+        SharedPreferences.Editor ed = sharedPreferences.edit();
+        for (Map.Entry<String,?> entry : allPrefs.entrySet()) {
+            // НЕ связанные с документами
+            if (!entry.getKey().equals(KEY_SHOPID)) {
+                ed.putString(entry.getKey(), null);
+            }
+        }
+        ed.apply();
+
+    }
+
     private void readLocalData(IncomeRec incomeRec) {
-        incomeRec.setCntDone(sharedPreferences.getInt(KEY_CNTDONE+"_"+incomeRec.getWbRegId(), 0));
-        incomeRec.setStatus(IncomeRecStatus.valueOf(sharedPreferences.getString(KEY_STATUS+"_"+incomeRec.getWbRegId(), IncomeRecStatus.NEW.toString())));
-        incomeRec.setExported(sharedPreferences.getBoolean(KEY_EXPORTED + "_" + incomeRec.getWbRegId(), false));
+        incomeRec.setCntDone(sharedPreferences.getInt(KEY_CNTDONE+"_"+incomeRec.getWbRegId()+"_", 0));
+        incomeRec.setStatus(IncomeRecStatus.valueOf(sharedPreferences.getString(KEY_STATUS+"_"+incomeRec.getWbRegId()+"_", IncomeRecStatus.NEW.toString())));
+        incomeRec.setExported(sharedPreferences.getBoolean(KEY_EXPORTED + "_" + incomeRec.getWbRegId()+"_", false));
         // пройтись по строкам и прочитать доп.данные
         incomeRec.getIncomeRecContentList().clear();
         for (IncomeContentIn incomeContentIn : incomeRec.getIncomeIn().getContent()) {
@@ -188,9 +214,9 @@ public class DaoMem {
         }
         incomeRec.setCntDone(cntDone);
         SharedPreferences.Editor ed = sharedPreferences.edit();
-        ed.putBoolean(KEY_EXPORTED+"_"+incomeRec.getWbRegId(), incomeRec.isExported());
-        ed.putInt(KEY_CNTDONE+"_"+incomeRec.getWbRegId(), incomeRec.getCntDone());
-        ed.putString(KEY_STATUS+"_"+incomeRec.getWbRegId(), incomeRec.getStatus().toString());
+        ed.putBoolean(KEY_EXPORTED+"_"+incomeRec.getWbRegId()+"_", incomeRec.isExported());
+        ed.putInt(KEY_CNTDONE+"_"+incomeRec.getWbRegId()+"_", incomeRec.getCntDone());
+        ed.putString(KEY_STATUS+"_"+incomeRec.getWbRegId()+"_", incomeRec.getStatus().toString());
         ed.apply();
         // записать данные по строкам
         for (IncomeRecContent incomeRecContent : incomeRec.getIncomeRecContentList()) {
@@ -483,13 +509,13 @@ public class DaoMem {
     }
 
     public boolean readFilterOnIncomeRec(IncomeRec incomeRec) {
-        boolean filter = sharedPreferences.getBoolean(KEY_FILTER+"_"+incomeRec.getWbRegId(), true);
+        boolean filter = sharedPreferences.getBoolean(KEY_FILTER+"_"+incomeRec.getWbRegId()+"_", true);
         return filter;
     }
 
     public void writeFilterOnIncomeRec(IncomeRec incomeRec, boolean checked) {
         SharedPreferences.Editor ed = sharedPreferences.edit();
-        ed.putBoolean(KEY_FILTER+"_"+incomeRec.getWbRegId(), checked);
+        ed.putBoolean(KEY_FILTER+"_"+incomeRec.getWbRegId()+"_", checked);
         ed.apply();
     }
 

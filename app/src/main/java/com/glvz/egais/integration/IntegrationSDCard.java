@@ -10,7 +10,6 @@ import com.glvz.egais.model.IncomeRec;
 import com.glvz.egais.utils.StringUtils;
 
 import java.io.*;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -162,7 +161,8 @@ public class IntegrationSDCard implements Integration {
     }
 
     @Override
-    public void clearOldData(int numDaysOld) {
+    public List<IncomeIn> clearOldData(int numDaysOld) {
+        List<IncomeIn> res = new ArrayList<>();
         Calendar calendar = Calendar.getInstance();
         calendar.add(Calendar.DAY_OF_MONTH, - numDaysOld);
         // Взять все файлы из директории
@@ -177,6 +177,8 @@ public class IntegrationSDCard implements Integration {
                     Date d = StringUtils.jsonStringToDate(incomeIn.getDate());
                     if (d.before(calendar.getTime())) {
                         toDelete = true;
+                    } else {
+                        res.add(incomeIn);
                     }
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -201,6 +203,7 @@ public class IntegrationSDCard implements Integration {
             }
         }
 
+        return res;
     }
 
 }
