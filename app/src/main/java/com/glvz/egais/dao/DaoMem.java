@@ -315,7 +315,7 @@ public class DaoMem {
             //
             if (alcocode != null && alcocode.equals(incomeRecContent.getIncomeContentIn().getAlccode())
                     && (incomeRecContent.getQtyAccepted() == null || incomeRecContent.getQtyAccepted() < incomeRecContent.getIncomeContentIn().getQty()
-                        || incomeRecContent.getIncomeContentIn().getQtyDirectInput() == 1) ) {
+                        /*|| incomeRecContent.getIncomeContentIn().getQtyDirectInput() == 1 */ ) ) {
                 result.add(incomeRecContent);
             }
         }
