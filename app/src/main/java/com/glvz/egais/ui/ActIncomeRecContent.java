@@ -3,6 +3,7 @@ package com.glvz.egais.ui;
 import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.view.WindowManager;
@@ -30,6 +31,9 @@ import java.util.List;
 
 public class ActIncomeRecContent extends Activity implements BarcodeReader.BarcodeListener, PickBottliingDateCallback, TransferCallback {
 
+    private static final int CHANGENOMEN_REQUESTCODE = 1;
+    public static final String NEWBARCODE = "barcode";
+
     private String lastMark;
     private IncomeRec incomeRec;
     private IncomeRecContent incomeRecContent;
@@ -39,6 +43,7 @@ public class ActIncomeRecContent extends Activity implements BarcodeReader.Barco
     EditText etQtyAccepted;
     LinearLayout llAccepted;
     Button btnAdd;
+    Button btnManualChange;
     private boolean isBoxScanned = false;
     private boolean isOpenByScan = false;
 
@@ -227,6 +232,18 @@ public class ActIncomeRecContent extends Activity implements BarcodeReader.Barco
         });
         etQtyAccepted = (EditText) findViewById(R.id.etQtyAccepted);
         llAccepted = (LinearLayout) findViewById(R.id.llAccepted);
+        btnManualChange = (Button) findViewById(R.id.btnManualChange);
+        btnManualChange.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent in = new Intent();
+                in.setClass(ActIncomeRecContent.this, ActIncomeRecContentChangeNomen.class);
+                in.putExtra(ActIncomeRec.INCOMEREC_WBREGID, incomeRec.getWbRegId());
+                in.putExtra(ActIncomeRec.INCOMERECCONTENT_POSITION, incomeRecContent.getPosition());
+                ActIncomeRecContent.this.startActivityForResult(in, CHANGENOMEN_REQUESTCODE);
+            }
+        });
+
     }
 
     private void updateDisplayData() {
@@ -278,6 +295,11 @@ public class ActIncomeRecContent extends Activity implements BarcodeReader.Barco
                     countToAddInFuture = DaoMem.getDaoMem().calculateQtyToAdd(ActIncomeRecContent.this.incomeRec, ActIncomeRecContent.this.incomeRecContent, ActIncomeRecContent.this.lastMark);
                 }
                 docRecContentHolder.setItem(incomeRecContent, countToAddInFuture, IncomeContentArrayAdapter.RECCONTENT_MODE);
+                if (incomeRecContent.getNomenIn() == null) {
+                    btnManualChange.setEnabled(false);
+                } else {
+                    btnManualChange.setEnabled(true);
+                }
             }
         });
     }
@@ -485,5 +507,19 @@ public class ActIncomeRecContent extends Activity implements BarcodeReader.Barco
     @Override
     public void doFinishTransferCallback(Context ctx, String wbRegId, IncomeRecContent irc, int addQty, String barcode) {
         prepareActWithData(wbRegId, irc, addQty, barcode);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == CHANGENOMEN_REQUESTCODE) {
+            if (resultCode == RESULT_OK) {
+                String newBarCode = (String) data.getExtras().get(NEWBARCODE);
+                final NomenIn nomenIn = DaoMem.getDaoMem().getDictionary().findNomenByBarcode(newBarCode);
+                incomeRecContent.setNomenIn(nomenIn, newBarCode);
+                DaoMem.getDaoMem().writeLocalDataIncomeRec(incomeRec);
+                updateDisplayData();
+            }
+        }
     }
 }

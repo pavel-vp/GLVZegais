@@ -37,6 +37,22 @@
                 />
             </LinearLayout>
 
+
+
+            <LinearLayout
+                    android:orientation="horizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/llManualChange1c">
+
+                <Button
+                        android:text="Изменить привязку к товару"
+                        android:id="@+id/btnManualChange"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"/>
+
+            </LinearLayout>
+
             <LinearLayout
                     android:orientation="horizontal"
                     android:layout_width="match_parent"

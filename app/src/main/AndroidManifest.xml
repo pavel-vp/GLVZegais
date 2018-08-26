@@ -45,6 +45,7 @@
         <activity android:name=".ui.ActIncomeRec" android:screenOrientation="portrait"/>
         <activity android:name=".ui.ActIncomeRecContent" android:screenOrientation="portrait"/>
         <activity android:name=".ui.ActDummy" android:screenOrientation="portrait"/>
+        <activity android:name=".ui.ActIncomeRecContentChangeNomen" android:screenOrientation="portrait"/>
 
 
     </application>
