@@ -47,7 +47,7 @@
                     android:textAppearance="?android:attr/textAppearanceMedium"
                     android:text="ООО Родник"
                     android:textStyle="bold"
-                    android:maxLines="1"
+                    android:maxLines="3"
                     android:id="@+id/tvNamepost" />
         </LinearLayout>
 

@@ -308,7 +308,7 @@ public class DaoMem {
     }
 
     // Найти непринятные позиции по алкокоду (может быть несколько)
-    public List<IncomeRecContent> findIncomeRecContentListByAlcocodeNotDone(IncomeRec incomeRec, String alcocode) {
+    public List<IncomeRecContent> findIncomeRecContentListByAlcocodeNotDone(IncomeRec incomeRec, String alcocode, boolean checkCompletedToo) {
         List<IncomeRecContent> result = new ArrayList<>();
         // пройтись по каждой позиции
         for (IncomeRecContent incomeRecContent : incomeRec.getIncomeRecContentList()) {
@@ -319,6 +319,17 @@ public class DaoMem {
                 result.add(incomeRecContent);
             }
         }
+
+        // если в итоге ничего нет, но стоит флаг -  checkNotCompletedToo - выведем также принятые
+        if (result.size() == 0 && checkCompletedToo) {
+            // пройтись по каждой позиции
+            for (IncomeRecContent incomeRecContent : incomeRec.getIncomeRecContentList()) {
+                if (alcocode != null && alcocode.equals(incomeRecContent.getIncomeContentIn().getAlccode()) ) {
+                    result.add(incomeRecContent);
+                }
+            }
+        }
+
         // Если позиций в списке более 1 - попытаться свернуть по датам
         if (result.size() > 1) {
             Map<String, IncomeRecContent> mapDate = new HashMap<>();
@@ -329,6 +340,7 @@ public class DaoMem {
             result.addAll(mapDate.values());
         }
 
+        // если пусто - непринятффе
         return result;
     }
 
