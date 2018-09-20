@@ -36,6 +36,8 @@ public class StringUtils {
     }
 
     public static String formatDateDisplay(Date date) {
+        if (date == null)
+            return "";
         String s = dateFormatterDisplay.format(date);
         return s;
     }
