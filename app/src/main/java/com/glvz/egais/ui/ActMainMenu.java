@@ -19,9 +19,16 @@ public class ActMainMenu extends Activity {
 
         setResources();
 
-        DaoMem.getDaoMem().initDocuments();
     }
 
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        DaoMem.getDaoMem().initDocuments();
+        DaoMem.getDaoMem().checkIsNeedToUpdate(this);
+
+    }
 
     private void setResources() {
 
