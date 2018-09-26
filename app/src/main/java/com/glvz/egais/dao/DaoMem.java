@@ -71,7 +71,7 @@ public class DaoMem {
     private String shopId;
 
 
-    private void initDictionary() {
+    public void initDictionary() {
         File path = new File(Environment.getExternalStorageDirectory(), MainApp.getContext().getResources().getString(R.string.path_exchange));
         sharedPreferences = MainApp.getContext().getSharedPreferences("settings", Activity.MODE_PRIVATE);
         integrationFile = new IntegrationSDCard(path.getAbsolutePath());

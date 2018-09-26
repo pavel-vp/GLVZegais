@@ -27,6 +27,7 @@ public class ActMainMenu extends Activity {
         super.onStart();
         DaoMem.getDaoMem().initDocuments();
         DaoMem.getDaoMem().checkIsNeedToUpdate(this);
+        DaoMem.getDaoMem().initDictionary();
 
     }
 
