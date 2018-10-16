@@ -1,5 +1,7 @@
 package com.glvz.egais.model;
 
+import java.util.Objects;
+
 public class IncomeRecContentMark {
     public static final int MARK_SCANNED_AS_MARK = 0;
     public static final int MARK_SCANNED_AS_BOX = 1;
@@ -40,4 +42,17 @@ public class IncomeRecContentMark {
     }
 
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        IncomeRecContentMark that = (IncomeRecContentMark) o;
+        return Objects.equals(markScanned, that.markScanned);
+    }
+
+    @Override
+    public int hashCode() {
+
+        return Objects.hash(markScanned);
+    }
 }
