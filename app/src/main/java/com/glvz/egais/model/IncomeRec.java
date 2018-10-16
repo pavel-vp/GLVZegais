@@ -4,7 +4,9 @@ import com.glvz.egais.dao.DaoMem;
 import com.glvz.egais.integration.model.*;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class IncomeRec {
     // ссылка наисходный имопртированный документ
@@ -102,9 +104,12 @@ public class IncomeRec {
             contentOutput.setQtyFact(recContent.getQtyAccepted());
             contentOutput.setQtyDirectInput(recContent.getIncomeContentIn().getQtyDirectInput());
 
-            contentOutput.setMarks(new IncomeContentMarkIn[recContent.getIncomeRecContentMarkList().size()]);
+            Set<IncomeRecContentMark> scannedMarkSet = new HashSet<>();
+            scannedMarkSet.addAll(recContent.getIncomeRecContentMarkList());
+
+            contentOutput.setMarks(new IncomeContentMarkIn[scannedMarkSet.size()]);
             int idx2 = 0;
-            for (IncomeRecContentMark mark : recContent.getIncomeRecContentMarkList()) {
+            for (IncomeRecContentMark mark : scannedMarkSet) {
                 IncomeContentMarkIn markOutput = new IncomeContentMarkIn();
                 markOutput.setMark(mark.getMarkScanned());
                 markOutput.setBox(mark.getMarkScannedReal());
