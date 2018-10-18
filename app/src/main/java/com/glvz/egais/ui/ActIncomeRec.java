@@ -208,7 +208,7 @@ public class ActIncomeRec extends Activity implements BarcodeReader.BarcodeListe
                 ActionOnScanDataMatrixWrapper actionOnScanDataMatrixWrapper = proceedDataMatrix(incomeRec, barcode);
                 if (actionOnScanDataMatrixWrapper != null) {
                     // Перейти в форму "приемка позиции"
-                    pickRec(this, incomeRec.getWbRegId(), actionOnScanDataMatrixWrapper.irc, actionOnScanDataMatrixWrapper.addQty, barcode, false, true);
+                    pickRec(this, incomeRec.getWbRegId(), actionOnScanDataMatrixWrapper.irc, actionOnScanDataMatrixWrapper.addQty, actionOnScanDataMatrixWrapper.addQty == 0 ? null : barcode, false, true);
                 }
                 break;
             case CODE128:
