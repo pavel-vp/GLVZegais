@@ -456,6 +456,7 @@ public class ActIncomeRecContent extends Activity implements BarcodeReader.Barco
                     addQty = DaoMem.getDaoMem().calculateQtyToAdd(incomeRec, incomeRecContentLocal, barcodeReadEvent.getBarcodeData());
 
                     this.isBoxScanned = true;
+                    this.isOpenByScan = true;
                     this.incomeRecContent = incomeRecContentLocal;
                     this.lastMark = barcodeReadEvent.getBarcodeData();
                     boolean resCheck = checkQtyOnLastMark();

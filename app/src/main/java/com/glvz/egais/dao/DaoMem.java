@@ -85,7 +85,7 @@ public class DaoMem {
         String shopIdStored = sharedPreferences.getString(KEY_SHOPID, null);
         if (shopIdStored != null) {
             ShopIn shopInStored = findShopInById(shopIdStored);
-            if (shopIdStored != null) {
+            if (shopInStored != null) {
                 setShopId(shopInStored.getId());
             }
         }
