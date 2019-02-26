@@ -205,7 +205,7 @@ public class ActIncomeRec extends Activity implements BarcodeReader.BarcodeListe
                 }
                 break;
             case DATAMATRIX:
-                ActionOnScanDataMatrixWrapper actionOnScanDataMatrixWrapper = proceedDataMatrix(incomeRec, barcode);
+                ActionOnScanDataMatrixWrapper actionOnScanDataMatrixWrapper = proceedDataMatrix(this, incomeRec, barcode);
                 if (actionOnScanDataMatrixWrapper != null) {
                     // Перейти в форму "приемка позиции"
                     pickRec(this, incomeRec.getWbRegId(), actionOnScanDataMatrixWrapper.irc, actionOnScanDataMatrixWrapper.addQty, actionOnScanDataMatrixWrapper.addQty == 0 ? null : barcode, false, true);
@@ -218,7 +218,7 @@ public class ActIncomeRec extends Activity implements BarcodeReader.BarcodeListe
                     MessageUtils.showToastMessage("Марка коробки уже сканирована!");
                 }
 
-                incomeRecContent = proceedCode128(incomeRec, barcode);
+                incomeRecContent = proceedCode128(this, incomeRec, barcode);
                 if (incomeRecContent != null) {
                     // Перейти в форму "приемка позиции" с установленным флагом что сканируем упаковку
                     int addQty = DaoMem.getDaoMem().calculateQtyToAdd(incomeRec, incomeRecContent, barcode);
@@ -228,7 +228,7 @@ public class ActIncomeRec extends Activity implements BarcodeReader.BarcodeListe
         }
     }
 
-    public static IncomeRecContent proceedCode128(IncomeRec incomeRec, String barcode) {
+    public static IncomeRecContent proceedCode128(Activity activity, IncomeRec incomeRec, String barcode) {
 
         // проверить наличие разрешения на коробочную приемку по справочнику поставщиков.
         // Если разрешения нет - выдать сообщение “По поставщику [наименование] приемка коробками запрещена”.
@@ -241,7 +241,10 @@ public class ActIncomeRec extends Activity implements BarcodeReader.BarcodeListe
         IncomeRecContent irc = DaoMem.getDaoMem().findIncomeRecContentByBoxBarcode(incomeRec, barcode);
         if (irc == null) {
             // если ШК нет - сообщение
-            MessageUtils.showToastMessage("Штрихкод упаковки %s отсутствует в ТТН ЕГАИС. Проверьте тот ли сканировали ШК либо сканируйте марки побутылочно. Если ШК упаковки и марок не проходят - верните не принятую продукцию поставщику", barcode);
+            // LAG 2019-01-21 start (+ параметр activity в параметрах процедуры)
+            //MessageUtils.showToastMessage("Штрихкод упаковки %s отсутствует в ТТН ЕГАИС. Проверьте тот ли сканировали ШК либо сканируйте марки побутылочно. Если ШК упаковки и марок не проходят - верните не принятую продукцию поставщику", barcode);
+            MessageUtils.showModalMessage(activity, "Внимание!", "Штрихкод упаковки %s отсутствует в ТТН ЕГАИС. Проверьте тот ли сканировали ШК либо сканируйте марки побутылочно. Если ШК упаковки и марок не проходят - верните не принятую продукцию поставщику", barcode);
+            // LAG 2019-01-21 end
             return null;
         }
         // проверять по позиции - соответствует ли количество марок количеству позиции - если нет - ругатся - “Допустимо сканирование только по-марочно”
@@ -454,7 +457,7 @@ public class ActIncomeRec extends Activity implements BarcodeReader.BarcodeListe
         }
     }
 
-    public static ActionOnScanDataMatrixWrapper proceedDataMatrix(IncomeRec incomeRec, String barcode) {
+    public static ActionOnScanDataMatrixWrapper proceedDataMatrix(Activity activity, IncomeRec incomeRec, String barcode) {
         // Проверить что этот ШК ранее не сканировался в данной ТТН
         Integer markScanned = DaoMem.getDaoMem().checkMarkScanned(incomeRec, barcode);
         if (markScanned != null) {
@@ -473,7 +476,10 @@ public class ActIncomeRec extends Activity implements BarcodeReader.BarcodeListe
         // Проверить наличие ШК марки в ТТН ЕГАИС
         IncomeRecContent incomeRecContent = DaoMem.getDaoMem().findIncomeRecContentByMark(incomeRec, barcode);
         if (incomeRecContent == null) {
-            MessageUtils.showToastMessage("Прием бутылки запрещен: марка отсутствует в ТТН от поставщика. Верните бутылку поставщику, принимать ее нельзя!");
+            // LAG 2019-01-21 start (+ параметр activity в параметрах процедуры)
+            //MessageUtils.showToastMessage("Прием бутылки запрещен: марка отсутствует в ТТН от поставщика. Верните бутылку поставщику, принимать ее нельзя!");
+            MessageUtils.showModalMessage(activity, "Внимание!", "Прием бутылки запрещен: марка отсутствует в ТТН от поставщика. Верните бутылку поставщику, принимать ее нельзя!");
+            // LAG 2019-01-21 end
             return null;
         }
         // Статус данной ТТН перевести в состояние “Идет приемка”

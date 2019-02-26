@@ -325,7 +325,7 @@ public class ActIncomeRecContent extends Activity implements BarcodeReader.Barco
                 final NomenIn nomenIn = DaoMem.getDaoMem().getDictionary().findNomenByBarcode(barcodeReadEvent.getBarcodeData());
                 //Если в номенклатуре нет такого ШК - запрет приемки: звуковой сигнал и сообщение “Штрихкод [указать номер] отсутствует в номенклатуре 1С. Прием этой позиции запрещен. Верните все бутылки этой позиции поставщику”. Запретить ввод значения в поле “Принимаемое количество”
                 if (nomenIn == null) {
-                    MessageUtils.showModalMessage(this, "ВНИМАНИЕ!","Штрихкод "+barcodeReadEvent.getBarcodeData()+" отсутствует в номенклатуре 1С. Прием этой позиции запрещен. Верните все бутылки этой позиции поставщику");
+                    MessageUtils.showModalMessage(this, "ВНИМАНИЕ!","Штрихкод "+barcodeReadEvent.getBarcodeData()+" отсутствует в номенклатуре 1С. Прием этой позиции запрещен. Сообщите категорийному менеджеру или верните все бутылки этой позиции поставщику.");
                     MessageUtils.playSound(R.raw.no_ean);
                     incomeRecContent.setNomenIn(null, null);
                     this.lastMark= null;
@@ -419,7 +419,7 @@ public class ActIncomeRecContent extends Activity implements BarcodeReader.Barco
                 }
                 this.isBoxScanned = false;
                 // без сохранения предыдущего состояния - та же обработка что и в картчоке накладной
-                ActIncomeRec.ActionOnScanDataMatrixWrapper actionOnScanDataMatrixWrapper = ActIncomeRec.proceedDataMatrix(incomeRec, barcodeReadEvent.getBarcodeData());
+                ActIncomeRec.ActionOnScanDataMatrixWrapper actionOnScanDataMatrixWrapper = ActIncomeRec.proceedDataMatrix(this, incomeRec, barcodeReadEvent.getBarcodeData());
                 if (actionOnScanDataMatrixWrapper != null) {
                     this.incomeRecContent = actionOnScanDataMatrixWrapper.irc;
                     if (actionOnScanDataMatrixWrapper.addQty > 0) {
@@ -451,7 +451,7 @@ public class ActIncomeRecContent extends Activity implements BarcodeReader.Barco
                 }
 
                 // без сохранения предыдущего состояния - та же обработка что и в картчоке накладной
-                incomeRecContentLocal = ActIncomeRec.proceedCode128(incomeRec, barcodeReadEvent.getBarcodeData());
+                incomeRecContentLocal = ActIncomeRec.proceedCode128(this, incomeRec, barcodeReadEvent.getBarcodeData());
                 if (incomeRecContentLocal != null) {
                     addQty = DaoMem.getDaoMem().calculateQtyToAdd(incomeRec, incomeRecContentLocal, barcodeReadEvent.getBarcodeData());
 

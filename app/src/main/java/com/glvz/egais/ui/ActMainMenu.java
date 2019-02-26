@@ -50,6 +50,14 @@ public class ActMainMenu extends Activity {
                 ActMainMenu.this.finish();
             }
         });
+        Button buttonLoadData = (Button) findViewById(R.id.buttonLoadData);
+        buttonLoadData.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                DaoMem.getDaoMem().initDocuments();
+                DaoMem.getDaoMem().initDictionary();
+            }
+        });
 
     }
 

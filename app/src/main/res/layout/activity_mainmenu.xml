@@ -12,4 +12,10 @@
             android:text="К выбору магазина"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" android:id="@+id/buttonBack"/>
+
+    <Button
+        android:id="@+id/buttonLoadData"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Загрузить данные" />
 </LinearLayout>
