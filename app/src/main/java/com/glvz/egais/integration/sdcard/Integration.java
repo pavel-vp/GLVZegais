@@ -1,6 +1,7 @@
-package com.glvz.egais.integration;
+package com.glvz.egais.integration.sdcard;
 
 import com.glvz.egais.integration.model.*;
+import com.glvz.egais.integration.wifi.model.SyncFileRec;
 import com.glvz.egais.model.IncomeRec;
 
 import java.io.File;
@@ -28,4 +29,6 @@ public interface Integration {
     File loadNewApk();
 
     List<IncomeIn> clearOldData(int numDaysOld);
+
+    List<SyncFileRec> convertDirs(String[] paths, String shopId);
 }

@@ -42,4 +42,6 @@ dependencies {
     compile 'com.fasterxml.jackson.core:jackson-annotations:2.4.1'
     compile 'com.fasterxml.jackson.core:jackson-databind:2.4.1'
 
+    compile group: 'commons-net', name: 'commons-net', version: '3.6'
+
 }

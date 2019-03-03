@@ -1,25 +1,33 @@
 package com.glvz.egais.dao;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.net.Uri;
+import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.Environment;
 import android.support.v4.content.FileProvider;
+import android.util.Log;
 import com.glvz.egais.BuildConfig;
 import com.glvz.egais.MainApp;
 import com.glvz.egais.R;
-import com.glvz.egais.integration.Integration;
-import com.glvz.egais.integration.IntegrationSDCard;
+import com.glvz.egais.integration.sdcard.Integration;
+import com.glvz.egais.integration.sdcard.IntegrationSDCard;
 import com.glvz.egais.integration.model.*;
+import com.glvz.egais.integration.wifi.model.SyncFileRec;
 import com.glvz.egais.model.*;
 import com.glvz.egais.utils.MessageUtils;
 import com.glvz.egais.utils.StringUtils;
+import org.apache.commons.net.ftp.FTP;
+import org.apache.commons.net.ftp.FTPClient;
+import org.apache.commons.net.ftp.FTPFile;
 
-import java.io.File;
+import java.io.*;
+import java.net.InetAddress;
 import java.util.*;
 
 public class DaoMem {
@@ -602,6 +610,75 @@ public class DaoMem {
             this.setShopId(userIn.getUsersPodrs()[0]);
         } else{
             this.setShopId(null);
+        }
+    }
+
+    public void syncWiFiFtp() {
+        List<SyncFileRec> pathsIn = integrationFile.convertDirs(new String[] {"APK","DIC","Shops/%SHOPID%/IN"}, shopId);
+        List<SyncFileRec> pathsOut = integrationFile.convertDirs(new String[] {"Shops/%SHOPID%/OUT"}, shopId);
+
+        WifiManager wifi = (WifiManager)(MainApp.getContext().getApplicationContext().getSystemService(Context.WIFI_SERVICE));
+        if (wifi.isWifiEnabled()) {
+            //wifi is enabled
+            try {
+
+                FTPClient ftpClient = new FTPClient();
+                ftpClient.connect(InetAddress.getByName("10.0.0.7"));
+                ftpClient.login("ftp", null);
+                Log.v("DaoMem", "status :: " + ftpClient.getStatus());
+                ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
+                ftpClient.enterLocalPassiveMode();
+
+                // IN
+                for (SyncFileRec rec : pathsIn) {
+                    Log.v("DaoMem", "Remote directory: " + rec.getRemoteDir() + " -> local:"+rec.getLocalDir());
+
+                    File path = new File(rec.getLocalDir());
+                    path.mkdirs();
+
+
+                    FTPFile[] ftpFiles = ftpClient.listFiles(rec.getRemoteDir());
+                    for (int i = 0; i < ftpFiles.length; i++) {
+                        String fileName = ftpFiles[i].getName();
+                        Log.v("DaoMem", "File->: " + fileName);
+                        OutputStream outputStream = new FileOutputStream(new File(path + "/" + fileName));
+                        ftpClient.retrieveFile(rec.getRemoteDir() + "/" + fileName, outputStream);
+                        outputStream.close();
+
+
+                    }
+
+                }
+
+                // OUT
+                for (SyncFileRec rec : pathsOut) {
+                    Log.v("DaoMem", "Local: " + rec.getLocalDir() + " -> Remote directory:"+rec.getRemoteDir());
+
+                    File directory = new File(rec.getLocalDir());
+                    ftpClient.makeDirectory("/" + rec.getRemoteDir());
+
+                    // Get all the files from a directory.
+                    File[] fList = directory.listFiles();
+                    if(fList != null) {
+                        for (File file : fList) {
+                            if (file.isFile()) {
+                                Log.v("DaoMem", "File->: " + file.getName());
+                                InputStream inputStream = new FileInputStream(file);
+                                ftpClient.storeFile("/" + rec.getRemoteDir() + "/" + file.getName(), inputStream);
+                                inputStream.close();
+                            }
+                        }
+                    }
+
+                }
+
+
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+
         }
     }
 

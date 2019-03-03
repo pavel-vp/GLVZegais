@@ -1,4 +1,4 @@
-package com.glvz.egais.integration;
+package com.glvz.egais.integration.sdcard;
 
 import android.media.MediaScannerConnection;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.glvz.egais.MainApp;
 import com.glvz.egais.integration.model.*;
+import com.glvz.egais.integration.wifi.model.SyncFileRec;
 import com.glvz.egais.model.IncomeRec;
 import com.glvz.egais.utils.StringUtils;
 
@@ -27,11 +28,14 @@ public class IntegrationSDCard implements Integration {
     private static final String IN_DIR = "IN";
     private static final String OUT_DIR = "OUT";
 
+    private static final String SHOPID_DIR_TEMPLATE = "%SHOPID%";
+
     private static final String SHOP_FILE = "shops.json";
     private static final String POST_FILE = "posts.json";
     private static final String NOMEN_FILE = "nomen.json";
     private static final String USER_FILE = "users.json";
     private static final String APK_FILE = "glvzegais.apk";
+
 
     private ObjectMapper objectMapper = new ObjectMapper();
 
@@ -204,6 +208,16 @@ public class IntegrationSDCard implements Integration {
         }
 
         return res;
+    }
+
+    @Override
+    public List<SyncFileRec> convertDirs(String[] paths, String shopId) {
+        List<SyncFileRec> result = new ArrayList<>();
+        for (String path : paths) {
+            String pathConv = path.replaceAll(SHOPID_DIR_TEMPLATE, shopId);
+            result.add(new SyncFileRec(pathConv, basePath + "/" + pathConv));
+        }
+        return result;
     }
 
 }

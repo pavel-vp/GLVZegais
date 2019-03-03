@@ -1,16 +1,23 @@
 package com.glvz.egais.ui;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.view.View;
 import android.widget.Button;
 import com.glvz.egais.R;
 import com.glvz.egais.dao.DaoMem;
-import com.glvz.egais.utils.BarcodeObject;
+import com.glvz.egais.utils.MessageUtils;
 
 public class ActMainMenu extends Activity {
 
+
+    private static final int REQUEST_READ_PHONE_STATE = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,13 +61,56 @@ public class ActMainMenu extends Activity {
         buttonLoadData.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                DaoMem.getDaoMem().initDocuments();
-                DaoMem.getDaoMem().initDictionary();
+                checkPermissionToLoadData();
             }
         });
 
     }
 
+    private void checkPermissionToLoadData() {
+        // Here, thisActivity is the current activity
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_WIFI_STATE) != PackageManager.PERMISSION_GRANTED) {
+
+            // Permission is not granted
+            // Should we show an explanation?
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_WIFI_STATE)) {
+                // Show an explanation to the user *asynchronously* -- don't block
+                // this thread waiting for the user's response! After the user
+                // sees the explanation, try again to request the permission.
+                MessageUtils.showToastMessage("Необходимо дать разрешение!");
+            } else {
+                // No explanation needed; request the permission
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_WIFI_STATE}, REQUEST_READ_PHONE_STATE);
+
+                // MY_PERMISSIONS_REQUEST_READ_CONTACTS is an
+                // app-defined int constant. The callback method gets the
+                // result of the request.
+            }
+        } else {
+            // Permission has already been granted
+            loadData();
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == REQUEST_READ_PHONE_STATE) {
+            loadData();
+        }
+    }
+
+    private void loadData() {
+        //   засунуть джоб,показывать колбасу, стопорить процесс пока не обработается
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                DaoMem.getDaoMem().initDocuments();
+                DaoMem.getDaoMem().initDictionary();
+                DaoMem.getDaoMem().syncWiFiFtp();
+            }
+        }).start();
+    }
 
 
 }

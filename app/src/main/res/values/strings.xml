@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">GLVZegais</string>
     <string name="path_exchange">GLVZ</string>
-    <string name="num_days_old">30</string>
+    <string name="num_days_old">3000</string>
 
     <!-- CALCULATOR RES -->
     <string name="error">Error</string>
