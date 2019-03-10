@@ -1,53 +1,28 @@
-package com.glvz.egais.model;
+package com.glvz.egais.model.income;
 
+import android.content.SharedPreferences;
 import com.glvz.egais.dao.DaoMem;
-import com.glvz.egais.integration.model.*;
+import com.glvz.egais.dao.Dictionary;
+import com.glvz.egais.integration.model.doc.DocContentIn;
+import com.glvz.egais.integration.model.doc.DocIn;
+import com.glvz.egais.integration.model.doc.income.*;
+import com.glvz.egais.model.*;
+import com.glvz.egais.utils.StringUtils;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
-public class IncomeRec {
+public class IncomeRec extends BaseRec {
     // ссылка наисходный имопртированный документ
     private String wbRegId;
     private IncomeIn incomeIn;
-    // данные заполненные локально на терминале
-    private int cntDone;
-    private IncomeRecStatus status = IncomeRecStatus.NEW;
-    // список строк (собранный из импортированных и локальных данных)
-    private List<IncomeRecContent> incomeRecContentList = new ArrayList<>();
-    private boolean exported;
-
-
-    public int getCntDone() {
-        return cntDone;
-    }
-
-    public void setCntDone(int cntDone) {
-        this.cntDone = cntDone;
-    }
-
-    public IncomeRecStatus getStatus() {
-        return status;
-    }
-
-    public void setStatus(IncomeRecStatus status) {
-        if (status != this.status) {
-            this.exported = false;
-        }
-        this.status = status;
-    }
-
-
 
     public IncomeRec(String wbRegId, IncomeIn incomeIn) {
         this.wbRegId = wbRegId;
         this.incomeIn = incomeIn;
     }
 
-    public String getWbRegId() {
-
+    @Override
+    public String getDocId() {
         return wbRegId;
     }
 
@@ -61,23 +36,6 @@ public class IncomeRec {
 
     public void setIncomeIn(IncomeIn incomeIn) {
         this.incomeIn = incomeIn;
-    }
-
-    public List<IncomeRecContent> getIncomeRecContentList() {
-        return incomeRecContentList;
-    }
-
-    public void setIncomeRecContentList(List<IncomeRecContent> incomeRecContentList) {
-        this.incomeRecContentList = incomeRecContentList;
-    }
-
-
-    public boolean isExported() {
-        return exported;
-    }
-
-    public void setExported(boolean exported) {
-        this.exported = exported;
     }
 
 
@@ -102,14 +60,14 @@ public class IncomeRec {
             IncomeRecContent recContent = DaoMem.getDaoMem().getIncomeRecContentByPosition(this, contentIn.getPosition());
             contentOutput.setBarCode(recContent.getBarcode());
             contentOutput.setQtyFact(recContent.getQtyAccepted());
-            contentOutput.setQtyDirectInput(recContent.getIncomeContentIn().getQtyDirectInput());
+            contentOutput.setQtyDirectInput(recContent.getContentIn().getQtyDirectInput());
 
-            Set<IncomeRecContentMark> scannedMarkSet = new HashSet<>();
-            scannedMarkSet.addAll(recContent.getIncomeRecContentMarkList());
+            Set<BaseRecContentMark> scannedMarkSet = new HashSet<>();
+            scannedMarkSet.addAll(recContent.getBaseRecContentMarkList());
 
             contentOutput.setMarks(new IncomeContentMarkIn[scannedMarkSet.size()]);
             int idx2 = 0;
-            for (IncomeRecContentMark mark : scannedMarkSet) {
+            for (BaseRecContentMark mark : scannedMarkSet) {
                 IncomeContentMarkIn markOutput = new IncomeContentMarkIn();
                 markOutput.setMark(mark.getMarkScanned());
                 markOutput.setBox(mark.getMarkScannedReal());
@@ -129,5 +87,49 @@ public class IncomeRec {
                 "wbRegId='" + wbRegId + '\'' +
                 ", incomeIn=" + incomeIn +
                 '}';
+    }
+
+
+    @Override
+    public Date getDate() {
+        return StringUtils.jsonStringToDate(incomeIn.getDate());
+    }
+
+    @Override
+    public String getAgentName() {
+        return incomeIn.getPostName();
+    }
+
+    @Override
+    public String getDocNum() {
+        return incomeIn.getNumber();
+    }
+
+    @Override
+    public DocIn getDocIn() {
+        return incomeIn;
+    }
+
+    @Override
+    public List<DocContentIn> getDocContentInList() {
+        List<DocContentIn> list = new ArrayList<>();
+        for (IncomeContentIn incomeContentIn : incomeIn.getContent()) {
+            list.add(incomeContentIn);
+        }
+        return list;
+    }
+
+    @Override
+    public BaseRecContent buildRecContent(DocContentIn docContentIn) {
+        IncomeContentIn incomeContentIn = (IncomeContentIn)docContentIn;
+        return new IncomeRecContent(incomeContentIn.getPosition(), incomeContentIn);
+    }
+
+    public List<IncomeRecContent> getIncomeRecContentList() {
+        List<IncomeRecContent> list = new ArrayList<>();
+        for (BaseRecContent recContent : recContentList) {
+            list.add((IncomeRecContent) recContent);
+        }
+        return list;
     }
 }

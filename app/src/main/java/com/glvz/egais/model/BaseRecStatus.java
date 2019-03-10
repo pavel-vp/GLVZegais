@@ -1,16 +1,16 @@
 package com.glvz.egais.model;
 
-public enum IncomeRecContentStatus {
+public enum BaseRecStatus {
 
-    NOT_ENTERED(0, "Не принятно"),
-    IN_PROGRESS(1, "В приемке"),
-    DONE(2, "Принято"),
-    REJECTED(3, "Отказано");
+    NEW(1, "Новый"),
+    INPROGRESS(2, "В приемке"),
+    REJECTED(3, "Отказано"),
+    DONE(4, "Принято");
 
     private int code;
     private String message;
 
-    IncomeRecContentStatus(int code, String message) {
+    BaseRecStatus(int code, String message) {
         this.code = code;
         this.message = message;
     }
@@ -23,5 +23,4 @@ public enum IncomeRecContentStatus {
     public String getMessage() {
         return message;
     }
-
 }

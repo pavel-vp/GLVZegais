@@ -9,6 +9,10 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content" android:id="@+id/buttonIncome"/>
     <Button
+            android:text="Внутренние перемещения"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" android:id="@+id/buttonMove"/>
+    <Button
             android:text="К выбору магазина"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" android:id="@+id/buttonBack"/>

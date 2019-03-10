@@ -2,28 +2,31 @@ package com.glvz.egais.ui;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ProgressBar;
 import com.glvz.egais.R;
 import com.glvz.egais.dao.DaoMem;
+import com.glvz.egais.ui.income.ActIncomeList;
+import com.glvz.egais.ui.move.ActMoveList;
 import com.glvz.egais.utils.MessageUtils;
 
 public class ActMainMenu extends Activity {
-
-
+    ProgressDialog pg ;
     private static final int REQUEST_READ_PHONE_STATE = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_mainmenu);
-
         setResources();
 
     }
@@ -40,12 +43,23 @@ public class ActMainMenu extends Activity {
 
     private void setResources() {
 
+        pg = new ProgressDialog(this);
+        pg.setMessage("Синхронизаци по WiFi...");
         Button buttonIncome = (Button) findViewById(R.id.buttonIncome);
         buttonIncome.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent();
                 intent.setClass(ActMainMenu.this, ActIncomeList.class);
+                startActivity(intent);
+            }
+        });
+        Button buttonMove = (Button) findViewById(R.id.buttonMove);
+        buttonMove.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent();
+                intent.setClass(ActMainMenu.this, ActMoveList.class);
                 startActivity(intent);
             }
         });
@@ -101,15 +115,35 @@ public class ActMainMenu extends Activity {
     }
 
     private void loadData() {
-        //   засунуть джоб,показывать колбасу, стопорить процесс пока не обработается
+        pg.show();
         new Thread(new Runnable() {
             @Override
             public void run() {
+                try {
+                    DaoMem.getDaoMem().syncWiFiFtp();
+                    handleResult(true);
+                } catch (Exception e) {
+                    Log.e(getLocalClassName(), "error at wifi" ,e);
+                    handleResult(false);
+                }
                 DaoMem.getDaoMem().initDocuments();
                 DaoMem.getDaoMem().initDictionary();
-                DaoMem.getDaoMem().syncWiFiFtp();
             }
         }).start();
+    }
+
+    private void handleResult(final boolean result) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                pg.dismiss();
+                if (result) {
+                    MessageUtils.showToastMessage("Синхрониация по WiFi выполнена");
+                } else {
+                    MessageUtils.showModalMessage(ActMainMenu.this, "Ошибка", "Выполните обмен через USB-кабель (WiFi-подключение отсутствует)");
+                }
+            }
+        });
     }
 
 

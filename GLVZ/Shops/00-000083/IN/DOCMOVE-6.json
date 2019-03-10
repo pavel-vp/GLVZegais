@@ -1,0 +1,32 @@
+{
+ "DOCId": "DOCMOVE-6",
+ "NUMBER": "6",
+ "Date": "2019-03-06T12:17:23",
+ "SkladID": "00-000216",
+ "SkladName": "Магазин №01(Р) Север",
+ "PoluchID": "00-000060",
+ "PoluchName": "Магазин №03(Р) Глинки",
+ "CheckMark": "DataMatrix",
+ "Content": [
+  {
+   "position": "1",
+   "NomenID": "00000000109",
+   "QTY": 5
+  },
+  {
+   "position": "2",
+   "NomenID": "00000020420",
+   "QTY": 2
+  },
+  {
+   "position": "3",
+   "NomenID": "00000020466",
+   "QTY": 3
+  },
+  {
+   "position": "4",
+   "NomenID": "00000117639",
+   "QTY": 1
+  }
+ ]
+}

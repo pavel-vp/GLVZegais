@@ -1,4 +1,4 @@
-package com.glvz.egais.integration.model;
+package com.glvz.egais.integration.model.doc.income;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 

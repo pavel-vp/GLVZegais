@@ -1,9 +1,6 @@
 package com.glvz.egais.dao;
 
-import com.glvz.egais.integration.model.NomenIn;
-import com.glvz.egais.integration.model.PostIn;
-import com.glvz.egais.integration.model.ShopIn;
-import com.glvz.egais.integration.model.UserIn;
+import com.glvz.egais.integration.model.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -16,14 +13,18 @@ public class DictionaryMem implements Dictionary {
     private List<ShopIn> listShop;
     private List<PostIn> listPost;
     private List<NomenIn> listNomen;
+    private List<AlcCodeIn> listAlcCode;
+    private List<MarkIn> listMark;
 
     private Map<String, NomenIn> mapNomen = new HashMap<>();
 
-    public DictionaryMem(List<UserIn> listU, List<ShopIn> listS, List<PostIn> listP, List<NomenIn> listN) {
+    public DictionaryMem(List<UserIn> listU, List<ShopIn> listS, List<PostIn> listP, List<NomenIn> listN, List<AlcCodeIn> listA, List<MarkIn> listM) {
         this.listUser = listU;
         this.listShop = listS;
         this.listPost = listP;
         this.listNomen = listN;
+        this.listAlcCode = listA;
+        this.listMark = listM;
         // Трансформировать в мапу
         for (NomenIn nomen : listNomen) {
             if (nomen.getBarcode() != null && nomen.getBarcode().length > 0) {
@@ -39,6 +40,16 @@ public class DictionaryMem implements Dictionary {
     @Override
     public NomenIn findNomenByBarcode(String s) {
         return mapNomen.get(s);
+    }
+
+    @Override
+    public NomenIn findNomenByBarcodeAlco(String s) {
+        NomenIn result = findNomenByBarcode(s);
+        if (result != null &&
+                (result.getNomenType() == NomenIn.NOMENTYPE_ALCO_MARK || result.getNomenType() == NomenIn.NOMENTYPE_ALCO_NOMARK)) {
+            return result;
+        }
+        return null;
     }
 
     @Override

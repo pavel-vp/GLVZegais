@@ -1,0 +1,37 @@
+{
+ "DOCId": "DOCMOVE-2",
+ "NUMBER": "2",
+ "Date": "2019-03-06T15:34:42",
+ "SkladID": "00-000216",
+ "SkladName": "Магазин №01(Р) Север",
+ "PoluchID": "00-000058",
+ "PoluchName": "Магазин №03(Р) (Закусочная) Глинки",
+ "CheckMark": "DataMatrix",
+ "Content": [
+  {
+   "position": "1",
+   "NomenID": "00000025415",
+   "QTY": 2
+  },
+  {
+   "position": "2",
+   "NomenID": "00000025427",
+   "QTY": 1
+  },
+  {
+   "position": "3",
+   "NomenID": "00000025426",
+   "QTY": 5
+  },
+  {
+   "position": "4",
+   "NomenID": "00000025425",
+   "QTY": 2
+  },
+  {
+   "position": "5",
+   "NomenID": "00000025424",
+   "QTY": 3
+  }
+ ]
+}

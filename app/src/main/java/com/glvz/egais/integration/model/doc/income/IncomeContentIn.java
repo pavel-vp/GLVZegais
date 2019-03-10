@@ -1,10 +1,11 @@
-package com.glvz.egais.integration.model;
+package com.glvz.egais.integration.model.doc.income;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.glvz.egais.integration.model.doc.DocContentIn;
 
 import java.util.Arrays;
 
-public class IncomeContentIn {
+public class IncomeContentIn implements DocContentIn {
 
     @JsonProperty(value="position")
     private String position;

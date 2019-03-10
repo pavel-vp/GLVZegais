@@ -42,11 +42,13 @@
 
         <activity android:name=".ui.ActChooseShop" android:screenOrientation="portrait"/>
         <activity android:name=".ui.ActMainMenu" android:screenOrientation="portrait"/>
-        <activity android:name=".ui.ActIncomeList" android:screenOrientation="portrait"/>
-        <activity android:name=".ui.ActIncomeRec" android:screenOrientation="portrait"/>
-        <activity android:name=".ui.ActIncomeRecContent" android:screenOrientation="portrait"/>
+        <activity android:name=".ui.income.ActIncomeList" android:screenOrientation="portrait"/>
+        <activity android:name=".ui.income.ActIncomeRec" android:screenOrientation="portrait"/>
+        <activity android:name=".ui.income.ActIncomeRecContent" android:screenOrientation="portrait"/>
         <activity android:name=".ui.ActDummy" android:screenOrientation="portrait"/>
-        <activity android:name=".ui.ActIncomeRecContentChangeNomen" android:screenOrientation="portrait"/>
+        <activity android:name=".ui.income.ActIncomeRecContentChangeNomen" android:screenOrientation="portrait"/>
+
+        <activity android:name=".ui.move.ActMoveList" android:screenOrientation="portrait"/>
 
 
     </application>

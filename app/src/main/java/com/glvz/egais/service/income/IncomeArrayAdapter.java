@@ -1,4 +1,4 @@
-package com.glvz.egais.service;
+package com.glvz.egais.service.income;
 
 import android.app.Activity;
 import android.content.Context;
@@ -10,7 +10,7 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
 import com.glvz.egais.R;
-import com.glvz.egais.model.IncomeRec;
+import com.glvz.egais.model.income.IncomeRec;
 import com.glvz.egais.utils.StringUtils;
 
 import java.util.Date;

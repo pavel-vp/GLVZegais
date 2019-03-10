@@ -1,9 +1,10 @@
 package com.glvz.egais;
 
+import com.glvz.egais.dao.*;
 import com.glvz.egais.dao.Dictionary;
-import com.glvz.egais.dao.DictionaryMem;
-import com.glvz.egais.dao.Document;
-import com.glvz.egais.dao.DocumentMem;
+import com.glvz.egais.integration.model.doc.income.IncomeContentIn;
+import com.glvz.egais.integration.model.doc.income.IncomeIn;
+import com.glvz.egais.integration.model.doc.move.MoveIn;
 import com.glvz.egais.integration.sdcard.Integration;
 import com.glvz.egais.integration.sdcard.IntegrationSDCard;
 import com.glvz.egais.integration.model.*;
@@ -22,6 +23,7 @@ public class ExampleUnitTest {
     Integration integrationFile;
     Dictionary dictionary;
     Document document;
+    DocumentMove documentMove;
 
     @Before
     public void setup() {
@@ -30,9 +32,13 @@ public class ExampleUnitTest {
         List<ShopIn> listS = integrationFile.loadShops();
         List<PostIn> listP = integrationFile.loadPosts();
         List<NomenIn> listN = integrationFile.loadNomen();
-        dictionary = new DictionaryMem(listU, listS, listP, listN);
+        List<AlcCodeIn> listA = integrationFile.loadAlcCode();
+        List<MarkIn> listM = integrationFile.loadMark();
+        dictionary = new DictionaryMem(listU, listS, listP, listN, listA, listM);
         List<IncomeIn> listIncomeIn = integrationFile.loadIncome("00-000083") ;
         document = new DocumentMem(listIncomeIn);
+        List<MoveIn> listMoveIn = integrationFile.loadMove("00-000083") ;
+        documentMove = new DocumentMoveMem(listMoveIn);
     }
 
     @Test
@@ -42,7 +48,7 @@ public class ExampleUnitTest {
 
     @Test
     public void searchNomenByBarcode() {
-        NomenIn nomen = dictionary.findNomenByBarcode("4603040010655");
+        NomenIn nomen = dictionary.findNomenByBarcodeAlco("4603040010655");
 
         System.out.println(nomen);
     }

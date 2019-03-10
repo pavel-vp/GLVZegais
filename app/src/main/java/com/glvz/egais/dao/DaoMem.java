@@ -1,50 +1,36 @@
 package com.glvz.egais.dao;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.net.Uri;
-import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.Environment;
 import android.support.v4.content.FileProvider;
-import android.util.Log;
 import com.glvz.egais.BuildConfig;
 import com.glvz.egais.MainApp;
 import com.glvz.egais.R;
+import com.glvz.egais.integration.model.doc.DocContentIn;
+import com.glvz.egais.integration.model.doc.income.IncomeContentBoxTreeIn;
+import com.glvz.egais.integration.model.doc.income.IncomeContentIn;
+import com.glvz.egais.integration.model.doc.income.IncomeContentMarkIn;
+import com.glvz.egais.integration.model.doc.income.IncomeIn;
+import com.glvz.egais.integration.model.doc.move.MoveIn;
 import com.glvz.egais.integration.sdcard.Integration;
 import com.glvz.egais.integration.sdcard.IntegrationSDCard;
 import com.glvz.egais.integration.model.*;
-import com.glvz.egais.integration.wifi.model.SyncFileRec;
+import com.glvz.egais.integration.wifi.SyncWiFiFtp;
 import com.glvz.egais.model.*;
+import com.glvz.egais.model.income.*;
+import com.glvz.egais.model.move.MoveRec;
 import com.glvz.egais.utils.MessageUtils;
-import com.glvz.egais.utils.StringUtils;
-import org.apache.commons.net.ftp.FTP;
-import org.apache.commons.net.ftp.FTPClient;
-import org.apache.commons.net.ftp.FTPFile;
 
 import java.io.*;
-import java.net.InetAddress;
 import java.util.*;
 
 public class DaoMem {
-
-    private static final String KEY_SHOPID = "shopid";
-    private static final String KEY_CNTDONE = "cntdone";
-    private static final String KEY_STATUS = "status";
-    private static final String KEY_EXPORTED = "exported";
-    private static final String KEY_FILTER = "incomefilter";
-    private static final String KEY_POS_ID1C = "pos_id1c";
-    private static final String KEY_POS_BARCODE = "pos_barcode";
-    private static final String KEY_POS_STATUS = "pos_status";
-    private static final String KEY_POS_QTYACCEPTED = "pos_qtyaccepted";
-    private static final String KEY_POS_MARKSCANNED_CNT = "pos_markscanned_cnt";
-    private static final String KEY_POS_MARKSCANNED = "pos_markscanned";
-    private static final String KEY_POS_MARKSCANNED_ASTYPE = "pos_markscanned_astype";
-    private static final String KEY_POS_MARKSCANNEDREAL = "pos_markscannedreal";
 
 
     private static DaoMem daoMem = null;
@@ -65,14 +51,21 @@ public class DaoMem {
     Dictionary dictionary;
 
     Document document;
+    DocumentMove documentMove;
+
+    SyncWiFiFtp syncWiFiFtp;
 
     List<ShopIn> listS;
     List<PostIn> listP;
     List<UserIn> listU;
     List<NomenIn> listN;
+    List<AlcCodeIn> listA;
+    List<MarkIn> listM;
     List<IncomeIn> listIncomeIn;
+    List<MoveIn> listMoveIn;
 
     Map<String, IncomeRec> mapIncomeRec;
+    Map<String, MoveRec> mapMoveRec;
     SharedPreferences sharedPreferences;
 
     private UserIn userIn;
@@ -89,20 +82,31 @@ public class DaoMem {
         listS = integrationFile.loadShops();
         listP = integrationFile.loadPosts();
         listN = integrationFile.loadNomen();
-        dictionary = new DictionaryMem(listU, listS, listP, listN);
-        String shopIdStored = sharedPreferences.getString(KEY_SHOPID, null);
+        listA = integrationFile.loadAlcCode();
+        listM = integrationFile.loadMark();
+        dictionary = new DictionaryMem(listU, listS, listP, listN, listA, listM);
+        String shopIdStored = sharedPreferences.getString(BaseRec.KEY_SHOPID, null);
         if (shopIdStored != null) {
             ShopIn shopInStored = findShopInById(shopIdStored);
             if (shopInStored != null) {
                 setShopId(shopInStored.getId());
             }
         }
+        syncWiFiFtp = new SyncWiFiFtp();
+        syncWiFiFtp.init(MainApp.getContext(), path.getAbsolutePath(),
+                MainApp.getContext().getResources().getStringArray(R.array.pathsin),
+                MainApp.getContext().getResources().getStringArray(R.array.pathsout),
+                MainApp.getContext().getResources().getString(R.string.ftp_server),
+                MainApp.getContext().getResources().getString(R.string.ftp_user),
+                MainApp.getContext().getResources().getString(R.string.ftp_pass),
+                MainApp.getContext().getResources().getInteger(R.integer.wifi_check_delay_sec)
+                );
     }
 
     public void setShopId(String shopId) {
         this.shopId = shopId;
         SharedPreferences.Editor ed = sharedPreferences.edit();
-        ed.putString(KEY_SHOPID, this.shopId);
+        ed.putString(BaseRec.KEY_SHOPID, this.shopId);
         ed.apply();
     }
 
@@ -118,12 +122,27 @@ public class DaoMem {
     public void initDocuments() {
         integrationFile.initDirectories(shopId);
         listIncomeIn = integrationFile.loadIncome(shopId);
+        listMoveIn = integrationFile.loadMove(shopId);
         document = new DocumentMem(listIncomeIn);
+        documentMove = new DocumentMoveMem(listMoveIn);
 
         // Прочитать локальные данные
         mapIncomeRec = readIncomeRec();
+        mapMoveRec = readMoveRec();
         MessageUtils.showToastMessage("Данные загружены");
 
+    }
+
+    private Map<String,MoveRec> readMoveRec() {
+        Map<String, MoveRec> map = new HashMap<>();
+
+        for (MoveIn moveIn : listMoveIn) {
+            MoveRec moveRec = new MoveRec(moveIn.getDocId(), moveIn);
+            readLocalData(moveRec);
+            map.put(moveIn.getDocId(), moveRec);
+        }
+
+        return map;
     }
 
     private Map<String,IncomeRec> readIncomeRec() {
@@ -136,6 +155,37 @@ public class DaoMem {
         }
 
         return map;
+    }
+
+    private void readLocalData(BaseRec baseRec) {
+        baseRec.setCntDone(sharedPreferences.getInt(BaseRec.KEY_CNTDONE + "_" + baseRec.getDocId() + "_", 0));
+        baseRec.setStatus(BaseRecStatus.valueOf(sharedPreferences.getString(BaseRec.KEY_STATUS + "_" + baseRec.getDocId() + "_", BaseRecStatus.NEW.toString())));
+        baseRec.setExported(sharedPreferences.getBoolean(BaseRec.KEY_EXPORTED + "_" + baseRec.getDocId() + "_", false));
+        // пройтись по строкам и прочитать доп.данные
+        baseRec.getRecContentList().clear();
+        for (DocContentIn docContentIn : baseRec.getDocContentInList()) {
+            BaseRecContent recContent = baseRec.buildRecContent(docContentIn);
+            // прочитать данные по строке локальные
+            recContent.setId1c(sharedPreferences.getString(BaseRec.KEY_POS_ID1C + "_" + baseRec.getDocId() + "_" + recContent.getPosition(), null));
+            String barcode = sharedPreferences.getString(BaseRec.KEY_POS_BARCODE + "_" + baseRec.getDocId() + "_" + recContent.getPosition(), null);
+            recContent.setNomenIn(dictionary.findNomenById(recContent.getId1c()), barcode);
+            recContent.setStatus(BaseRecContentStatus.valueOf(
+                    sharedPreferences.getString(BaseRec.KEY_POS_STATUS + "_" + baseRec.getDocId() + "_" + recContent.getPosition(), BaseRecContentStatus.NOT_ENTERED.toString())));
+            float qty = sharedPreferences.getFloat(BaseRec.KEY_POS_QTYACCEPTED + "_" + baseRec.getDocId() + "_" + recContent.getPosition(), 0);
+            if (qty != 0) {
+                recContent.setQtyAccepted(Double.valueOf(qty));
+            }
+            int cnt = sharedPreferences.getInt(BaseRec.KEY_POS_MARKSCANNED_CNT + "_" + baseRec.getDocId() + "_" + recContent.getPosition(), 0);
+            if (cnt > 0) {
+                for (int i = 1; i <= cnt; i++) {
+                    String mark = sharedPreferences.getString(BaseRec.KEY_POS_MARKSCANNED + "_" + baseRec.getDocId() + "_" + recContent.getPosition() + "_" + i, null);
+                    int typeAs = sharedPreferences.getInt(BaseRec.KEY_POS_MARKSCANNED_ASTYPE + "_" + baseRec.getDocId() + "_" + recContent.getPosition() + "_" + i, 0);
+                    String realMark = sharedPreferences.getString(BaseRec.KEY_POS_MARKSCANNEDREAL + "_" + baseRec.getDocId() + "_" + recContent.getPosition() + "_" + i, null);
+                    recContent.getBaseRecContentMarkList().add(new BaseRecContentMark(mark, typeAs, realMark));
+                }
+            }
+            baseRec.getRecContentList().add(recContent);
+        }
     }
 
     private void clearStoredDataNotInList(List<IncomeIn> incomeInList) {
@@ -155,7 +205,7 @@ public class DaoMem {
         SharedPreferences.Editor ed = sharedPreferences.edit();
         for (Map.Entry<String,?> entry : allPrefs.entrySet()) {
             // НЕ связанные с документами
-            if (!entry.getKey().equals(KEY_SHOPID)) {
+            if (!entry.getKey().equals(BaseRec.KEY_SHOPID)) {
                 ed.putString(entry.getKey(), null);
             }
         }
@@ -163,119 +213,92 @@ public class DaoMem {
 
     }
 
-    private void readLocalData(IncomeRec incomeRec) {
-        incomeRec.setCntDone(sharedPreferences.getInt(KEY_CNTDONE+"_"+incomeRec.getWbRegId()+"_", 0));
-        incomeRec.setStatus(IncomeRecStatus.valueOf(sharedPreferences.getString(KEY_STATUS+"_"+incomeRec.getWbRegId()+"_", IncomeRecStatus.NEW.toString())));
-        incomeRec.setExported(sharedPreferences.getBoolean(KEY_EXPORTED + "_" + incomeRec.getWbRegId()+"_", false));
-        // пройтись по строкам и прочитать доп.данные
-        incomeRec.getIncomeRecContentList().clear();
-        for (IncomeContentIn incomeContentIn : incomeRec.getIncomeIn().getContent()) {
-            IncomeRecContent incomeRecContent = new IncomeRecContent(incomeContentIn.getPosition(), incomeContentIn);
-            // прочитать данные по строке локальные
-            incomeRecContent.setId1c(sharedPreferences.getString(KEY_POS_ID1C+"_"+incomeRec.getWbRegId()+"_"+incomeContentIn.getPosition(), null));
-            String barcode = sharedPreferences.getString(KEY_POS_BARCODE+"_"+incomeRec.getWbRegId()+"_"+incomeContentIn.getPosition(), null);
-            incomeRecContent.setNomenIn(dictionary.findNomenById(incomeRecContent.getId1c()), barcode);
-            incomeRecContent.setStatus( IncomeRecContentStatus.valueOf(
-                    sharedPreferences.getString(KEY_POS_STATUS+"_"+incomeRec.getWbRegId()+"_"+incomeContentIn.getPosition(), IncomeRecContentStatus.NOT_ENTERED.toString())));
-            float qty = sharedPreferences.getFloat(KEY_POS_QTYACCEPTED+"_"+incomeRec.getWbRegId()+"_"+incomeContentIn.getPosition(), 0);
-            if (qty != 0) {
-                incomeRecContent.setQtyAccepted(Double.valueOf(qty));
-            }
-            int cnt = sharedPreferences.getInt(KEY_POS_MARKSCANNED_CNT+"_"+incomeRec.getWbRegId()+"_"+incomeContentIn.getPosition(), 0);
-            if (cnt > 0) {
-                for (int i = 1; i <= cnt; i++) {
-                    String mark = sharedPreferences.getString(KEY_POS_MARKSCANNED+"_"+incomeRec.getWbRegId()+"_"+incomeContentIn.getPosition()+"_" + i, null);
-                    int typeAs = sharedPreferences.getInt(KEY_POS_MARKSCANNED_ASTYPE+"_"+incomeRec.getWbRegId()+"_"+incomeContentIn.getPosition()+"_" + i, 0);
-                    String realMark = sharedPreferences.getString(KEY_POS_MARKSCANNEDREAL+"_"+incomeRec.getWbRegId()+"_"+incomeContentIn.getPosition()+"_" + i, null);
-                    incomeRecContent.getIncomeRecContentMarkList().add(new IncomeRecContentMark(mark, typeAs, realMark));
-                }
-            }
-            incomeRec.getIncomeRecContentList().add(incomeRecContent);
-        }
-
+    public void writeLocalDataIncomeRec(IncomeRec incomeRec) {
+        writeLocalDataBaseRec(incomeRec);
     }
 
-    public void writeLocalDataIncomeRec(IncomeRec incomeRec) {
+    public void writeLocalDataBaseRec(BaseRec baseRec) {
         // Синхронизируем общий статус накладной
         // Посчитаем число реально принятых строк
         int cntDone = 0;
         int cntZero = 0;
-        for (IncomeRecContent incomeRecContent : incomeRec.getIncomeRecContentList()) {
-            if (incomeRecContent.getStatus() == IncomeRecContentStatus.DONE){
+        for (BaseRecContent recContent : baseRec.getRecContentList()) {
+            if (recContent.getStatus() == BaseRecContentStatus.DONE){
                 cntDone++;
             }
-            if (incomeRecContent.getQtyAccepted() != null &&  incomeRecContent.getQtyAccepted().equals(Double.valueOf(0))
-                    && incomeRecContent.getNomenIn() == null){
+            if (recContent.getQtyAccepted() != null &&  recContent.getQtyAccepted().equals(Double.valueOf(0))
+                    && recContent.getNomenIn() == null){
                 cntZero++;
             }
         }
         // Если все записи =0, и связок с товарами нет и в статусе накл = отказ, оставим отказ
-        if (cntZero == incomeRec.getIncomeRecContentList().size()
-                && incomeRec.getStatus() == IncomeRecStatus.REJECTED) {
+        if (cntZero == baseRec.getRecContentList().size()
+                && baseRec.getStatus() == BaseRecStatus.REJECTED) {
             // оставим отказ
         } else {
-            if (incomeRec.getIncomeIn().getContent().length == cntDone) {
-                incomeRec.setStatus(IncomeRecStatus.DONE);
+            if (baseRec.getDocContentInList().size() == cntDone) {
+                baseRec.setStatus(BaseRecStatus.DONE);
             } else {
-                incomeRec.setStatus(IncomeRecStatus.INPROGRESS);
+                baseRec.setStatus(BaseRecStatus.INPROGRESS);
             }
         }
-        incomeRec.setCntDone(cntDone);
+        baseRec.setCntDone(cntDone);
         SharedPreferences.Editor ed = sharedPreferences.edit();
-        ed.putBoolean(KEY_EXPORTED+"_"+incomeRec.getWbRegId()+"_", incomeRec.isExported());
-        ed.putInt(KEY_CNTDONE+"_"+incomeRec.getWbRegId()+"_", incomeRec.getCntDone());
-        ed.putString(KEY_STATUS+"_"+incomeRec.getWbRegId()+"_", incomeRec.getStatus().toString());
+        ed.putBoolean(BaseRec.KEY_EXPORTED+"_"+baseRec.getDocId()+"_", baseRec.isExported());
+        ed.putInt(BaseRec.KEY_CNTDONE+"_"+baseRec.getDocId()+"_", baseRec.getCntDone());
+        ed.putString(BaseRec.KEY_STATUS+"_"+baseRec.getDocId()+"_", baseRec.getStatus().toString());
         ed.apply();
         // записать данные по строкам
-        for (IncomeRecContent incomeRecContent : incomeRec.getIncomeRecContentList()) {
-            writeLocalDataIncomeRecContent(incomeRec.getWbRegId(), incomeRecContent);
+        for (BaseRecContent recContent : baseRec.getRecContentList()) {
+            writeLocalDataBaseRecContent(baseRec.getDocId(), recContent);
         }
     }
 
-    public void writeLocalDataIncomeRecContent(String wbRegId, IncomeRecContent incomeRecContent) {
+    private void writeLocalDataBaseRecContent(String docId, BaseRecContent recContent) {
         SharedPreferences.Editor ed = sharedPreferences.edit();
-        ed.putString(KEY_POS_ID1C+"_"+wbRegId+"_"+incomeRecContent.getPosition(), incomeRecContent.getId1c());
-        ed.putString(KEY_POS_BARCODE+"_"+wbRegId+"_"+incomeRecContent.getPosition(), incomeRecContent.getBarcode());
-        ed.putString(KEY_POS_STATUS+"_"+wbRegId+"_"+incomeRecContent.getPosition(), incomeRecContent.getStatus().toString());
+        ed.putString(BaseRec.KEY_POS_ID1C+"_"+docId+"_"+recContent.getPosition(), recContent.getId1c());
+        ed.putString(BaseRec.KEY_POS_BARCODE+"_"+docId+"_"+recContent.getPosition(), recContent.getBarcode());
+        ed.putString(BaseRec.KEY_POS_STATUS+"_"+docId+"_"+recContent.getPosition(), recContent.getStatus().toString());
         float qty = 0;
-        if (incomeRecContent.getQtyAccepted() != null) {
-            qty = incomeRecContent.getQtyAccepted().floatValue();
+        if (recContent.getQtyAccepted() != null) {
+            qty = recContent.getQtyAccepted().floatValue();
         }
-        ed.putFloat(KEY_POS_QTYACCEPTED+"_"+wbRegId+"_"+incomeRecContent.getPosition(), qty);
-        ed.putInt(KEY_POS_MARKSCANNED_CNT + "_"+wbRegId+"_"+incomeRecContent.getPosition(), incomeRecContent.getIncomeRecContentMarkList().size());
+        ed.putFloat(BaseRec.KEY_POS_QTYACCEPTED+"_"+docId+"_"+recContent.getPosition(), qty);
+        ed.putInt(BaseRec.KEY_POS_MARKSCANNED_CNT + "_"+docId+"_"+recContent.getPosition(), recContent.getBaseRecContentMarkList().size());
         int idx = 1;
-        for (IncomeRecContentMark incomeRecContentMark : incomeRecContent.getIncomeRecContentMarkList()) {
-            ed.putString(KEY_POS_MARKSCANNED + "_"+wbRegId+"_"+incomeRecContent.getPosition()+"_"+idx, incomeRecContentMark.getMarkScanned());
-            ed.putInt(KEY_POS_MARKSCANNED_ASTYPE + "_"+wbRegId+"_"+incomeRecContent.getPosition()+"_"+idx, incomeRecContentMark.getMarkScannedAsType());
-            ed.putString(KEY_POS_MARKSCANNEDREAL + "_"+wbRegId+"_"+incomeRecContent.getPosition()+"_"+idx, incomeRecContentMark.getMarkScannedReal());
+        for (BaseRecContentMark baseRecContentMark : recContent.getBaseRecContentMarkList()) {
+            ed.putString(BaseRec.KEY_POS_MARKSCANNED + "_"+docId+"_"+recContent.getPosition()+"_"+idx, baseRecContentMark.getMarkScanned());
+            ed.putInt(BaseRec.KEY_POS_MARKSCANNED_ASTYPE + "_"+docId+"_"+recContent.getPosition()+"_"+idx, baseRecContentMark.getMarkScannedAsType());
+            ed.putString(BaseRec.KEY_POS_MARKSCANNEDREAL + "_"+docId+"_"+recContent.getPosition()+"_"+idx, baseRecContentMark.getMarkScannedReal());
             idx++;
         }
         ed.apply();
     }
 
+    Comparator docRecDateComparator = new Comparator<BaseRec>() {
+        @Override
+        public int compare(BaseRec lhs, BaseRec rhs) {
+
+
+            Date d1 = lhs.getDate();
+            Date d2 = rhs.getDate();
+
+            if (d1.before(d2)) return 1;
+            if (d1.after(d2)) return -1;
+
+            int res = lhs.getAgentName().compareTo(rhs.getAgentName());
+            if (res != 0) return res;
+
+            return lhs.getDocNum().compareTo(rhs.getDocNum());
+        }
+    };
 
     public Collection<IncomeRec> getIncomeRecListOrdered() {
 
         List<IncomeRec> list = new ArrayList<>();
         list.addAll(mapIncomeRec.values());
 
-        Collections.sort(list, new Comparator<IncomeRec>() {
-            @Override
-            public int compare(IncomeRec lhs, IncomeRec rhs) {
-
-
-                Date d1 = StringUtils.jsonStringToDate(lhs.getIncomeIn().getDate());
-                Date d2 = StringUtils.jsonStringToDate(rhs.getIncomeIn().getDate());
-
-                if (d1.before(d2)) return 1;
-                if (d1.after(d2)) return -1;
-
-                int res = lhs.getIncomeIn().getPostName().compareTo(rhs.getIncomeIn().getPostName());
-                if (res != 0) return res;
-
-                return lhs.getIncomeIn().getNumber().compareTo(rhs.getIncomeIn().getNumber());
-            }
-        });
+        Collections.sort(list, docRecDateComparator);
         return list;
     }
 
@@ -306,9 +329,9 @@ public class DaoMem {
         // пройтись по каждой позиции
         for (IncomeRecContent incomeRecContent : incomeRec.getIncomeRecContentList()) {
             // в каждой позиции пройтись по сканированным маркам
-            for (IncomeRecContentMark incomeRecContentMark : incomeRecContent.getIncomeRecContentMarkList()) {
-                if (incomeRecContentMark.getMarkScanned().equals(mark)) {
-                    return incomeRecContentMark.getMarkScannedAsType();
+            for (BaseRecContentMark baseRecContentMark : incomeRecContent.getBaseRecContentMarkList()) {
+                if (baseRecContentMark.getMarkScanned().equals(mark)) {
+                    return baseRecContentMark.getMarkScannedAsType();
                 }
             }
         }
@@ -321,9 +344,9 @@ public class DaoMem {
         // пройтись по каждой позиции
         for (IncomeRecContent incomeRecContent : incomeRec.getIncomeRecContentList()) {
             //
-            if (alcocode != null && alcocode.equals(incomeRecContent.getIncomeContentIn().getAlccode())
-                    && (incomeRecContent.getQtyAccepted() == null || incomeRecContent.getQtyAccepted() < incomeRecContent.getIncomeContentIn().getQty()
-                        /*|| incomeRecContent.getIncomeContentIn().getQtyDirectInput() == 1 */ ) ) {
+            if (alcocode != null && alcocode.equals(incomeRecContent.getContentIn().getAlccode())
+                    && (incomeRecContent.getQtyAccepted() == null || incomeRecContent.getQtyAccepted() < incomeRecContent.getContentIn().getQty()
+                        /*|| incomeRecContent.getContentIn().getQtyDirectInput() == 1 */ ) ) {
                 result.add(incomeRecContent);
             }
         }
@@ -332,7 +355,7 @@ public class DaoMem {
         if (result.size() == 0 && checkCompletedToo) {
             // пройтись по каждой позиции
             for (IncomeRecContent incomeRecContent : incomeRec.getIncomeRecContentList()) {
-                if (alcocode != null && alcocode.equals(incomeRecContent.getIncomeContentIn().getAlccode()) ) {
+                if (alcocode != null && alcocode.equals(incomeRecContent.getContentIn().getAlccode()) ) {
                     result.add(incomeRecContent);
                 }
             }
@@ -342,7 +365,7 @@ public class DaoMem {
         if (result.size() > 1) {
             Map<String, IncomeRecContent> mapDate = new HashMap<>();
             for (IncomeRecContent irc : result) {
-                mapDate.put(irc.getIncomeContentIn().getBottlingDate(), irc);
+                mapDate.put(irc.getContentIn().getBottlingDate(), irc);
             }
             result.clear();
             result.addAll(mapDate.values());
@@ -388,11 +411,11 @@ public class DaoMem {
         return null; // ничего не нашли
     }
 
-    public IncomeRecContentMark findIncomeRecContentMarkByMarkScanned(IncomeRec incomeRec, String barcode) {
+    public BaseRecContentMark findIncomeRecContentMarkByMarkScanned(IncomeRec incomeRec, String barcode) {
         for (IncomeRecContent incomeRecContent : incomeRec.getIncomeRecContentList()) {
-            for (IncomeRecContentMark incomeRecContentMark : incomeRecContent.getIncomeRecContentMarkList()) {
-                if (barcode.equals(incomeRecContentMark.getMarkScanned())){
-                    return incomeRecContentMark;
+            for (BaseRecContentMark baseRecContentMark : incomeRecContent.getBaseRecContentMarkList()) {
+                if (barcode.equals(baseRecContentMark.getMarkScanned())){
+                    return baseRecContentMark;
                 }
             }
         }
@@ -442,10 +465,10 @@ public class DaoMem {
         for (IncomeRecContent irc : incomeRec.getIncomeRecContentList()) {
             irc.setNomenIn(null, null);
             irc.setQtyAccepted(Double.valueOf(0));
-            irc.getIncomeRecContentMarkList().clear();
-            irc.setStatus(IncomeRecContentStatus.REJECTED);
+            irc.getBaseRecContentMarkList().clear();
+            irc.setStatus(BaseRecContentStatus.REJECTED);
         }
-        incomeRec.setStatus(IncomeRecStatus.REJECTED);
+        incomeRec.setStatus(BaseRecStatus.REJECTED);
         writeLocalDataIncomeRec(incomeRec);
         exportData(incomeRec);
     }
@@ -459,7 +482,7 @@ public class DaoMem {
             DaoMem.getDaoMem().getAllIncomeRecMarksByBoxBarcode(resList, incomeRecContent, icb, 1);
             // пройтись по каждой из них
             for (DaoMem.MarkInBox mb : resList) {
-                IncomeRecContentMark ircm = DaoMem.getDaoMem().findIncomeRecContentMarkByMarkScanned(incomeRec, mb.icm.getMark());
+                BaseRecContentMark ircm = DaoMem.getDaoMem().findIncomeRecContentMarkByMarkScanned(incomeRec, mb.icm.getMark());
                 //Если добавляемой марки еще нет в списке принятых: добавить ее в список принятых, признак сканирования установить в значение уровня вложенности упаковки (см. пред. пункт), принятое количество увеличить на 1 шт.
                 if (ircm == null) {
                     result++;
@@ -470,7 +493,7 @@ public class DaoMem {
                 }
             }
         } else {
-            result = (barcode == null) || incomeRecContent.getIncomeContentIn().getQtyDirectInput() == 1 ? 0 : 1; // все проверки должны быть выполнены до
+            result = (barcode == null) || incomeRecContent.getContentIn().getQtyDirectInput() == 1 ? 0 : 1; // все проверки должны быть выполнены до
         }
         return result;
     }
@@ -506,11 +529,11 @@ public class DaoMem {
         }
     }
 
-    public IncomeRecContentMark findIncomeRecContentScannedMarkBox(IncomeRec incomeRec, String barcode) {
+    public BaseRecContentMark findIncomeRecContentScannedMarkBox(IncomeRec incomeRec, String barcode) {
         for (IncomeRecContent incomeRecContent : incomeRec.getIncomeRecContentList()) {
-            for (IncomeRecContentMark incomeRecContentMark : incomeRecContent.getIncomeRecContentMarkList()) {
-                if (barcode.equals(incomeRecContentMark.getMarkScanned()) || barcode.equals(incomeRecContentMark.getMarkScannedReal())){
-                    return incomeRecContentMark;
+            for (BaseRecContentMark baseRecContentMark : incomeRecContent.getBaseRecContentMarkList()) {
+                if (barcode.equals(baseRecContentMark.getMarkScanned()) || barcode.equals(baseRecContentMark.getMarkScannedReal())){
+                    return baseRecContentMark;
                 }
             }
         }
@@ -519,8 +542,8 @@ public class DaoMem {
 
     public IncomeRecContent findIncomeRecContentByMarkScanned(IncomeRec incomeRec, String barcode) {
         for (IncomeRecContent incomeRecContent : incomeRec.getIncomeRecContentList()) {
-            for (IncomeRecContentMark incomeRecContentMark : incomeRecContent.getIncomeRecContentMarkList()) {
-                if (barcode.equals(incomeRecContentMark.getMarkScanned()) || barcode.equals(incomeRecContentMark.getMarkScannedReal())){
+            for (BaseRecContentMark baseRecContentMark : incomeRecContent.getBaseRecContentMarkList()) {
+                if (barcode.equals(baseRecContentMark.getMarkScanned()) || barcode.equals(baseRecContentMark.getMarkScannedReal())){
                     return incomeRecContent;
                 }
             }
@@ -529,13 +552,13 @@ public class DaoMem {
     }
 
     public boolean readFilterOnIncomeRec(IncomeRec incomeRec) {
-        boolean filter = sharedPreferences.getBoolean(KEY_FILTER+"_"+incomeRec.getWbRegId()+"_", true);
+        boolean filter = sharedPreferences.getBoolean(BaseRec.KEY_FILTER+"_"+incomeRec.getDocId()+"_", true);
         return filter;
     }
 
     public void writeFilterOnIncomeRec(IncomeRec incomeRec, boolean checked) {
         SharedPreferences.Editor ed = sharedPreferences.edit();
-        ed.putBoolean(KEY_FILTER+"_"+incomeRec.getWbRegId()+"_", checked);
+        ed.putBoolean(BaseRec.KEY_FILTER+"_"+incomeRec.getDocId()+"_", checked);
         ed.apply();
     }
 
@@ -546,6 +569,10 @@ public class DaoMem {
             }
         }
         return true;
+    }
+
+    public void syncWiFiFtp() throws Exception {
+        this.syncWiFiFtp.syncWiFiFtp(shopId);
     }
 
     public static class MarkInBox {
@@ -560,14 +587,14 @@ public class DaoMem {
 
     public void getAllIncomeRecMarksByBoxBarcode(List<MarkInBox> resList, IncomeRecContent irc, IncomeContentBoxTreeIn icbt, int level) {
         // Достать все марки по этой коробке
-        for (IncomeContentMarkIn icm : irc.getIncomeContentIn().getMarkInfo()) {
+        for (IncomeContentMarkIn icm : irc.getContentIn().getMarkInfo()) {
             if (icm.getBox().equals(icbt.getBox())) {
                 resList.add(new MarkInBox(icm, level));
             }
         }
 
         // Вызвать рекурсивно со всеми потомками
-        for (IncomeContentBoxTreeIn icbtChild : irc.getIncomeContentIn().getBoxTree()) {
+        for (IncomeContentBoxTreeIn icbtChild : irc.getContentIn().getBoxTree()) {
             if (icbtChild.getParentBox().equals(icbt.getBox())) {
                 getAllIncomeRecMarksByBoxBarcode(resList, irc, icbtChild, level + 1);
             }
@@ -575,8 +602,8 @@ public class DaoMem {
     }
 
     public IncomeContentBoxTreeIn findIncomeContentBoxTreeIn(IncomeRecContent incomeRecContent, String box) {
-        if (incomeRecContent.getIncomeContentIn().getBoxTree() != null) {
-            for (IncomeContentBoxTreeIn icbt : incomeRecContent.getIncomeContentIn().getBoxTree()) {
+        if (incomeRecContent.getContentIn().getBoxTree() != null) {
+            for (IncomeContentBoxTreeIn icbt : incomeRecContent.getContentIn().getBoxTree()) {
                 if (icbt.getBox().equals(box)) {
                     return icbt;
                 }
@@ -589,8 +616,8 @@ public class DaoMem {
         // по всем строкам
         for (IncomeRecContent irc :incomeRec.getIncomeRecContentList()) {
             // по каждой строке - пройтись по BoxTree
-            if (irc.getIncomeContentIn().getBoxTree() != null) {
-                for (IncomeContentBoxTreeIn icbt : irc.getIncomeContentIn().getBoxTree()) {
+            if (irc.getContentIn().getBoxTree() != null) {
+                for (IncomeContentBoxTreeIn icbt : irc.getContentIn().getBoxTree()) {
                     if (icbt.getBox().equals(box)) {
                         return irc;
                     }
@@ -613,73 +640,13 @@ public class DaoMem {
         }
     }
 
-    public void syncWiFiFtp() {
-        List<SyncFileRec> pathsIn = integrationFile.convertDirs(new String[] {"APK","DIC","Shops/%SHOPID%/IN"}, shopId);
-        List<SyncFileRec> pathsOut = integrationFile.convertDirs(new String[] {"Shops/%SHOPID%/OUT"}, shopId);
+    public Collection<MoveRec> getMoveRecListOrdered() {
+        List<MoveRec> list = new ArrayList<>();
+        list.addAll(mapMoveRec.values());
 
-        WifiManager wifi = (WifiManager)(MainApp.getContext().getApplicationContext().getSystemService(Context.WIFI_SERVICE));
-        if (wifi.isWifiEnabled()) {
-            //wifi is enabled
-            try {
-
-                FTPClient ftpClient = new FTPClient();
-                ftpClient.connect(InetAddress.getByName("10.0.0.7"));
-                ftpClient.login("ftp", null);
-                Log.v("DaoMem", "status :: " + ftpClient.getStatus());
-                ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
-                ftpClient.enterLocalPassiveMode();
-
-                // IN
-                for (SyncFileRec rec : pathsIn) {
-                    Log.v("DaoMem", "Remote directory: " + rec.getRemoteDir() + " -> local:"+rec.getLocalDir());
-
-                    File path = new File(rec.getLocalDir());
-                    path.mkdirs();
-
-
-                    FTPFile[] ftpFiles = ftpClient.listFiles(rec.getRemoteDir());
-                    for (int i = 0; i < ftpFiles.length; i++) {
-                        String fileName = ftpFiles[i].getName();
-                        Log.v("DaoMem", "File->: " + fileName);
-                        OutputStream outputStream = new FileOutputStream(new File(path + "/" + fileName));
-                        ftpClient.retrieveFile(rec.getRemoteDir() + "/" + fileName, outputStream);
-                        outputStream.close();
-
-
-                    }
-
-                }
-
-                // OUT
-                for (SyncFileRec rec : pathsOut) {
-                    Log.v("DaoMem", "Local: " + rec.getLocalDir() + " -> Remote directory:"+rec.getRemoteDir());
-
-                    File directory = new File(rec.getLocalDir());
-                    ftpClient.makeDirectory("/" + rec.getRemoteDir());
-
-                    // Get all the files from a directory.
-                    File[] fList = directory.listFiles();
-                    if(fList != null) {
-                        for (File file : fList) {
-                            if (file.isFile()) {
-                                Log.v("DaoMem", "File->: " + file.getName());
-                                InputStream inputStream = new FileInputStream(file);
-                                ftpClient.storeFile("/" + rec.getRemoteDir() + "/" + file.getName(), inputStream);
-                                inputStream.close();
-                            }
-                        }
-                    }
-
-                }
-
-
-
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-
-
-        }
+        Collections.sort(list, docRecDateComparator);
+        return list;
     }
+
 
 }

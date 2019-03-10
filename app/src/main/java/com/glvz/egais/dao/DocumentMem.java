@@ -1,8 +1,8 @@
 package com.glvz.egais.dao;
 
-import com.glvz.egais.integration.model.IncomeContentIn;
-import com.glvz.egais.integration.model.IncomeContentMarkIn;
-import com.glvz.egais.integration.model.IncomeIn;
+import com.glvz.egais.integration.model.doc.income.IncomeContentIn;
+import com.glvz.egais.integration.model.doc.income.IncomeContentMarkIn;
+import com.glvz.egais.integration.model.doc.income.IncomeIn;
 
 import java.util.HashMap;
 import java.util.List;

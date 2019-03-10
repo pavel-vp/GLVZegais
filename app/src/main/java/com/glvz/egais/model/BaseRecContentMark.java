@@ -2,7 +2,7 @@ package com.glvz.egais.model;
 
 import java.util.Objects;
 
-public class IncomeRecContentMark {
+public class BaseRecContentMark {
     public static final int MARK_SCANNED_AS_MARK = 0;
     public static final int MARK_SCANNED_AS_BOX = 1;
 
@@ -10,7 +10,7 @@ public class IncomeRecContentMark {
     private Integer markScannedAsType = null;
     private String markScannedReal;
 
-    public IncomeRecContentMark(String markScanned, Integer markScannedAsType, String markScannedReal) {
+    public BaseRecContentMark(String markScanned, Integer markScannedAsType, String markScannedReal) {
         this.markScanned = markScanned;
         this.markScannedAsType = markScannedAsType;
         this.markScannedReal = markScannedReal;
@@ -46,7 +46,7 @@ public class IncomeRecContentMark {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        IncomeRecContentMark that = (IncomeRecContentMark) o;
+        BaseRecContentMark that = (BaseRecContentMark) o;
         return Objects.equals(markScanned, that.markScanned);
     }
 

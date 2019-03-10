@@ -1,12 +1,14 @@
-package com.glvz.egais.integration.model;
+package com.glvz.egais.integration.model.doc.move;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.glvz.egais.integration.model.doc.DocIn;
 
 import java.util.Arrays;
 
-public class IncomeIn {
-    @JsonProperty(value="WBRegId")
-    private String wbRegId;
+public class MoveIn implements DocIn {
+
+    @JsonProperty(value="DOCId")
+    private String docId;
     @JsonProperty(value="NUMBER")
     private String number;
     @JsonProperty(value="Date")
@@ -15,20 +17,22 @@ public class IncomeIn {
     private String skladID;
     @JsonProperty(value="SkladName")
     private String skladName;
-    @JsonProperty(value="PostID")
-    private String postID;
-    @JsonProperty(value="PostName")
-    private String postName;
+    @JsonProperty(value="PoluchID")
+    private String poluchID;
+    @JsonProperty(value="PoluchName")
+    private String poluchName;
+    @JsonProperty(value="CheckMark")
+    private String checkMark;
 
     @JsonProperty(value="Content")
-    private IncomeContentIn[] content;
+    private MoveContentIn[] content;
 
-    public String getWbRegId() {
-        return wbRegId;
+    public String getDocId() {
+        return docId;
     }
 
-    public void setWbRegId(String wbRegId) {
-        this.wbRegId = wbRegId;
+    public void setDocId(String docId) {
+        this.docId = docId;
     }
 
     public String getNumber() {
@@ -63,40 +67,49 @@ public class IncomeIn {
         this.skladName = skladName;
     }
 
-    public String getPostID() {
-        return postID;
+    public String getPoluchID() {
+        return poluchID;
     }
 
-    public void setPostID(String postID) {
-        this.postID = postID;
+    public void setPoluchID(String poluchID) {
+        this.poluchID = poluchID;
     }
 
-    public String getPostName() {
-        return postName;
+    public String getPoluchName() {
+        return poluchName;
     }
 
-    public void setPostName(String postName) {
-        this.postName = postName;
+    public void setPoluchName(String poluchName) {
+        this.poluchName = poluchName;
     }
 
-    public IncomeContentIn[] getContent() {
+    public String getCheckMark() {
+        return checkMark;
+    }
+
+    public void setCheckMark(String checkMark) {
+        this.checkMark = checkMark;
+    }
+
+    public MoveContentIn[] getContent() {
         return content;
     }
 
-    public void setContent(IncomeContentIn[] content) {
+    public void setContent(MoveContentIn[] content) {
         this.content = content;
     }
 
     @Override
     public String toString() {
-        return "IncomeIn{" +
-                "wbRegId='" + wbRegId + '\'' +
+        return "MoveIn{" +
+                "docId='" + docId + '\'' +
                 ", number='" + number + '\'' +
                 ", date='" + date + '\'' +
                 ", skladID='" + skladID + '\'' +
                 ", skladName='" + skladName + '\'' +
-                ", postID='" + postID + '\'' +
-                ", postName='" + postName + '\'' +
+                ", poluchID='" + poluchID + '\'' +
+                ", poluchName='" + poluchName + '\'' +
+                ", checkMark='" + checkMark + '\'' +
                 ", content=" + Arrays.toString(content) +
                 '}';
     }

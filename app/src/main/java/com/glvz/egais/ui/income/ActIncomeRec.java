@@ -1,4 +1,4 @@
-package com.glvz.egais.ui;
+package com.glvz.egais.ui.income;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -17,9 +17,12 @@ import com.glvz.egais.MainApp;
 import com.glvz.egais.R;
 import com.glvz.egais.dao.DaoMem;
 import com.glvz.egais.integration.model.PostIn;
-import com.glvz.egais.model.*;
-import com.glvz.egais.service.IncomeArrayAdapter;
-import com.glvz.egais.service.IncomeContentArrayAdapter;
+import com.glvz.egais.model.BaseRecContentMark;
+import com.glvz.egais.model.BaseRecContentStatus;
+import com.glvz.egais.model.BaseRecStatus;
+import com.glvz.egais.model.income.*;
+import com.glvz.egais.service.income.IncomeArrayAdapter;
+import com.glvz.egais.service.income.IncomeContentArrayAdapter;
 import com.glvz.egais.service.PickBottliingDateCallback;
 import com.glvz.egais.service.TransferCallback;
 import com.glvz.egais.utils.BarcodeObject;
@@ -78,7 +81,7 @@ public class ActIncomeRec extends Activity implements BarcodeReader.BarcodeListe
         switch (id) {
             case R.id.action_export:
                 // Если накладная новая или количесвто факт по всем строкам - 0, то поставить статус отказа
-                if (incomeRec.getStatus() == IncomeRecStatus.NEW ||
+                if (incomeRec.getStatus() == BaseRecStatus.NEW ||
                         DaoMem.getDaoMem().checkIncomeRecZeroQtyFact(incomeRec)) {
                     DaoMem.getDaoMem().rejectData(incomeRec);
                     cbFilter.setChecked(false);
@@ -131,7 +134,7 @@ public class ActIncomeRec extends Activity implements BarcodeReader.BarcodeListe
         lvContent.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                pickRec(ActIncomeRec.this, incomeRec.getWbRegId(), list.get(position), 0, null, false, false);
+                pickRec(ActIncomeRec.this, incomeRec.getDocId(), list.get(position), 0, null, false, false);
             }
         });
         adapter = new IncomeContentArrayAdapter(this, R.layout.rec_prih_position, list);
@@ -142,10 +145,10 @@ public class ActIncomeRec extends Activity implements BarcodeReader.BarcodeListe
     private void updateData() {
         docRecHolder.setItem(incomeRec);
         // Достать список позиций по накладной
-        Collection<IncomeRecContent> newList = DaoMem.getDaoMem().getIncomeRecContentList(incomeRec.getWbRegId());
+        Collection<IncomeRecContent> newList = DaoMem.getDaoMem().getIncomeRecContentList(incomeRec.getDocId());
         list.clear();
         for (IncomeRecContent incomeRecContent : newList) {
-            if (!cbFilter.isChecked() || incomeRecContent.getStatus() != IncomeRecContentStatus.DONE) {
+            if (!cbFilter.isChecked() || incomeRecContent.getStatus() != BaseRecContentStatus.DONE) {
                 list.add(incomeRecContent);
             }
         }
@@ -198,9 +201,9 @@ public class ActIncomeRec extends Activity implements BarcodeReader.BarcodeListe
                 if (actionOnScanPDF417Wrapper.ircList != null) {
                     if (actionOnScanPDF417Wrapper.ircList.size() == 1) {
                         // Перейти в форму "приемка позиции"
-                        pickRec(this, incomeRec.getWbRegId(), actionOnScanPDF417Wrapper.ircList.get(0), actionOnScanPDF417Wrapper.addQty, actionOnScanPDF417Wrapper.addQty == 0 ? null : barcode, false, true);
+                        pickRec(this, incomeRec.getDocId(), actionOnScanPDF417Wrapper.ircList.get(0), actionOnScanPDF417Wrapper.addQty, actionOnScanPDF417Wrapper.addQty == 0 ? null : barcode, false, true);
                     } else {
-                        pickBottlingDate(this, incomeRec.getWbRegId(), actionOnScanPDF417Wrapper.ircList, barcode, this);
+                        pickBottlingDate(this, incomeRec.getDocId(), actionOnScanPDF417Wrapper.ircList, barcode, this);
                     }
                 }
                 break;
@@ -208,12 +211,12 @@ public class ActIncomeRec extends Activity implements BarcodeReader.BarcodeListe
                 ActionOnScanDataMatrixWrapper actionOnScanDataMatrixWrapper = proceedDataMatrix(this, incomeRec, barcode);
                 if (actionOnScanDataMatrixWrapper != null) {
                     // Перейти в форму "приемка позиции"
-                    pickRec(this, incomeRec.getWbRegId(), actionOnScanDataMatrixWrapper.irc, actionOnScanDataMatrixWrapper.addQty, actionOnScanDataMatrixWrapper.addQty == 0 ? null : barcode, false, true);
+                    pickRec(this, incomeRec.getDocId(), actionOnScanDataMatrixWrapper.irc, actionOnScanDataMatrixWrapper.addQty, actionOnScanDataMatrixWrapper.addQty == 0 ? null : barcode, false, true);
                 }
                 break;
             case CODE128:
                 // Проверить сканирован ли этот ШК коробки уже
-                IncomeRecContentMark scannedMark = DaoMem.getDaoMem().findIncomeRecContentScannedMarkBox(incomeRec, barcodeReadEvent.getBarcodeData());
+                BaseRecContentMark scannedMark = DaoMem.getDaoMem().findIncomeRecContentScannedMarkBox(incomeRec, barcodeReadEvent.getBarcodeData());
                 if (scannedMark != null) {
                     MessageUtils.showToastMessage("Марка коробки уже сканирована!");
                 }
@@ -222,7 +225,7 @@ public class ActIncomeRec extends Activity implements BarcodeReader.BarcodeListe
                 if (incomeRecContent != null) {
                     // Перейти в форму "приемка позиции" с установленным флагом что сканируем упаковку
                     int addQty = DaoMem.getDaoMem().calculateQtyToAdd(incomeRec, incomeRecContent, barcode);
-                    pickRec(this, incomeRec.getWbRegId(), incomeRecContent, addQty, barcode, true, true);
+                    pickRec(this, incomeRec.getDocId(), incomeRecContent, addQty, barcode, true, true);
                 }
                 break;
         }
@@ -248,14 +251,14 @@ public class ActIncomeRec extends Activity implements BarcodeReader.BarcodeListe
             return null;
         }
         // проверять по позиции - соответствует ли количество марок количеству позиции - если нет - ругатся - “Допустимо сканирование только по-марочно”
-        if (irc.getIncomeContentIn().getQty().intValue() != irc.getIncomeContentIn().getMarkInfo().length) {
+        if (irc.getContentIn().getQty().intValue() != irc.getContentIn().getMarkInfo().length) {
             MessageUtils.showToastMessage("Допустимо сканирование только по-марочно");
             return null;
         }
 
         // определить позицию в ТТН ЕГАИС и наличие по ней ранее отсканированного ШК номенклатуры
         // Статус данной ТТН перевести в состояние “Идет приемка”
-        incomeRec.setStatus(IncomeRecStatus.INPROGRESS);
+        incomeRec.setStatus(BaseRecStatus.INPROGRESS);
         DaoMem.getDaoMem().writeLocalDataIncomeRec(incomeRec);
         return irc;
     }
@@ -269,7 +272,7 @@ public class ActIncomeRec extends Activity implements BarcodeReader.BarcodeListe
     public static void pickBottlingDate(final Context ctx, final String wbRegId, List<IncomeRecContent> incomeRecContentList, final String barcode, final PickBottliingDateCallback cb) {
         final Map<CharSequence, List<IncomeRecContent>> dates = new HashMap<>();
         for (IncomeRecContent irc : incomeRecContentList) {
-            String bottlingDate = StringUtils.formatDateDisplay(StringUtils.jsonBottlingStringToDate(irc.getIncomeContentIn().getBottlingDate()));
+            String bottlingDate = StringUtils.formatDateDisplay(StringUtils.jsonBottlingStringToDate(irc.getContentIn().getBottlingDate()));
             if (bottlingDate != null && !"".equals(bottlingDate)) {
                 List<IncomeRecContent> ircOnDate = dates.get(bottlingDate);
                 if (ircOnDate == null) {
@@ -323,13 +326,13 @@ public class ActIncomeRec extends Activity implements BarcodeReader.BarcodeListe
         // Проверить что этот ШК ранее не сканировался в данной ТТН
         Integer markScanned = DaoMem.getDaoMem().checkMarkScanned(incomeRec, barcode);
         if (markScanned != null) {
-            if (markScanned == IncomeRecContentMark.MARK_SCANNED_AS_MARK) {
+            if (markScanned == BaseRecContentMark.MARK_SCANNED_AS_MARK) {
                 MessageUtils.showToastMessage("Эта марка уже сканировалась!");
             }
             // Марка была сканирована - найти по ней позицию Rec
-            IncomeRecContentMark incomeRecContentMark = DaoMem.getDaoMem().findIncomeRecContentMarkByMarkScanned(incomeRec, barcode);
-            incomeRecContentMark.setMarkScannedAsType(IncomeRecContentMark.MARK_SCANNED_AS_MARK);
-            incomeRecContentMark.setMarkScannedReal(barcode);
+            BaseRecContentMark baseRecContentMark = DaoMem.getDaoMem().findIncomeRecContentMarkByMarkScanned(incomeRec, barcode);
+            baseRecContentMark.setMarkScannedAsType(BaseRecContentMark.MARK_SCANNED_AS_MARK);
+            baseRecContentMark.setMarkScannedReal(barcode);
             // возвращать управление - переходим в карточку позиции
             DaoMem.getDaoMem().writeLocalDataIncomeRec(incomeRec);
             IncomeRecContent irc = DaoMem.getDaoMem().findIncomeRecContentByMarkScanned(incomeRec, barcode);
@@ -351,12 +354,12 @@ public class ActIncomeRec extends Activity implements BarcodeReader.BarcodeListe
                 incomeRecContent = incomeRecContentList.get(0);
                 //определить позицию в ТТН ЕГАИС и принятое по ней количество
                 //Если [Количество по ТТН] = [Принятое количество]
-                if (incomeRecContent.getQtyAccepted() != null && incomeRecContent.getQtyAccepted().equals(incomeRecContent.getIncomeContentIn().getQty()) &&
-                        incomeRecContent.getIncomeContentIn().getQtyDirectInput() == 0) {
+                if (incomeRecContent.getQtyAccepted() != null && incomeRecContent.getQtyAccepted().equals(incomeRecContent.getContentIn().getQty()) &&
+                        incomeRecContent.getContentIn().getQtyDirectInput() == 0) {
                     MessageUtils.showModalMessage(activity,"Внимание","По позиции номер: %s, алкокод: %s, (%s) уже принято полное количество %s. Сканированная бутылка лишняя, принимать нельзя. Верните поставщику!",
                             incomeRecContent.getPosition(),
                             alcocode,
-                            incomeRecContent.getIncomeContentIn().getName(),
+                            incomeRecContent.getContentIn().getName(),
                             incomeRecContent.getQtyAccepted()
                             );
                     return null;
@@ -368,7 +371,7 @@ public class ActIncomeRec extends Activity implements BarcodeReader.BarcodeListe
 
         } else {
             // если позиция принята не полностью
-            if (incomeRecContent.getStatus() != IncomeRecContentStatus.DONE) {
+            if (incomeRecContent.getStatus() != BaseRecContentStatus.DONE) {
                 return new ActionOnScanPDF417Wrapper(Collections.singletonList(incomeRecContent), 1);
             } else {
                 //  Если полностью принято
@@ -377,14 +380,14 @@ public class ActIncomeRec extends Activity implements BarcodeReader.BarcodeListe
                 DataToTransfer dataToTransfer = ActIncomeRec.findIncomeRecContentToTransfer(incomeRec, barcode, incomeRecContent);
                 if (dataToTransfer != null) {
                     // Перенести подобранную марку в новую позицию и у этой новой позиции Принятое количество увеличить на 1 шт.
-                    String markToTransfer = dataToTransfer.incomeRecContentMark.getMarkScanned();
+                    String markToTransfer = dataToTransfer.baseRecContentMark.getMarkScanned();
                     //  Текущую марку привязать к текущей позиции (без изменения в ней принятого количества).
-                    dataToTransfer.incomeRecContentMark.setMarkScanned(barcode);
-                    dataToTransfer.incomeRecContentMark.setMarkScannedReal(barcode);
-                    //dataToTransfer.incomeRecContent.getIncomeRecContentMarkList().add(new IncomeRecContentMark(markToTransfer, IncomeRecContentMark.MARK_SCANNED_AS_MARK));
+                    dataToTransfer.baseRecContentMark.setMarkScanned(barcode);
+                    dataToTransfer.baseRecContentMark.setMarkScannedReal(barcode);
+                    //dataToTransfer.incomeRecContent.getBaseRecContentMarkList().add(new BaseRecContentMark(markToTransfer, BaseRecContentMark.MARK_SCANNED_AS_MARK));
                     //DaoMem.getDaoMem().writeLocalDataIncomeRec(incomeRec);
                     //  Завершить обработку марки  (выход на следующее сканирование). Перебрасываем на форму карточки той, куда перекинули марку
-                    transferCallback.doFinishTransferCallback(MainApp.getContext(), incomeRec.getWbRegId(), dataToTransfer.incomeRecContent, 1, markToTransfer);
+                    transferCallback.doFinishTransferCallback(MainApp.getContext(), incomeRec.getDocId(), dataToTransfer.incomeRecContent, 1, markToTransfer);
 
                     return null;
                 } else {
@@ -397,7 +400,7 @@ public class ActIncomeRec extends Activity implements BarcodeReader.BarcodeListe
         }
 
         // Статус данной ТТН перевести в состояние “Идет приемка”
-        incomeRec.setStatus(IncomeRecStatus.INPROGRESS);
+        incomeRec.setStatus(BaseRecStatus.INPROGRESS);
         DaoMem.getDaoMem().writeLocalDataIncomeRec(incomeRec);
         return new ActionOnScanPDF417Wrapper(Collections.singletonList(incomeRecContent), 1);
 
@@ -411,19 +414,19 @@ public class ActIncomeRec extends Activity implements BarcodeReader.BarcodeListe
 
     public static class DataToTransfer {
         IncomeRecContent incomeRecContent;
-        IncomeRecContentMark incomeRecContentMark;
+        BaseRecContentMark baseRecContentMark;
 
-        public DataToTransfer(IncomeRecContent incomeRecContent, IncomeRecContentMark incomeRecContentMark) {
+        public DataToTransfer(IncomeRecContent incomeRecContent, BaseRecContentMark baseRecContentMark) {
             this.incomeRecContent = incomeRecContent;
-            this.incomeRecContentMark = incomeRecContentMark;
+            this.baseRecContentMark = baseRecContentMark;
         }
     }
 
     public static DataToTransfer findIncomeRecContentToTransfer(IncomeRec incomeRec, String barcode, IncomeRecContent originalIncomeRecContent) {
 
-        IncomeRecContentMark ircmToTransfer = null;
+        BaseRecContentMark ircmToTransfer = null;
         // В оригинальной позиции найти марку, которую можно теоретически перенести - она недолжна быть нигде в ТТН
-        for (IncomeRecContentMark ircm : originalIncomeRecContent.getIncomeRecContentMarkList()) {
+        for (BaseRecContentMark ircm : originalIncomeRecContent.getBaseRecContentMarkList()) {
             // Если марки нет вообще в этой ТТН
             IncomeRecContent ircTmp = DaoMem.getDaoMem().findIncomeRecContentByMark(incomeRec, ircm.getMarkScanned());
             if (ircTmp == null) {
@@ -439,7 +442,7 @@ public class ActIncomeRec extends Activity implements BarcodeReader.BarcodeListe
         // пройтись по списку, найти запись (не оригинальную), которая еще не принята
         for (IncomeRecContent irc : incomeRecContentList) {
             if (!irc.getPosition().equals(originalIncomeRecContent.getPosition()) // Не эта позиция
-                    && irc.getStatus() != IncomeRecContentStatus.DONE ) {   // не принятая
+                    && irc.getStatus() != BaseRecContentStatus.DONE ) {   // не принятая
 
                 return new DataToTransfer(irc, ircmToTransfer);
             }
@@ -461,13 +464,13 @@ public class ActIncomeRec extends Activity implements BarcodeReader.BarcodeListe
         // Проверить что этот ШК ранее не сканировался в данной ТТН
         Integer markScanned = DaoMem.getDaoMem().checkMarkScanned(incomeRec, barcode);
         if (markScanned != null) {
-            if (markScanned == IncomeRecContentMark.MARK_SCANNED_AS_MARK) {
+            if (markScanned == BaseRecContentMark.MARK_SCANNED_AS_MARK) {
                 MessageUtils.showToastMessage("Эта марка уже сканировалась!");
             }
             // Марка была сканирована - найти по ней позицию Rec
-            IncomeRecContentMark incomeRecContentMark = DaoMem.getDaoMem().findIncomeRecContentMarkByMarkScanned(incomeRec, barcode);
-            incomeRecContentMark.setMarkScannedAsType(IncomeRecContentMark.MARK_SCANNED_AS_MARK);
-            incomeRecContentMark.setMarkScannedReal(barcode);
+            BaseRecContentMark baseRecContentMark = DaoMem.getDaoMem().findIncomeRecContentMarkByMarkScanned(incomeRec, barcode);
+            baseRecContentMark.setMarkScannedAsType(BaseRecContentMark.MARK_SCANNED_AS_MARK);
+            baseRecContentMark.setMarkScannedReal(barcode);
             // переходим в карточку
             DaoMem.getDaoMem().writeLocalDataIncomeRec(incomeRec);
             IncomeRecContent irc = DaoMem.getDaoMem().findIncomeRecContentByMarkScanned(incomeRec, barcode);
@@ -483,7 +486,7 @@ public class ActIncomeRec extends Activity implements BarcodeReader.BarcodeListe
             return null;
         }
         // Статус данной ТТН перевести в состояние “Идет приемка”
-        incomeRec.setStatus(IncomeRecStatus.INPROGRESS);
+        incomeRec.setStatus(BaseRecStatus.INPROGRESS);
         DaoMem.getDaoMem().writeLocalDataIncomeRec(incomeRec);
         return new ActionOnScanDataMatrixWrapper(incomeRecContent, 1);
     }

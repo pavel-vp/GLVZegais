@@ -1,8 +1,9 @@
 package com.glvz.egais.integration.sdcard;
 
 import com.glvz.egais.integration.model.*;
-import com.glvz.egais.integration.wifi.model.SyncFileRec;
-import com.glvz.egais.model.IncomeRec;
+import com.glvz.egais.integration.model.doc.income.IncomeIn;
+import com.glvz.egais.integration.model.doc.move.MoveIn;
+import com.glvz.egais.model.income.IncomeRec;
 
 import java.io.File;
 import java.util.List;
@@ -23,6 +24,7 @@ public interface Integration {
     void initDirectories(String shopId);
 
     List<IncomeIn> loadIncome(String shopId);
+    List<MoveIn> loadMove(String shopId);
 
     void writeIncomeRec(String shopId, IncomeRec incomeRec);
 
@@ -30,5 +32,7 @@ public interface Integration {
 
     List<IncomeIn> clearOldData(int numDaysOld);
 
-    List<SyncFileRec> convertDirs(String[] paths, String shopId);
+    List<AlcCodeIn> loadAlcCode();
+
+    List<MarkIn> loadMark();
 }

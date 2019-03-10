@@ -1,6 +1,6 @@
 package com.glvz.egais.service;
 
-import com.glvz.egais.model.IncomeRec;
+import com.glvz.egais.model.income.IncomeRec;
 
 public class BarCodeProceedDataMatrix extends BarcodeProceedBase {
 

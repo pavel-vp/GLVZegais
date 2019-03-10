@@ -1,4 +1,4 @@
-package com.glvz.egais.ui;
+package com.glvz.egais.ui.income;
 
 import android.app.Activity;
 import android.content.DialogInterface;
@@ -11,8 +11,8 @@ import android.widget.TextView;
 import com.glvz.egais.R;
 import com.glvz.egais.dao.DaoMem;
 import com.glvz.egais.integration.model.NomenIn;
-import com.glvz.egais.model.IncomeRec;
-import com.glvz.egais.model.IncomeRecContent;
+import com.glvz.egais.model.income.IncomeRec;
+import com.glvz.egais.model.income.IncomeRecContent;
 import com.glvz.egais.utils.BarcodeObject;
 import com.glvz.egais.utils.MessageUtils;
 import com.glvz.egais.utils.StringUtils;
@@ -104,9 +104,9 @@ public class ActIncomeRecContentChangeNomen extends Activity implements BarcodeR
                                 ActIncomeRecContentChangeNomen.this.finish();
                             }
                         },
-                        incomeRecContent.getIncomeContentIn().getName(),
-                        StringUtils.formatQty(incomeRecContent.getIncomeContentIn().getCapacity()),
-                        StringUtils.formatQty(incomeRecContent.getIncomeContentIn().getAlcVolume()),
+                        incomeRecContent.getContentIn().getName(),
+                        StringUtils.formatQty(incomeRecContent.getContentIn().getCapacity()),
+                        StringUtils.formatQty(incomeRecContent.getContentIn().getAlcVolume()),
                         newNomenIn.getName(),
                         StringUtils.formatQty(newNomenIn.getCapacity()),
                         StringUtils.formatQty(newNomenIn.getAlcVolume())
@@ -131,10 +131,10 @@ public class ActIncomeRecContentChangeNomen extends Activity implements BarcodeR
                     tvCapacity1cNew.setText( null );
                 }
 
-                tvNameEgais.setText( incomeRecContent.getIncomeContentIn().getName() );
-                tvCapacityEgais.setText( String.valueOf( incomeRecContent.getIncomeContentIn().getCapacity() ) );
-                tvAlcVolumeEgais.setText( String.valueOf( incomeRecContent.getIncomeContentIn().getAlcVolume() ) );
-                tvBottlingDateEgais.setText( incomeRecContent.getIncomeContentIn().getBottlingDate() );
+                tvNameEgais.setText( incomeRecContent.getContentIn().getName() );
+                tvCapacityEgais.setText( String.valueOf( incomeRecContent.getContentIn().getCapacity() ) );
+                tvAlcVolumeEgais.setText( String.valueOf( incomeRecContent.getContentIn().getAlcVolume() ) );
+                tvBottlingDateEgais.setText( incomeRecContent.getContentIn().getBottlingDate() );
 
                 if (incomeRecContent.getNomenIn() != null) {
                     tvName1c.setText(incomeRecContent.getNomenIn().getName());
@@ -171,7 +171,7 @@ public class ActIncomeRecContentChangeNomen extends Activity implements BarcodeR
         if (barCodeType == EAN13) {
             //Сканирование ШК номенклатуры (EAN):
             // Проверить наличие ШК в справочнике номенклатуры 1С.
-            final NomenIn nomenIn = DaoMem.getDaoMem().getDictionary().findNomenByBarcode(barcodeReadEvent.getBarcodeData());
+            final NomenIn nomenIn = DaoMem.getDaoMem().getDictionary().findNomenByBarcodeAlco(barcodeReadEvent.getBarcodeData());
             //Если в номенклатуре нет такого ШК - запрет приемки: звуковой сигнал и сообщение “Штрихкод [указать номер] отсутствует в номенклатуре 1С. Прием этой позиции запрещен. Верните все бутылки этой позиции поставщику”. Запретить ввод значения в поле “Принимаемое количество”
             if (nomenIn == null) {
                 MessageUtils.showModalMessage(this, "ВНИМАНИЕ!","Штрихкод "+barcodeReadEvent.getBarcodeData()+" отсутствует в номенклатуре 1С.");

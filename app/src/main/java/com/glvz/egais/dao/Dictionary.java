@@ -11,6 +11,8 @@ public interface Dictionary {
 
     NomenIn findNomenByBarcode(String s);
 
+    NomenIn findNomenByBarcodeAlco(String s);
+
     PostIn findPostById(String s);
 
     NomenIn findNomenById(String id1c);

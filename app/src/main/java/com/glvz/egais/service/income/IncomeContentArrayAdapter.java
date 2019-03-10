@@ -1,4 +1,4 @@
-package com.glvz.egais.service;
+package com.glvz.egais.service.income;
 
 import android.app.Activity;
 import android.content.Context;
@@ -11,7 +11,7 @@ import android.widget.ArrayAdapter;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import com.glvz.egais.R;
-import com.glvz.egais.model.IncomeRecContent;
+import com.glvz.egais.model.income.IncomeRecContent;
 import com.glvz.egais.utils.StringUtils;
 
 import java.util.Date;
@@ -111,10 +111,10 @@ public class IncomeContentArrayAdapter extends ArrayAdapter<IncomeRecContent> {
                 tvPosition.setText(incomeRecContent.getPosition().toString());
                 tvStatus.setText(incomeRecContent.getStatus().getMessage());
             }
-            tvNameEgais.setText(incomeRecContent.getIncomeContentIn().getName());
-            tvCapacityEgais.setText(StringUtils.formatQty(incomeRecContent.getIncomeContentIn().getCapacity()));
-            tvAlcVolumeEgais.setText(StringUtils.formatQty(incomeRecContent.getIncomeContentIn().getAlcVolume()));
-            Date d = StringUtils.jsonBottlingStringToDate(incomeRecContent.getIncomeContentIn().getBottlingDate());
+            tvNameEgais.setText(incomeRecContent.getContentIn().getName());
+            tvCapacityEgais.setText(StringUtils.formatQty(incomeRecContent.getContentIn().getCapacity()));
+            tvAlcVolumeEgais.setText(StringUtils.formatQty(incomeRecContent.getContentIn().getAlcVolume()));
+            Date d = StringUtils.jsonBottlingStringToDate(incomeRecContent.getContentIn().getBottlingDate());
             tvBottlingDateEgais.setText(StringUtils.formatDateDisplay(d));
             if (incomeRecContent.getNomenIn() != null) {
                 tvName1c.setText(incomeRecContent.getNomenIn().getName());
@@ -123,7 +123,7 @@ public class IncomeContentArrayAdapter extends ArrayAdapter<IncomeRecContent> {
                 tvName1c.setText("");
                 tvCapacity1c.setText("");
             }
-            tvQty.setText(StringUtils.formatQty(incomeRecContent.getIncomeContentIn().getQty()));
+            tvQty.setText(StringUtils.formatQty(incomeRecContent.getContentIn().getQty()));
             if (incomeRecContent.getQtyAccepted() != null) {
                 tvQtyAccepted.setText(StringUtils.formatQty(incomeRecContent.getQtyAccepted() + addMark ));
             } else {

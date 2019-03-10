@@ -8,6 +8,12 @@ import java.util.Arrays;
  * Created by pasha on 07.06.18.
  */
 public class NomenIn {
+
+    public static final int NOMENTYPE_ALCO_MARK = 1;
+    public static final int NOMENTYPE_ALCO_NOMARK = 2;
+    public static final int NOMENTYPE_ALCO_TOBACCO = 3;
+    public static final int NOMENTYPE_ALCO_OTHER = 0;
+
     @JsonProperty(value="ID")
     private String id;
     @JsonProperty(value="Name")
@@ -18,6 +24,10 @@ public class NomenIn {
     private Double alcVolume;
     @JsonProperty(value="Barcode")
     private String[] barcode;
+    @JsonProperty(value="NomenType")
+    private Integer nomenType;
+    @JsonProperty(value="MRCArr")
+    private String[] mcArr;
 
     public NomenIn() {
     }
@@ -51,7 +61,7 @@ public class NomenIn {
     }
 
     public void setAlcVolume(Double alcVolume) {
-        alcVolume = alcVolume;
+        this.alcVolume = alcVolume;
     }
 
     public String[] getBarcode() {
@@ -62,6 +72,22 @@ public class NomenIn {
         this.barcode = barcode;
     }
 
+    public Integer getNomenType() {
+        return nomenType;
+    }
+
+    public void setNomenType(Integer nomenType) {
+        this.nomenType = nomenType;
+    }
+
+    public String[] getMcArr() {
+        return mcArr;
+    }
+
+    public void setMcArr(String[] mcArr) {
+        this.mcArr = mcArr;
+    }
+
     @Override
     public String toString() {
         return "NomenIn{" +
@@ -70,6 +96,8 @@ public class NomenIn {
                 ", capacity=" + capacity +
                 ", alcVolume=" + alcVolume +
                 ", barcode=" + Arrays.toString(barcode) +
+                ", nomenType=" + nomenType +
+                ", mcArr=" + Arrays.toString(mcArr) +
                 '}';
     }
 }

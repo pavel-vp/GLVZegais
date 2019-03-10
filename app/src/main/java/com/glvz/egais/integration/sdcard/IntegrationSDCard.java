@@ -6,8 +6,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.glvz.egais.MainApp;
 import com.glvz.egais.integration.model.*;
-import com.glvz.egais.integration.wifi.model.SyncFileRec;
-import com.glvz.egais.model.IncomeRec;
+import com.glvz.egais.integration.model.doc.income.IncomeIn;
+import com.glvz.egais.integration.model.doc.income.IncomeRecOutput;
+import com.glvz.egais.integration.model.doc.move.MoveIn;
+import com.glvz.egais.model.income.IncomeRec;
 import com.glvz.egais.utils.StringUtils;
 
 import java.io.*;
@@ -28,14 +30,16 @@ public class IntegrationSDCard implements Integration {
     private static final String IN_DIR = "IN";
     private static final String OUT_DIR = "OUT";
 
-    private static final String SHOPID_DIR_TEMPLATE = "%SHOPID%";
-
     private static final String SHOP_FILE = "shops.json";
     private static final String POST_FILE = "posts.json";
     private static final String NOMEN_FILE = "nomen.json";
+    private static final String ALCCODE_FILE = "alccodes.json";
+    private static final String MARK_FILE = "marks.json";
     private static final String USER_FILE = "users.json";
     private static final String APK_FILE = "glvzegais.apk";
 
+    private static final String DOC_PREFIX_INCOME = "TTN";
+    private static final String DOC_PREFIX_MOVE = "DOCMOVE";
 
     private ObjectMapper objectMapper = new ObjectMapper();
 
@@ -88,6 +92,34 @@ public class IntegrationSDCard implements Integration {
     }
 
     @Override
+    public List<AlcCodeIn> loadAlcCode() {
+        File pathToFile = new File(basePath + "/" + DIC_DIR, ALCCODE_FILE);
+        List<AlcCodeIn> listAlcCode = new ArrayList<>();
+        try {
+            listAlcCode = objectMapper.readValue(pathToFile, new TypeReference<ArrayList<AlcCodeIn>>(){});
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return listAlcCode;
+    }
+
+    @Override
+    public List<MarkIn> loadMark() {
+        File pathToFile = new File(basePath + "/" + DIC_DIR, MARK_FILE);
+        List<MarkIn> listMark = new ArrayList<>();
+        try {
+            listMark = objectMapper.readValue(pathToFile, new TypeReference<ArrayList<MarkIn>>(){});
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return listMark;
+    }
+
+    @Override
     public List<UserIn> loadUsers() {
         File pathToFile = new File(basePath + "/" + DIC_DIR, USER_FILE);
         List<UserIn> listUser = new ArrayList<>();
@@ -116,22 +148,42 @@ public class IntegrationSDCard implements Integration {
         File path = new File(basePath + "/" + SHOPS_DIR + "/" + shopId + "/" + IN_DIR);
         if (path.listFiles() != null) {
             for (File file : path.listFiles()) {
-                try {
-                    IncomeIn incomeIn = objectMapper.readValue(file, IncomeIn.class);
-                    listIncomeIn.add(incomeIn);
-                } catch (IOException e) {
-                    e.printStackTrace();
+                if (file.getName().toUpperCase().startsWith(DOC_PREFIX_INCOME)) {
+                    try {
+                        IncomeIn incomeIn = objectMapper.readValue(file, IncomeIn.class);
+                        listIncomeIn.add(incomeIn);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                 }
             }
         }
-
         return listIncomeIn;
+    }
+
+    @Override
+    public List<MoveIn> loadMove(String shopId) {
+        List<MoveIn> listMoveIn = new ArrayList<>();
+        File path = new File(basePath + "/" + SHOPS_DIR + "/" + shopId + "/" + IN_DIR);
+        if (path.listFiles() != null) {
+            for (File file : path.listFiles()) {
+                if (file.getName().toUpperCase().startsWith(DOC_PREFIX_MOVE)) {
+                    try {
+                        MoveIn moveIn = objectMapper.readValue(file, MoveIn.class);
+                        listMoveIn.add(moveIn);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }
+        return listMoveIn;
     }
 
     @Override
     public void writeIncomeRec(String shopId, IncomeRec incomeRec) {
         File path = new File(basePath + "/" + SHOPS_DIR + "/" + shopId + "/" + OUT_DIR);
-        File file = new File(path, incomeRec.getWbRegId() + "_out.json");
+        File file = new File(path, incomeRec.getDocId() + "_out.json");
             try {
                 IncomeRecOutput out = incomeRec.formatAsOutput();
                 objectMapper.writeValue(file, out);
@@ -173,51 +225,43 @@ public class IntegrationSDCard implements Integration {
         List<File> files = new ArrayList<>();
         listf(basePath + "/" + SHOPS_DIR, files);
         for (File file : files) {
-            boolean toDelete = false;
-            // Если это приход
-            if (file.getAbsolutePath().contains("/" + IN_DIR + "/")) {
-                try {
-                    IncomeIn incomeIn = objectMapper.readValue(file, IncomeIn.class);
-                    Date d = StringUtils.jsonStringToDate(incomeIn.getDate());
-                    if (d.before(calendar.getTime())) {
-                        toDelete = true;
-                    } else {
-                        res.add(incomeIn);
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                    toDelete = true;
-                }
-            }
-            // Если это экспорт
-            if (file.getAbsolutePath().contains("/" + OUT_DIR + "/")) {
-                try {
-                    IncomeRecOutput incomeRecOutput = objectMapper.readValue(file, IncomeRecOutput.class);
-                    Date d = StringUtils.jsonStringToDate(incomeRecOutput.getDate());
-                    if (d.before(calendar.getTime())) {
+            if (file.getName().toUpperCase().startsWith("/" + DOC_PREFIX_INCOME + "/")) {
+                boolean toDelete = false;
+                // Если это импорт
+                if (file.getAbsolutePath().contains("/" + IN_DIR + "/")) {
+                    try {
+                        IncomeIn incomeIn = objectMapper.readValue(file, IncomeIn.class);
+                        Date d = StringUtils.jsonStringToDate(incomeIn.getDate());
+                        if (d.before(calendar.getTime())) {
+                            toDelete = true;
+                        } else {
+                            res.add(incomeIn);
+                        }
+                    } catch (IOException e) {
+                        e.printStackTrace();
                         toDelete = true;
                     }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                    toDelete = true;
                 }
-            }
-            if (toDelete) {
-                file.delete();
+                // Если это экспорт
+                if (file.getAbsolutePath().contains("/" + OUT_DIR + "/")) {
+                    try {
+                        IncomeRecOutput incomeRecOutput = objectMapper.readValue(file, IncomeRecOutput.class);
+                        Date d = StringUtils.jsonStringToDate(incomeRecOutput.getDate());
+                        if (d.before(calendar.getTime())) {
+                            toDelete = true;
+                        }
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        toDelete = true;
+                    }
+                }
+                if (toDelete) {
+                    file.delete();
+                }
             }
         }
 
         return res;
-    }
-
-    @Override
-    public List<SyncFileRec> convertDirs(String[] paths, String shopId) {
-        List<SyncFileRec> result = new ArrayList<>();
-        for (String path : paths) {
-            String pathConv = path.replaceAll(SHOPID_DIR_TEMPLATE, shopId);
-            result.add(new SyncFileRec(pathConv, basePath + "/" + pathConv));
-        }
-        return result;
     }
 
 }
