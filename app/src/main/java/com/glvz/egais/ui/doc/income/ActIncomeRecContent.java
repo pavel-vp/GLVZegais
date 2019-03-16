@@ -1,4 +1,4 @@
-package com.glvz.egais.ui.income;
+package com.glvz.egais.ui.doc.income;
 
 import android.app.Activity;
 import android.content.Context;
@@ -19,9 +19,10 @@ import com.glvz.egais.model.BaseRecContentMark;
 import com.glvz.egais.model.BaseRecContentPositionType;
 import com.glvz.egais.model.BaseRecContentStatus;
 import com.glvz.egais.model.income.*;
-import com.glvz.egais.service.income.IncomeContentArrayAdapter;
+import com.glvz.egais.service.DocContentArrayAdapter;
 import com.glvz.egais.service.PickBottliingDateCallback;
 import com.glvz.egais.service.TransferCallback;
+import com.glvz.egais.service.income.IncomeRecContentHolder;
 import com.glvz.egais.utils.BarcodeObject;
 import com.glvz.egais.utils.MessageUtils;
 import com.glvz.egais.utils.StringUtils;
@@ -40,7 +41,7 @@ public class ActIncomeRecContent extends Activity implements BarcodeReader.Barco
     private String lastMark;
     private IncomeRec incomeRec;
     private IncomeRecContent incomeRecContent;
-    private IncomeContentArrayAdapter.DocRecContentHolder docRecContentHolder;
+    private IncomeRecContentHolder incomeRecContentHolder;
 
     TextView tvAction;
     EditText etQtyAccepted;
@@ -58,14 +59,14 @@ public class ActIncomeRecContent extends Activity implements BarcodeReader.Barco
         setResources();
 
         Bundle extras = getIntent().getExtras();
-        String wbRegId = extras.getString(ActIncomeRec.INCOMEREC_WBREGID);
+        String wbRegId = extras.getString(ActIncomeRec.REC_DOCID);
         IncomeRec ir = DaoMem.getDaoMem().getMapIncomeRec().get(wbRegId);
-        String position = extras.getString(ActIncomeRec.INCOMERECCONTENT_POSITION);
-        IncomeRecContent irc = DaoMem.getDaoMem().getIncomeRecContentByPosition(ir, position);
-        String barcode = extras.getString(ActIncomeRec.INCOMERECCONTENT_LASTMARK);
-        int addQty = extras.getInt(ActIncomeRec.INCOMERECCONTENT_ADDQTY);
-        this.isBoxScanned = extras.getBoolean(ActIncomeRec.INCOMERECCONTENT_ISBOXSCANNED);
-        this.isOpenByScan = extras.getBoolean(ActIncomeRec.INCOMERECCONTENT_ISOPENBYSCAN);
+        String position = extras.getString(ActIncomeRec.RECCONTENT_POSITION);
+        IncomeRecContent irc = (IncomeRecContent) DaoMem.getDaoMem().getRecContentByPosition(ir, position);
+        String barcode = extras.getString(ActIncomeRec.RECCONTENT_LASTMARK);
+        int addQty = extras.getInt(ActIncomeRec.RECCONTENT_ADDQTY);
+        this.isBoxScanned = extras.getBoolean(ActIncomeRec.RECCONTENT_ISBOXSCANNED);
+        this.isOpenByScan = extras.getBoolean(ActIncomeRec.RECCONTENT_ISOPENBYSCAN);
 
         prepareActWithData(wbRegId, irc, addQty, barcode);
 
@@ -186,7 +187,7 @@ public class ActIncomeRecContent extends Activity implements BarcodeReader.Barco
 
     private void setResources() {
         View container = findViewById(R.id.inclRecPrihContent);
-        docRecContentHolder = new IncomeContentArrayAdapter.DocRecContentHolder(container);
+        incomeRecContentHolder = new IncomeRecContentHolder(container);
 
 
         tvAction = (TextView) findViewById(R.id.tvAction);
@@ -241,8 +242,8 @@ public class ActIncomeRecContent extends Activity implements BarcodeReader.Barco
             public void onClick(View v) {
                 Intent in = new Intent();
                 in.setClass(ActIncomeRecContent.this, ActIncomeRecContentChangeNomen.class);
-                in.putExtra(ActIncomeRec.INCOMEREC_WBREGID, incomeRec.getDocId());
-                in.putExtra(ActIncomeRec.INCOMERECCONTENT_POSITION, incomeRecContent.getPosition());
+                in.putExtra(ActIncomeRec.REC_DOCID, incomeRec.getDocId());
+                in.putExtra(ActIncomeRec.RECCONTENT_POSITION, incomeRecContent.getPosition());
                 ActIncomeRecContent.this.startActivityForResult(in, CHANGENOMEN_REQUESTCODE);
             }
         });
@@ -297,7 +298,7 @@ public class ActIncomeRecContent extends Activity implements BarcodeReader.Barco
                     // Посчитать количество добавляемое, в случае успеха сканирования ШК ЕАН (предварительное добавленное колво)
                     countToAddInFuture = DaoMem.getDaoMem().calculateQtyToAdd(ActIncomeRecContent.this.incomeRec, ActIncomeRecContent.this.incomeRecContent, ActIncomeRecContent.this.lastMark);
                 }
-                docRecContentHolder.setItem(incomeRecContent, countToAddInFuture, IncomeContentArrayAdapter.RECCONTENT_MODE);
+                incomeRecContentHolder.setItem(incomeRecContent, countToAddInFuture, DocContentArrayAdapter.RECCONTENT_MODE);
                 if (incomeRecContent.getNomenIn() == null) {
                     btnManualChange.setEnabled(false);
                 } else {

@@ -28,6 +28,7 @@ public class MoveContentIn implements DocContentIn {
         this.nomenId = nomenId;
     }
 
+    @Override
     public Double getQty() {
         return qty;
     }

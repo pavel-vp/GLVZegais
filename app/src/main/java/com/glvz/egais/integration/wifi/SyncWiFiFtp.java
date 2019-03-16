@@ -6,6 +6,7 @@ import android.util.Log;
 import com.glvz.egais.MainApp;
 import com.glvz.egais.dao.Syncro;
 import com.glvz.egais.dao.SyncroMem;
+import com.glvz.egais.integration.model.SetupFtp;
 import com.glvz.egais.integration.wifi.model.LocalFileRec;
 import com.glvz.egais.integration.wifi.model.SyncFileRec;
 import org.apache.commons.net.ftp.FTP;
@@ -14,38 +15,29 @@ import org.apache.commons.net.ftp.FTPFile;
 
 import java.io.*;
 import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 
 public class SyncWiFiFtp {
 
+    public static final int SYNC_SUCCESS = 1;
+    public static final int SYNC_NO_WIFI = 2;
+    public static final int SYNC_ERROR = 3;
     private static final String SHOPID_DIR_TEMPLATE = "%SHOPID%";
 
     private Context context;
     private Syncro syncro;
     private String basePath;
-    private String[] pathsInArr;
-    private String[] pathsOutArr;
-    private String ftp_server;
-    private String ftp_user;
-    private String ftp_root_dir;
-    private int wifi_check_delay;
+    private SetupFtp setupFtp;
 
 
-    public void init(Context context, String basePath, String[] pathsInArr, String[] pathsOutArr,
-                     String ftp_server, String ftp_user, String ftp_root_dir, int wifi_check_delay) {
+    public void init(Context context, String basePath, SetupFtp setupFtp) {
         this.context = context;
         this.syncro = new SyncroMem();
         this.syncro.init(context);
         this.basePath = basePath;
-        this.pathsInArr = pathsInArr;
-        this.pathsOutArr = pathsOutArr;
-        this.ftp_server = ftp_server;
-        this.ftp_user = ftp_user;
-        if (ftp_root_dir != null) {
-            this.ftp_root_dir = ftp_root_dir + "/";
-        }
-        this.wifi_check_delay = wifi_check_delay;
+        this.setupFtp = setupFtp;
     }
 
 
@@ -67,63 +59,95 @@ public class SyncWiFiFtp {
         }
     }
 
-    public void syncWiFiFtp(String shopId) throws Exception {
-        List<SyncFileRec> pathsIn = convertDirs(this.pathsInArr, shopId);
-        List<SyncFileRec> pathsOut = convertDirs(this.pathsOutArr, shopId);
+    public void syncShared() throws Exception {
+        if (this.setupFtp == null) throw new RuntimeException();
+        List<SyncFileRec> pathsIn = convertDirs(this.setupFtp.getPathsInArr(), "0");
+        List<SyncFileRec> pathsOut = convertDirs(this.setupFtp.getPathsOutArr(), "0");
+
+        FTPClient ftpClient = initFTPClient();
+
+        Log.v("DaoMem", "IN===============================");
+        // IN
+        for (SyncFileRec rec : pathsIn) {
+            if (rec.isShared()) {
+                syncFilesIn(ftpClient, rec);
+            }
+        }
+        Log.v("DaoMem", "IN=DONE==============================");
+
+    }
+
+    private void syncFilesIn(FTPClient ftpClient, SyncFileRec rec) throws Exception {
+        Log.v("DaoMem", "Remote directory: " + rec.getRemoteDir() + " -> local:" + rec.getLocalDir());
+
+        File pathLocal = new File(rec.getLocalDir());
+        pathLocal.mkdirs();
+        List<LocalFileRec> localFileRecList = syncro.getLocalFileRecsByPath(rec.getLocalDir());
+
+        FTPFile[] ftpFiles = ftpClient.listFiles(rec.getRemoteDir());
+        for (FTPFile ftpFile : ftpFiles) {
+            String fileNameRemote = ftpFile.getName();
+            long timeRemote = ftpFile.getTimestamp().getTimeInMillis();
+            Log.v("DaoMem", "File remote: " + fileNameRemote + ", time:" + timeRemote);
+
+            LocalFileRec localFileRec = syncro.findFileByName(localFileRecList, fileNameRemote);
+
+            Log.v("DaoMem", "File local: " + localFileRec);
+            if (localFileRec == null || localFileRec.getTimestamp() != timeRemote) {
+                File fileLocal = new File(pathLocal + "/" + fileNameRemote);
+                OutputStream outputStream = new FileOutputStream(fileLocal);
+                ftpClient.retrieveFile(rec.getRemoteDir() + "/" + fileNameRemote, outputStream);
+                outputStream.close();
+                if (localFileRec == null) {
+                    localFileRec = new LocalFileRec(rec.getLocalDir(), fileNameRemote, timeRemote);
+                } else {
+                    localFileRec.setTimestamp(timeRemote);
+                }
+                syncro.addLocalFileRec(localFileRec);
+                Log.v("DaoMem", "File local has rewritten");
+            }
+            localFileRec.setProcessed(true);
+        }
+        // По оставшимся необработанным локальным файлам пройтись и удалить
+        for (LocalFileRec localFileRec : localFileRecList) {
+            if (!localFileRec.isProcessed()) {
+                syncro.deleteLocalFileRec(localFileRec.getPath(), localFileRec.getFileName());
+            }
+        }
+    }
+
+    private FTPClient initFTPClient() throws Exception {
+        WifiManager wifi = (WifiManager)(context.getApplicationContext().getSystemService(Context.WIFI_SERVICE));
+        waitForWiFi(wifi, 2, setupFtp.getWifi_check_delay());
+        //wifi is enabled
+        FTPClient ftpClient = new FTPClient();
+        ftpClient.connect(InetAddress.getByName(setupFtp.getFtp_server()));
+        ftpClient.login(setupFtp.getFtp_user(), setupFtp.getFtp_user());
+        Log.v("DaoMem", "status :: " + ftpClient.getStatus());
+        ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
+        ftpClient.enterLocalPassiveMode();
+        return ftpClient;
+    }
+
+    public void syncShopDocs(String shopId) throws Exception {
+        if (this.setupFtp == null) throw new RuntimeException();
+        List<SyncFileRec> pathsIn = convertDirs(this.setupFtp.getPathsInArr(), shopId);
+        List<SyncFileRec> pathsOut = convertDirs(this.setupFtp.getPathsOutArr(), shopId);
 
         WifiManager wifi = (WifiManager)(context.getApplicationContext().getSystemService(Context.WIFI_SERVICE));
-        waitForWiFi(wifi, 2, wifi_check_delay);
+        waitForWiFi(wifi, 2, setupFtp.getWifi_check_delay());
             //wifi is enabled
+        FTPClient ftpClient = initFTPClient();
 
-                FTPClient ftpClient = new FTPClient();
-                ftpClient.connect(InetAddress.getByName(ftp_server));
-                ftpClient.login(ftp_user, ftp_user);
-                Log.v("DaoMem", "status :: " + ftpClient.getStatus());
-                ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
-                ftpClient.enterLocalPassiveMode();
 
                 Log.v("DaoMem", "IN===============================");
                 // IN
                 for (SyncFileRec rec : pathsIn) {
-                    Log.v("DaoMem", "Remote directory: " + rec.getRemoteDir() + " -> local:"+rec.getLocalDir());
-
-                    File pathLocal = new File(rec.getLocalDir());
-                    pathLocal.mkdirs();
-                    List<LocalFileRec> localFileRecList = syncro.getLocalFileRecsByPath(rec.getLocalDir());
-
-
-                    FTPFile[] ftpFiles = ftpClient.listFiles(rec.getRemoteDir());
-                    for (FTPFile ftpFile : ftpFiles) {
-                        String fileNameRemote = ftpFile.getName();
-                        long timeRemote = ftpFile.getTimestamp().getTimeInMillis();
-                        Log.v("DaoMem", "File remote: " + fileNameRemote + ", time:" + timeRemote);
-
-                        LocalFileRec localFileRec = syncro.findFileByName(localFileRecList, fileNameRemote);
-
-                        Log.v("DaoMem", "File local: " + localFileRec);
-                        if (localFileRec == null || localFileRec.getTimestamp() != timeRemote) {
-                            File fileLocal = new File(pathLocal + "/" + fileNameRemote);
-                            OutputStream outputStream = new FileOutputStream(fileLocal);
-                            ftpClient.retrieveFile(rec.getRemoteDir() + "/" + fileNameRemote, outputStream);
-                            outputStream.close();
-                            if (localFileRec == null) {
-                                localFileRec = new LocalFileRec(rec.getLocalDir(), fileNameRemote, timeRemote);
-                            } else {
-                                localFileRec.setTimestamp(timeRemote);
-                            }
-                            syncro.addLocalFileRec(localFileRec);
-                            Log.v("DaoMem", "File local has rewritten");
-                        }
-                        localFileRec.setProcessed(true);
+                    if (!rec.isShared()) {
+                        syncFilesIn(ftpClient, rec);
                     }
-                    // По оставшимся необработанным локальным файлам пройтись и удалить
-                    for (LocalFileRec localFileRec : localFileRecList) {
-                        if (!localFileRec.isProcessed()) {
-                            syncro.deleteLocalFileRec(localFileRec.getPath(), localFileRec.getFileName());
-                        }
-                    }
-
                 }
+                Log.v("DaoMem", "IN=DONE===============================");
 
                 Log.v("DaoMem", "OUT===============================");
                 // OUT
@@ -147,6 +171,7 @@ public class SyncWiFiFtp {
                     }
                     syncro.writeLocalChangedFiles(rec.getLocalDir(), localFileList);
                 }
+                Log.v("DaoMem", "OUT=DONE===============================");
 
     }
 
@@ -163,7 +188,7 @@ public class SyncWiFiFtp {
         List<SyncFileRec> result = new ArrayList<>();
         for (String path : paths) {
             String pathConv = path.replaceAll(SHOPID_DIR_TEMPLATE, shopId);
-            result.add(new SyncFileRec(this.ftp_root_dir + pathConv, basePath + "/" + pathConv));
+            result.add(new SyncFileRec(this.setupFtp.getFtp_root_dir()+ pathConv, basePath + "/" + pathConv, !path.contains(SHOPID_DIR_TEMPLATE)));
         }
         return result;
     }

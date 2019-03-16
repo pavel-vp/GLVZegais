@@ -72,6 +72,7 @@ public class IncomeContentIn implements DocContentIn {
         this.alcVolume = alcVolume;
     }
 
+    @Override
     public Double getQty() {
         return qty;
     }

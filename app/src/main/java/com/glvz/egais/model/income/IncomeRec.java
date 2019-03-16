@@ -1,8 +1,6 @@
 package com.glvz.egais.model.income;
 
-import android.content.SharedPreferences;
 import com.glvz.egais.dao.DaoMem;
-import com.glvz.egais.dao.Dictionary;
 import com.glvz.egais.integration.model.doc.DocContentIn;
 import com.glvz.egais.integration.model.doc.DocIn;
 import com.glvz.egais.integration.model.doc.income.*;
@@ -38,7 +36,7 @@ public class IncomeRec extends BaseRec {
         this.incomeIn = incomeIn;
     }
 
-
+    @Override
     public IncomeRecOutput formatAsOutput() {
         IncomeRecOutput rec = new IncomeRecOutput();
         rec.setWbRegId(this.incomeIn.getWbRegId());
@@ -57,7 +55,7 @@ public class IncomeRec extends BaseRec {
             contentOutput.setAlccode(contentIn.getAlccode());
             contentOutput.setQty(contentIn.getQty());
 
-            IncomeRecContent recContent = DaoMem.getDaoMem().getIncomeRecContentByPosition(this, contentIn.getPosition());
+            IncomeRecContent recContent = (IncomeRecContent) DaoMem.getDaoMem().getRecContentByPosition(this, contentIn.getPosition());
             contentOutput.setBarCode(recContent.getBarcode());
             contentOutput.setQtyFact(recContent.getQtyAccepted());
             contentOutput.setQtyDirectInput(recContent.getContentIn().getQtyDirectInput());

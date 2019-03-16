@@ -12,11 +12,11 @@ import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
-import android.widget.ProgressBar;
 import com.glvz.egais.R;
 import com.glvz.egais.dao.DaoMem;
-import com.glvz.egais.ui.income.ActIncomeList;
-import com.glvz.egais.ui.move.ActMoveList;
+import com.glvz.egais.integration.wifi.SyncWiFiFtp;
+import com.glvz.egais.ui.doc.income.ActIncomeList;
+import com.glvz.egais.ui.doc.move.ActMoveList;
 import com.glvz.egais.utils.MessageUtils;
 
 public class ActMainMenu extends Activity {
@@ -44,7 +44,7 @@ public class ActMainMenu extends Activity {
     private void setResources() {
 
         pg = new ProgressDialog(this);
-        pg.setMessage("Синхронизаци по WiFi...");
+        pg.setMessage("Синхронизация по WiFi...");
         Button buttonIncome = (Button) findViewById(R.id.buttonIncome);
         buttonIncome.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -120,27 +120,31 @@ public class ActMainMenu extends Activity {
             @Override
             public void run() {
                 try {
-                    DaoMem.getDaoMem().syncWiFiFtp();
-                    handleResult(true);
-                } catch (Exception e) {
+                    DaoMem.getDaoMem().syncWiFiFtpShopDocs();
+                    handleResult(SyncWiFiFtp.SYNC_SUCCESS);
+                } catch (RuntimeException e) {
                     Log.e(getLocalClassName(), "error at wifi" ,e);
-                    handleResult(false);
+                    handleResult(SyncWiFiFtp.SYNC_NO_WIFI);
+                } catch (Exception e) {
+                    Log.e(getLocalClassName(), "error at wifi", e);
+                    handleResult(SyncWiFiFtp.SYNC_ERROR);
                 }
                 DaoMem.getDaoMem().initDocuments();
-                DaoMem.getDaoMem().initDictionary();
             }
         }).start();
     }
 
-    private void handleResult(final boolean result) {
+    private void handleResult(final int mode) {
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 pg.dismiss();
-                if (result) {
-                    MessageUtils.showToastMessage("Синхрониация по WiFi выполнена");
-                } else {
-                    MessageUtils.showModalMessage(ActMainMenu.this, "Ошибка", "Выполните обмен через USB-кабель (WiFi-подключение отсутствует)");
+                switch (mode){
+                    case SyncWiFiFtp.SYNC_SUCCESS: MessageUtils.showToastMessage("Синхрониация по WiFi выполнена");
+                            break;
+                    case SyncWiFiFtp.SYNC_NO_WIFI: break;
+                    case SyncWiFiFtp.SYNC_ERROR: MessageUtils.showModalMessage(ActMainMenu.this, "Ошибка", "Выполните обмен через USB-кабель (WiFi-подключение отсутствует)");
+                        break;
                 }
             }
         });

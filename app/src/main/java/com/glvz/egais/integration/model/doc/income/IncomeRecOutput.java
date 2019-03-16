@@ -1,10 +1,11 @@
 package com.glvz.egais.integration.model.doc.income;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.glvz.egais.integration.model.doc.BaseRecOutput;
 
 import java.io.Serializable;
 
-public class IncomeRecOutput implements Serializable {
+public class IncomeRecOutput extends BaseRecOutput {
 
     @JsonProperty(value="WBRegId")
     private String wbRegId;

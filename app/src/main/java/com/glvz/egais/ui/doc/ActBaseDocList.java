@@ -1,15 +1,13 @@
-package com.glvz.egais.ui.move;
+package com.glvz.egais.ui.doc;
 
 import android.app.Activity;
-import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
 import com.glvz.egais.R;
-import com.glvz.egais.dao.DaoMem;
-import com.glvz.egais.model.move.MoveRec;
-import com.glvz.egais.service.move.MoveArrayAdapter;
+import com.glvz.egais.model.BaseRec;
+import com.glvz.egais.service.DocArrayAdapter;
 import com.glvz.egais.utils.BarcodeObject;
 import com.glvz.egais.utils.MessageUtils;
 import com.honeywell.aidc.BarcodeFailureEvent;
@@ -17,57 +15,38 @@ import com.honeywell.aidc.BarcodeReadEvent;
 import com.honeywell.aidc.BarcodeReader;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
-public class ActMoveList extends Activity implements BarcodeReader.BarcodeListener {
-
+public abstract class ActBaseDocList extends Activity implements BarcodeReader.BarcodeListener {
 
     ListView lv;
-    volatile List<MoveRec> list = new ArrayList<>();
-    MoveArrayAdapter adapter;
+    protected volatile List<BaseRec> list = new ArrayList<>();
+    protected DocArrayAdapter adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_movelist);
+        setContentView(R.layout.activity_incomelist);
 
         setResources();
-
         updateList();
     }
 
-    private void setResources() {
+    protected void setResources() {
         lv = (ListView)findViewById(R.id.listView);
-
         lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 pickRec(list.get(position));
             }
         });
-        adapter = new MoveArrayAdapter(this, R.layout.rec_move, list);
+        adapter = new DocArrayAdapter(this, R.layout.rec_doc, list);
         lv.setAdapter(adapter);
-
     }
 
-    private void updateList() {
-        // Прочитать список накладных
-        Collection<MoveRec> newList = DaoMem.getDaoMem().getMoveRecListOrdered();
-        list.clear();
-        list.addAll(newList);
-        adapter.notifyDataSetChanged();
-    }
+    abstract protected void updateList();
 
-
-    private void pickRec(MoveRec req) {
-/*        // Перейти в форму одного документа
-        Intent in = new Intent();
-        in.setClass(ActMoveList.this, ActMoveRec.class);
-        in.putExtra(ActMoveRec.INCOMEREC_WBREGID, req.getDocId());
-        startActivity(in);
-        */
-    }
+    abstract protected void pickRec(BaseRec req);
 
     @Override
     public void onResume() {
@@ -93,3 +72,4 @@ public class ActMoveList extends Activity implements BarcodeReader.BarcodeListen
 
     }
 }
+

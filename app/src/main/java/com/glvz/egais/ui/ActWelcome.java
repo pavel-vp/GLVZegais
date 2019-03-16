@@ -2,12 +2,14 @@ package com.glvz.egais.ui;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.util.Log;
 import android.widget.TextView;
 import com.glvz.egais.BuildConfig;
 import com.glvz.egais.R;
@@ -21,6 +23,7 @@ import com.honeywell.aidc.BarcodeReader;
 
 public class ActWelcome extends Activity implements BarcodeReader.BarcodeListener {
 
+    ProgressDialog pg ;
 
     private static final int GLVZ_PERMISSIONS_REQUEST = 1;
 
@@ -36,6 +39,8 @@ public class ActWelcome extends Activity implements BarcodeReader.BarcodeListene
     }
 
     private void setResources() {
+        pg = new ProgressDialog(this);
+        pg.setMessage("Синхронизация по WiFi...");
         tvVersion = (TextView) findViewById(R.id.tvVersion);
         tvVersion.setText("Версия: " + BuildConfig.VERSION_CODE);
     }
@@ -52,6 +57,7 @@ public class ActWelcome extends Activity implements BarcodeReader.BarcodeListene
     public void onStart() {
         super.onStart();
         tryGrantPermition();
+
     }
 
     private void tryGrantPermition() {
@@ -93,6 +99,7 @@ public class ActWelcome extends Activity implements BarcodeReader.BarcodeListene
         super.onResume();
 //        BarcodeObject.linkToListener(this);
         BarcodeObject.setCurrentListener(this);
+        loadShared();
     }
 
     @Override
@@ -118,6 +125,23 @@ public class ActWelcome extends Activity implements BarcodeReader.BarcodeListene
     public void onFailureEvent(BarcodeFailureEvent barcodeFailureEvent) {
         System.out.println(barcodeFailureEvent);
 
+    }
+
+    private void loadShared() {
+            pg.show();
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    DaoMem.getDaoMem().initDictionary();
+                    try {
+                        DaoMem.getDaoMem().syncWiFiFtpShared();
+                    } catch (Exception e) {
+                        Log.e(getLocalClassName(), "error at wifi" ,e);
+                    }
+                    pg.dismiss();
+                    DaoMem.getDaoMem().initDictionary();
+                }
+            }).start();
     }
 
 }

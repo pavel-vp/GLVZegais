@@ -1,4 +1,4 @@
-package com.glvz.egais.ui.income;
+package com.glvz.egais.ui.doc.income;
 
 import android.app.Activity;
 import android.content.DialogInterface;
@@ -52,10 +52,10 @@ public class ActIncomeRecContentChangeNomen extends Activity implements BarcodeR
         setResources();
 
         Bundle extras = getIntent().getExtras();
-        String wbRegId = extras.getString(ActIncomeRec.INCOMEREC_WBREGID);
+        String wbRegId = extras.getString(ActIncomeRec.REC_DOCID);
         incomeRec = DaoMem.getDaoMem().getMapIncomeRec().get(wbRegId);
-        String position = extras.getString(ActIncomeRec.INCOMERECCONTENT_POSITION);
-        incomeRecContent = DaoMem.getDaoMem().getIncomeRecContentByPosition(incomeRec, position);
+        String position = extras.getString(ActIncomeRec.RECCONTENT_POSITION);
+        incomeRecContent = (IncomeRecContent) DaoMem.getDaoMem().getRecContentByPosition(incomeRec, position);
 
     }
 

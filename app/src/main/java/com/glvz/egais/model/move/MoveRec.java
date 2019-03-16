@@ -1,15 +1,18 @@
 package com.glvz.egais.model.move;
 
+import com.glvz.egais.integration.model.doc.BaseRecOutput;
 import com.glvz.egais.integration.model.doc.DocContentIn;
 import com.glvz.egais.integration.model.doc.DocIn;
 import com.glvz.egais.integration.model.doc.move.MoveContentIn;
 import com.glvz.egais.integration.model.doc.move.MoveIn;
 import com.glvz.egais.model.BaseRec;
 import com.glvz.egais.model.BaseRecContent;
+import com.glvz.egais.model.BaseRecContentStatus;
 import com.glvz.egais.model.BaseRecStatus;
 import com.glvz.egais.utils.StringUtils;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
@@ -59,6 +62,21 @@ public class MoveRec extends BaseRec {
     }
 
     @Override
+    public BaseRecOutput formatAsOutput() {
+        return null;
+    }
+
+    @Override
+    public BaseRecContent tryGetNextRecContent() {
+        for (BaseRecContent recContent : getRecContentList()) {
+            if (recContent.getStatus() != BaseRecContentStatus.DONE && recContent.getStatus() != BaseRecContentStatus.REJECTED) {
+                return recContent;
+            }
+        }
+        return null;
+    }
+
+    @Override
     public String getDocId() {
         return docId;
     }
@@ -73,6 +91,14 @@ public class MoveRec extends BaseRec {
 
     public void setMoveIn(MoveIn moveIn) {
         this.moveIn = moveIn;
+    }
+
+    public Collection<MoveRecContent> getMoveRecContentList() {
+        List<MoveRecContent> list = new ArrayList<>();
+        for (BaseRecContent recContent : recContentList) {
+            list.add((MoveRecContent) recContent);
+        }
+        return list;
     }
 
 }

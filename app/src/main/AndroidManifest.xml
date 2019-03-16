@@ -2,10 +2,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
           xmlns:tools="http://schemas.android.com/tools" package="com.glvz.egais">
 
-    <uses-sdk
-            android:minSdkVersion="16"
-            android:targetSdkVersion="17" />
-
     <uses-permission android:name="com.honeywell.decode.permission.DECODE" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
@@ -42,13 +38,17 @@
 
         <activity android:name=".ui.ActChooseShop" android:screenOrientation="portrait"/>
         <activity android:name=".ui.ActMainMenu" android:screenOrientation="portrait"/>
-        <activity android:name=".ui.income.ActIncomeList" android:screenOrientation="portrait"/>
-        <activity android:name=".ui.income.ActIncomeRec" android:screenOrientation="portrait"/>
-        <activity android:name=".ui.income.ActIncomeRecContent" android:screenOrientation="portrait"/>
+        <activity android:name=".ui.doc.income.ActIncomeList" android:screenOrientation="portrait"/>
+        <activity android:name=".ui.doc.income.ActIncomeRec" android:screenOrientation="portrait"/>
+        <activity android:name=".ui.doc.income.ActIncomeRecContent" android:screenOrientation="portrait"/>
         <activity android:name=".ui.ActDummy" android:screenOrientation="portrait"/>
-        <activity android:name=".ui.income.ActIncomeRecContentChangeNomen" android:screenOrientation="portrait"/>
+        <activity android:name=".ui.doc.income.ActIncomeRecContentChangeNomen" android:screenOrientation="portrait"/>
 
-        <activity android:name=".ui.move.ActMoveList" android:screenOrientation="portrait"/>
+        <activity android:name=".ui.doc.move.ActMoveList" android:screenOrientation="portrait"/>
+        <activity android:name=".ui.doc.move.ActMoveRec" android:screenOrientation="portrait"/>
+        <activity android:name=".ui.doc.move.ActMoveRecContent" android:screenOrientation="portrait"/>
+
+
 
 
     </application>

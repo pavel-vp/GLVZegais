@@ -2,12 +2,6 @@
     <string name="app_name">GLVZegais</string>
     <string name="path_exchange">GLVZ</string>
     <string name="num_days_old">3000</string>
-    <string name="ftp_server">10.0.0.6</string>
-    <string name="ftp_user">ftp</string>
-    <string name="ftp_pass"></string>
-    <string name="ftp_root_dir"></string>
-    <integer name="wifi_check_delay_sec">5</integer>
-
 
     <!-- CALCULATOR RES -->
     <string name="error">Error</string>

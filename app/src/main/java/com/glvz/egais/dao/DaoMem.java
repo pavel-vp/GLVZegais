@@ -25,6 +25,7 @@ import com.glvz.egais.integration.wifi.SyncWiFiFtp;
 import com.glvz.egais.model.*;
 import com.glvz.egais.model.income.*;
 import com.glvz.egais.model.move.MoveRec;
+import com.glvz.egais.model.move.MoveRecContent;
 import com.glvz.egais.utils.MessageUtils;
 
 import java.io.*;
@@ -55,6 +56,7 @@ public class DaoMem {
 
     SyncWiFiFtp syncWiFiFtp;
 
+    SetupFtp setupFtp;
     List<ShopIn> listS;
     List<PostIn> listP;
     List<UserIn> listU;
@@ -92,15 +94,10 @@ public class DaoMem {
                 setShopId(shopInStored.getId());
             }
         }
+        setupFtp = integrationFile.loadSetupFtp();
         syncWiFiFtp = new SyncWiFiFtp();
         syncWiFiFtp.init(MainApp.getContext(), path.getAbsolutePath(),
-                MainApp.getContext().getResources().getStringArray(R.array.pathsin),
-                MainApp.getContext().getResources().getStringArray(R.array.pathsout),
-                MainApp.getContext().getResources().getString(R.string.ftp_server),
-                MainApp.getContext().getResources().getString(R.string.ftp_user),
-                MainApp.getContext().getResources().getString(R.string.ftp_pass),
-                MainApp.getContext().getResources().getInteger(R.integer.wifi_check_delay_sec)
-                );
+                setupFtp);
     }
 
     public void setShopId(String shopId) {
@@ -217,6 +214,10 @@ public class DaoMem {
         writeLocalDataBaseRec(incomeRec);
     }
 
+    public void writeLocalDataMoveRec(MoveRec moveRec) {
+        writeLocalDataBaseRec(moveRec);
+    }
+
     public void writeLocalDataBaseRec(BaseRec baseRec) {
         // Синхронизируем общий статус накладной
         // Посчитаем число реально принятых строк
@@ -306,14 +307,22 @@ public class DaoMem {
         return mapIncomeRec;
     }
 
+    public Map<String, MoveRec> getMapMoveRec() {
+        return mapMoveRec;
+    }
+
     public Collection<IncomeRecContent> getIncomeRecContentList(String wbRegId) {
         return mapIncomeRec.get(wbRegId).getIncomeRecContentList();
     }
 
-    public IncomeRecContent getIncomeRecContentByPosition(IncomeRec incomeRec, String position) {
-        for (IncomeRecContent incomeRecContent : incomeRec.getIncomeRecContentList()) {
-            if (incomeRecContent.getPosition().equals(position)) {
-                return incomeRecContent;
+    public Collection<MoveRecContent> getMoveRecContentList(String docId) {
+        return mapMoveRec.get(docId).getMoveRecContentList();
+    }
+
+    public BaseRecContent getRecContentByPosition(BaseRec rec, String position) {
+        for (BaseRecContent recContent : rec.getRecContentList()) {
+            if (recContent.getPosition().equals(position)) {
+                return recContent;
             }
         }
         return null; // FIXME: обработку ексепшнов и сообщений пользователю
@@ -434,8 +443,19 @@ public class DaoMem {
         }
         incomeRec.setExported(true);
         writeLocalDataIncomeRec(incomeRec);
-        integrationFile.writeIncomeRec(shopId, incomeRec);
+        integrationFile.writeBaseRec(shopId, incomeRec);
         return true;
+    }
+
+    public boolean exportData(MoveRec moveRec) {
+        exportDataBaseRec(moveRec);
+        return true;
+    }
+
+    private void exportDataBaseRec(BaseRec rec) {
+        rec.setExported(true);
+        writeLocalDataBaseRec(rec);
+        integrationFile.writeBaseRec(shopId, rec);
     }
 
     public List<ShopIn> getListS() {
@@ -460,17 +480,10 @@ public class DaoMem {
         return shopId;
     }
 
-    public void rejectData(IncomeRec incomeRec) {
-        // Пройтись по всем строкам, очистить связки с товаром и проставить везде нули
-        for (IncomeRecContent irc : incomeRec.getIncomeRecContentList()) {
-            irc.setNomenIn(null, null);
-            irc.setQtyAccepted(Double.valueOf(0));
-            irc.getBaseRecContentMarkList().clear();
-            irc.setStatus(BaseRecContentStatus.REJECTED);
-        }
-        incomeRec.setStatus(BaseRecStatus.REJECTED);
-        writeLocalDataIncomeRec(incomeRec);
-        exportData(incomeRec);
+    public void rejectData(BaseRec rec) {
+        rec.rejectData();
+        writeLocalDataBaseRec(rec);
+        exportDataBaseRec(rec);
     }
 
     public int calculateQtyToAdd(IncomeRec incomeRec, IncomeRecContent incomeRecContent, String barcode) {
@@ -562,8 +575,8 @@ public class DaoMem {
         ed.apply();
     }
 
-    public boolean checkIncomeRecZeroQtyFact(IncomeRec incomeRec) {
-        for (IncomeRecContent irc : incomeRec.getIncomeRecContentList()) {
+    public boolean checkRecZeroQtyFact(BaseRec rec) {
+        for (BaseRecContent irc : rec.getRecContentList()) {
             if (irc.getQtyAccepted() != null && irc.getQtyAccepted() > 0) {
                 return false;
             }
@@ -571,8 +584,22 @@ public class DaoMem {
         return true;
     }
 
-    public void syncWiFiFtp() throws Exception {
-        this.syncWiFiFtp.syncWiFiFtp(shopId);
+    public boolean isQtyAcceptedFull(BaseRec rec) {
+        for (BaseRecContent irc : rec.getRecContentList()) {
+            if (irc.getQtyAccepted() == null ||
+                    (irc.getQtyAccepted().equals(irc.getContentIn().getQty())  )) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public void syncWiFiFtpShared() throws Exception {
+        this.syncWiFiFtp.syncShared();
+    }
+
+    public void syncWiFiFtpShopDocs() throws Exception {
+        this.syncWiFiFtp.syncShopDocs(shopId);
     }
 
     public static class MarkInBox {

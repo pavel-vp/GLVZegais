@@ -1,8 +1,8 @@
 package com.glvz.egais.model;
 
+import com.glvz.egais.integration.model.doc.BaseRecOutput;
 import com.glvz.egais.integration.model.doc.DocContentIn;
 import com.glvz.egais.integration.model.doc.DocIn;
-import com.glvz.egais.integration.model.doc.income.IncomeIn;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -79,4 +79,21 @@ public abstract class BaseRec {
     public abstract List<DocContentIn> getDocContentInList();
 
     public abstract BaseRecContent buildRecContent(DocContentIn docContentIn);
+
+    public abstract BaseRecOutput formatAsOutput();
+
+    public void rejectData() {
+        // Пройтись по всем строкам, очистить связки с товаром и проставить везде нули
+        for (BaseRecContent recContent : getRecContentList()) {
+            recContent.setNomenIn(null, null);
+            recContent.setQtyAccepted(Double.valueOf(0));
+            recContent.getBaseRecContentMarkList().clear();
+            recContent.setStatus(BaseRecContentStatus.REJECTED);
+        }
+        setStatus(BaseRecStatus.REJECTED);
+    }
+
+    public BaseRecContent tryGetNextRecContent() {
+        return null;
+    }
 }

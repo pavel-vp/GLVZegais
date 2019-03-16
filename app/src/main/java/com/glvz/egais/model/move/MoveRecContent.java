@@ -21,4 +21,9 @@ public class MoveRecContent extends BaseRecContent {
         return (MoveContentIn) contentIn;
     }
 
+    @Override
+    public String getId1c() {
+        return ((MoveContentIn)contentIn).getNomenId();
+    }
+
 }

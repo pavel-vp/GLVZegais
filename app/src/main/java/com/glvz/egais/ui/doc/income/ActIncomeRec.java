@@ -1,4 +1,4 @@
-package com.glvz.egais.ui.income;
+package com.glvz.egais.ui.doc.income;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -6,7 +6,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Handler;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -17,53 +16,79 @@ import com.glvz.egais.MainApp;
 import com.glvz.egais.R;
 import com.glvz.egais.dao.DaoMem;
 import com.glvz.egais.integration.model.PostIn;
+import com.glvz.egais.model.BaseRecContent;
 import com.glvz.egais.model.BaseRecContentMark;
 import com.glvz.egais.model.BaseRecContentStatus;
 import com.glvz.egais.model.BaseRecStatus;
 import com.glvz.egais.model.income.*;
-import com.glvz.egais.service.income.IncomeArrayAdapter;
-import com.glvz.egais.service.income.IncomeContentArrayAdapter;
+import com.glvz.egais.service.DocArrayAdapter;
+import com.glvz.egais.service.DocContentArrayAdapter;
 import com.glvz.egais.service.PickBottliingDateCallback;
 import com.glvz.egais.service.TransferCallback;
+import com.glvz.egais.service.income.IncomeContentArrayAdapter;
+import com.glvz.egais.ui.doc.ActBaseDocRec;
 import com.glvz.egais.utils.BarcodeObject;
 import com.glvz.egais.utils.MessageUtils;
 import com.glvz.egais.utils.StringUtils;
 import com.honeywell.aidc.BarcodeFailureEvent;
 import com.honeywell.aidc.BarcodeReadEvent;
-import com.honeywell.aidc.BarcodeReader;
 
 import java.util.*;
 
-public class ActIncomeRec extends Activity implements BarcodeReader.BarcodeListener, PickBottliingDateCallback, TransferCallback {
-
-    public final static String INCOMEREC_WBREGID = "WBREGID";
-    public final static String INCOMERECCONTENT_POSITION = "POSITION";
-    public static final String INCOMERECCONTENT_ADDQTY = "ADDQTY";
-    public static final String INCOMERECCONTENT_LASTMARK = "LASTMARK";
-    public static final String INCOMERECCONTENT_ISBOXSCANNED = "ISBOXSCANNED";
-    public static final String INCOMERECCONTENT_ISOPENBYSCAN = "ISOPENBYSCAN";
+public class ActIncomeRec extends ActBaseDocRec implements PickBottliingDateCallback, TransferCallback {
 
     private IncomeRec incomeRec;
 
-    private IncomeArrayAdapter.DocRecHolder docRecHolder;
-    private CheckBox cbFilter;
-    private ListView lvContent;
-    private List<IncomeRecContent> list = new ArrayList<>();
-    IncomeContentArrayAdapter adapter;
-    private static final Handler handler = new Handler(MainApp.getContext().getMainLooper());
-
+    @Override
+    protected void initRec() {
+        Bundle extras = getIntent().getExtras();
+        String key = extras.getString(ActBaseDocRec.REC_DOCID);
+        this.incomeRec = DaoMem.getDaoMem().getMapIncomeRec().get(key);
+    }
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+    protected void setResources() {
         setContentView(R.layout.activity_incomerec);
 
-        Bundle extras = getIntent().getExtras();
-        String key = extras.getString(INCOMEREC_WBREGID);
-        incomeRec = DaoMem.getDaoMem().getMapIncomeRec().get(key);
+        View container = findViewById(R.id.inclRecPrih);
+        docRecHolder = new DocArrayAdapter.DocRecHolder(container);
 
-        setResources();
-        updateData();
+        cbFilter = (CheckBox) findViewById(R.id.cbFilter);
+        cbFilter.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                DaoMem.getDaoMem().writeFilterOnIncomeRec((IncomeRec) incomeRec, cbFilter.isChecked());
+                ActIncomeRec.this.updateData();
+            }
+        });
+        cbFilter.setChecked(DaoMem.getDaoMem().readFilterOnIncomeRec((IncomeRec) incomeRec));
+
+        lvContent = (ListView) findViewById(R.id.lvContent);
+
+        lvContent.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                pickRec(ActIncomeRec.this, incomeRec.getDocId(), list.get(position), 0, null, false, false);
+            }
+        });
+        adapter = new IncomeContentArrayAdapter(this, R.layout.rec_prih_position, list);
+        lvContent.setAdapter(adapter);
+    }
+
+    @Override
+    protected void updateData() {
+
+        docRecHolder.setItem(incomeRec);
+        // Достать список позиций по накладной
+        Collection<IncomeRecContent> newList = DaoMem.getDaoMem().getIncomeRecContentList(incomeRec.getDocId());
+        list.clear();
+        for (IncomeRecContent incomeRecContent : newList) {
+            if (!cbFilter.isChecked() || incomeRecContent.getStatus() != BaseRecContentStatus.DONE) {
+                list.add(incomeRecContent);
+            }
+        }
+        adapter.notifyDataSetChanged();
+
     }
 
     @Override
@@ -82,7 +107,7 @@ public class ActIncomeRec extends Activity implements BarcodeReader.BarcodeListe
             case R.id.action_export:
                 // Если накладная новая или количесвто факт по всем строкам - 0, то поставить статус отказа
                 if (incomeRec.getStatus() == BaseRecStatus.NEW ||
-                        DaoMem.getDaoMem().checkIncomeRecZeroQtyFact(incomeRec)) {
+                        DaoMem.getDaoMem().checkRecZeroQtyFact(incomeRec)) {
                     DaoMem.getDaoMem().rejectData(incomeRec);
                     cbFilter.setChecked(false);
                     DaoMem.getDaoMem().writeFilterOnIncomeRec(incomeRec, cbFilter.isChecked());
@@ -113,72 +138,18 @@ public class ActIncomeRec extends Activity implements BarcodeReader.BarcodeListe
         }
     }
 
-    private void setResources() {
-
-        View container = findViewById(R.id.inclRecPrih);
-        docRecHolder = new IncomeArrayAdapter.DocRecHolder(container);
-
-        cbFilter = (CheckBox) findViewById(R.id.cbFilter);
-        cbFilter.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                DaoMem.getDaoMem().writeFilterOnIncomeRec(incomeRec, cbFilter.isChecked());
-                ActIncomeRec.this.updateData();
-            }
-        });
-        cbFilter.setChecked(DaoMem.getDaoMem().readFilterOnIncomeRec(incomeRec));
-
-
-        lvContent = (ListView) findViewById(R.id.lvContent);
-
-        lvContent.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                pickRec(ActIncomeRec.this, incomeRec.getDocId(), list.get(position), 0, null, false, false);
-            }
-        });
-        adapter = new IncomeContentArrayAdapter(this, R.layout.rec_prih_position, list);
-        lvContent.setAdapter(adapter);
-
-    }
-
-    private void updateData() {
-        docRecHolder.setItem(incomeRec);
-        // Достать список позиций по накладной
-        Collection<IncomeRecContent> newList = DaoMem.getDaoMem().getIncomeRecContentList(incomeRec.getDocId());
-        list.clear();
-        for (IncomeRecContent incomeRecContent : newList) {
-            if (!cbFilter.isChecked() || incomeRecContent.getStatus() != BaseRecContentStatus.DONE) {
-                list.add(incomeRecContent);
-            }
-        }
-        adapter.notifyDataSetChanged();
-    }
-
-    private static void pickRec(Context ctx, String wbRegId, IncomeRecContent req, int addQty, String barcode, boolean isBoxScanned, boolean isOpenByScan) {
+    @Override
+    protected void pickRec(Context ctx, String docId, BaseRecContent req, int addQty, String barcode, boolean isBoxScanned, boolean isOpenByScan) {
         // Перейти в форму одной строки позиции
         Intent in = new Intent();
         in.setClass(ctx, ActIncomeRecContent.class);
-        in.putExtra(ActIncomeRec.INCOMEREC_WBREGID, wbRegId);
-        in.putExtra(ActIncomeRec.INCOMERECCONTENT_POSITION, req.getPosition().toString());
-        in.putExtra(ActIncomeRec.INCOMERECCONTENT_ADDQTY, addQty);
-        in.putExtra(ActIncomeRec.INCOMERECCONTENT_LASTMARK, barcode);
-        in.putExtra(ActIncomeRec.INCOMERECCONTENT_ISBOXSCANNED, isBoxScanned);
-        in.putExtra(ActIncomeRec.INCOMERECCONTENT_ISOPENBYSCAN, isOpenByScan);
+        in.putExtra(ActIncomeRec.REC_DOCID, docId);
+        in.putExtra(ActIncomeRec.RECCONTENT_POSITION, req.getPosition().toString());
+        in.putExtra(ActIncomeRec.RECCONTENT_ADDQTY, addQty);
+        in.putExtra(ActIncomeRec.RECCONTENT_LASTMARK, barcode);
+        in.putExtra(ActIncomeRec.RECCONTENT_ISBOXSCANNED, isBoxScanned);
+        in.putExtra(ActIncomeRec.RECCONTENT_ISOPENBYSCAN, isOpenByScan);
         ctx.startActivity(in);
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-        BarcodeObject.setCurrentListener(this);
-        updateData();
-    }
-
-    @Override
-    public void onPause() {
-        super.onPause();
-        BarcodeObject.setCurrentListener(null);
     }
 
 

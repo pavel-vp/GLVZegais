@@ -3,6 +3,7 @@ package com.glvz.egais.integration.sdcard;
 import com.glvz.egais.integration.model.*;
 import com.glvz.egais.integration.model.doc.income.IncomeIn;
 import com.glvz.egais.integration.model.doc.move.MoveIn;
+import com.glvz.egais.model.BaseRec;
 import com.glvz.egais.model.income.IncomeRec;
 
 import java.io.File;
@@ -26,7 +27,7 @@ public interface Integration {
     List<IncomeIn> loadIncome(String shopId);
     List<MoveIn> loadMove(String shopId);
 
-    void writeIncomeRec(String shopId, IncomeRec incomeRec);
+    void writeBaseRec(String shopId, BaseRec rec);
 
     File loadNewApk();
 
@@ -35,4 +36,6 @@ public interface Integration {
     List<AlcCodeIn> loadAlcCode();
 
     List<MarkIn> loadMark();
+
+    SetupFtp loadSetupFtp();
 }

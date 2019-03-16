@@ -6,9 +6,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.glvz.egais.MainApp;
 import com.glvz.egais.integration.model.*;
+import com.glvz.egais.integration.model.doc.BaseRecOutput;
 import com.glvz.egais.integration.model.doc.income.IncomeIn;
 import com.glvz.egais.integration.model.doc.income.IncomeRecOutput;
 import com.glvz.egais.integration.model.doc.move.MoveIn;
+import com.glvz.egais.model.BaseRec;
 import com.glvz.egais.model.income.IncomeRec;
 import com.glvz.egais.utils.StringUtils;
 
@@ -37,6 +39,8 @@ public class IntegrationSDCard implements Integration {
     private static final String MARK_FILE = "marks.json";
     private static final String USER_FILE = "users.json";
     private static final String APK_FILE = "glvzegais.apk";
+    private static final String SETUP_FTP_FILE = "setupftp.json";
+
 
     private static final String DOC_PREFIX_INCOME = "TTN";
     private static final String DOC_PREFIX_MOVE = "DOCMOVE";
@@ -162,6 +166,20 @@ public class IntegrationSDCard implements Integration {
     }
 
     @Override
+    public SetupFtp loadSetupFtp() {
+        File pathToFile = new File(basePath , SETUP_FTP_FILE);
+        SetupFtp setupFtp = null;
+        try {
+            setupFtp = objectMapper.readValue(pathToFile, SetupFtp.class);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return setupFtp;
+    }
+
+    @Override
     public List<MoveIn> loadMove(String shopId) {
         List<MoveIn> listMoveIn = new ArrayList<>();
         File path = new File(basePath + "/" + SHOPS_DIR + "/" + shopId + "/" + IN_DIR);
@@ -181,11 +199,11 @@ public class IntegrationSDCard implements Integration {
     }
 
     @Override
-    public void writeIncomeRec(String shopId, IncomeRec incomeRec) {
+    public void writeBaseRec(String shopId, BaseRec rec) {
         File path = new File(basePath + "/" + SHOPS_DIR + "/" + shopId + "/" + OUT_DIR);
-        File file = new File(path, incomeRec.getDocId() + "_out.json");
+        File file = new File(path, rec.getDocId() + "_out.json");
             try {
-                IncomeRecOutput out = incomeRec.formatAsOutput();
+                BaseRecOutput out = rec.formatAsOutput();
                 objectMapper.writeValue(file, out);
             } catch (IOException e) {
                 e.printStackTrace();
