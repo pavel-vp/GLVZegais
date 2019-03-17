@@ -86,27 +86,29 @@ public class SyncWiFiFtp {
 
         FTPFile[] ftpFiles = ftpClient.listFiles(rec.getRemoteDir());
         for (FTPFile ftpFile : ftpFiles) {
-            String fileNameRemote = ftpFile.getName();
-            long timeRemote = ftpFile.getTimestamp().getTimeInMillis();
-            Log.v("DaoMem", "File remote: " + fileNameRemote + ", time:" + timeRemote);
+            if (ftpFile.isFile()) {
+                String fileNameRemote = ftpFile.getName();
+                long timeRemote = ftpFile.getTimestamp().getTimeInMillis();
+                Log.v("DaoMem", "File remote: " + fileNameRemote + ", time:" + timeRemote);
 
-            LocalFileRec localFileRec = syncro.findFileByName(localFileRecList, fileNameRemote);
+                LocalFileRec localFileRec = syncro.findFileByName(localFileRecList, fileNameRemote);
 
-            Log.v("DaoMem", "File local: " + localFileRec);
-            if (localFileRec == null || localFileRec.getTimestamp() != timeRemote) {
-                File fileLocal = new File(pathLocal + "/" + fileNameRemote);
-                OutputStream outputStream = new FileOutputStream(fileLocal);
-                ftpClient.retrieveFile(rec.getRemoteDir() + "/" + fileNameRemote, outputStream);
-                outputStream.close();
-                if (localFileRec == null) {
-                    localFileRec = new LocalFileRec(rec.getLocalDir(), fileNameRemote, timeRemote);
-                } else {
-                    localFileRec.setTimestamp(timeRemote);
+                Log.v("DaoMem", "File local: " + localFileRec);
+                if (localFileRec == null || localFileRec.getTimestamp() != timeRemote) {
+                    File fileLocal = new File(pathLocal + "/" + fileNameRemote);
+                    OutputStream outputStream = new FileOutputStream(fileLocal);
+                    ftpClient.retrieveFile(rec.getRemoteDir() + "/" + fileNameRemote, outputStream);
+                    outputStream.close();
+                    if (localFileRec == null) {
+                        localFileRec = new LocalFileRec(rec.getLocalDir(), fileNameRemote, timeRemote);
+                    } else {
+                        localFileRec.setTimestamp(timeRemote);
+                    }
+                    syncro.addLocalFileRec(localFileRec);
+                    Log.v("DaoMem", "File local has rewritten");
                 }
-                syncro.addLocalFileRec(localFileRec);
-                Log.v("DaoMem", "File local has rewritten");
+                localFileRec.setProcessed(true);
             }
-            localFileRec.setProcessed(true);
         }
         // По оставшимся необработанным локальным файлам пройтись и удалить
         for (LocalFileRec localFileRec : localFileRecList) {
