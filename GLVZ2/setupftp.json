@@ -1,0 +1,9 @@
+{
+ "paths_in_arr": ["APK","DIC", "Shops/%SHOPID%/IN", ""],
+ "paths_out_arr" : ["Shops/%SHOPID%/OUT"],
+ "ftp_server": "10.0.0.6",
+ "ftp_user": "ftp",
+ "ftp_password": "ftp",
+ "ftp_root_dir": "",
+ "wifi_check_delay" : 10
+}

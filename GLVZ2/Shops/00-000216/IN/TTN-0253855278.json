@@ -1,0 +1,39 @@
+{
+ "WBRegId": "TTN-0253855278",
+ "NUMBER": "56226",
+ "Date": "2018-12-20T00:00:00",
+ "SkladID": "00-000004",
+ "SkladName": "Магазин №17(Р) К.Маркса",
+ "PostID": "010060695276",
+ "PostName": "ООО \"ВинТрейд\"",
+ "Content": [
+  {
+   "position": "1",
+   "alccode": "0123151000002880804",
+   "name": "Вино с защищенным географическим указанием \"Кубань\" полусладкое белое \"Таманка\"",
+   "Capacity": 0.7,
+   "AlcVolume": 10,
+   "QTY": 6,
+   "Price": 100.6,
+   "BottlingDate": "2018-12-04",
+   "Marked": 1,
+   "QTYDirectInput": 1,
+   "MarkInfo": [],
+   "BoxTree": []
+  },
+  {
+   "position": "2",
+   "alccode": "0123151000002871329",
+   "name": "Вино с защищенным географическим указанием \"Кубань\" полусладкое белое \"Татьянин день\"",
+   "Capacity": 0.7,
+   "AlcVolume": 10,
+   "QTY": 6,
+   "Price": 100.6,
+   "BottlingDate": "2018-12-03",
+   "Marked": 1,
+   "QTYDirectInput": 1,
+   "MarkInfo": [],
+   "BoxTree": []
+  }
+ ]
+}
