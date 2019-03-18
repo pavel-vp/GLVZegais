@@ -50,4 +50,9 @@ public class StringUtils {
         s = s.indexOf(",") < 0 ? s : s.replaceAll("0*$", "").replaceAll("\\,$", "");
         return s;
     }
+
+    public static boolean isEmptyOrNull(String val) {
+        return (val == null ||
+                val.trim().equals(""));
+    }
 }

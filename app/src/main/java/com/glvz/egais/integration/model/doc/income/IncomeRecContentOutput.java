@@ -1,10 +1,11 @@
 package com.glvz.egais.integration.model.doc.income;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.glvz.egais.integration.model.doc.BaseRecContentOutput;
 
 import java.io.Serializable;
 
-public class IncomeRecContentOutput implements Serializable {
+public class IncomeRecContentOutput extends BaseRecContentOutput {
     @JsonProperty(value="position")
     private String position;
     @JsonProperty(value="alccode")

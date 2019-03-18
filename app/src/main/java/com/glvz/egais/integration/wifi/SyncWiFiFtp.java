@@ -166,8 +166,15 @@ public class SyncWiFiFtp {
                         if (localFileRec.isProcessed()) {
                             Log.v("DaoMem", "Local file->: " + localFileRec);
 
+                            boolean isDeleted = ftpClient.deleteFile("/" + rec.getRemoteDir() + "/" + localFileRec.getFileName());
+                            int replyCode = ftpClient.getReplyCode();
+                            String replyString = ftpClient.getReplyString();
+                            Log.v("DaoMem", "isDeleted: " + isDeleted+",replyCode:"+replyCode+",replyString:"+replyString);
                             InputStream inputStream = new FileInputStream(new File(localFileRec.getPath() + "/" + localFileRec.getFileName()));
-                            ftpClient.storeFile("/" + rec.getRemoteDir() + "/" + localFileRec.getFileName(), inputStream);
+                            boolean isWritten = ftpClient.storeFile("/" + rec.getRemoteDir() + "/" + localFileRec.getFileName(), inputStream);
+                            replyCode = ftpClient.getReplyCode();
+                            replyString = ftpClient.getReplyString();
+                            Log.v("DaoMem", "isWritten: " + isWritten+",replyCode:"+replyCode+",replyString:"+replyString);
                             inputStream.close();
                         }
                     }

@@ -2,6 +2,7 @@ package com.glvz.egais.ui.doc.move;
 
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -168,6 +169,13 @@ public class ActMoveRec extends ActBaseDocRec {
     @Override
     protected void pickRec(Context ctx, String docId, BaseRecContent req, int addQty, String barcode, boolean isBoxScanned, boolean isOpenByScan) {
         // Открыть форму строки
+        // Перейти в форму одной строки позиции
+        Intent in = new Intent();
+        in.setClass(ctx, ActMoveRecContent.class);
+        in.putExtra(ActMoveRec.REC_DOCID, docId);
+        in.putExtra(ActMoveRec.RECCONTENT_POSITION, req.getPosition().toString());
+        ctx.startActivity(in);
+
     }
 
 

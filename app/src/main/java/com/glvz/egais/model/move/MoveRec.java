@@ -1,20 +1,17 @@
 package com.glvz.egais.model.move;
 
+import com.glvz.egais.dao.DaoMem;
 import com.glvz.egais.integration.model.doc.BaseRecOutput;
 import com.glvz.egais.integration.model.doc.DocContentIn;
 import com.glvz.egais.integration.model.doc.DocIn;
 import com.glvz.egais.integration.model.doc.move.MoveContentIn;
 import com.glvz.egais.integration.model.doc.move.MoveIn;
-import com.glvz.egais.model.BaseRec;
-import com.glvz.egais.model.BaseRecContent;
-import com.glvz.egais.model.BaseRecContentStatus;
-import com.glvz.egais.model.BaseRecStatus;
+import com.glvz.egais.integration.model.doc.move.MoveRecContentOutput;
+import com.glvz.egais.integration.model.doc.move.MoveRecOutput;
+import com.glvz.egais.model.*;
 import com.glvz.egais.utils.StringUtils;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 public class MoveRec extends BaseRec {
     // ссылка наисходный имопртированный документ
@@ -63,7 +60,39 @@ public class MoveRec extends BaseRec {
 
     @Override
     public BaseRecOutput formatAsOutput() {
-        return null;
+        MoveRecOutput rec = new MoveRecOutput();
+        rec.setDocId(this.moveIn.getDocId());
+        rec.setNumber(this.moveIn.getNumber());
+        rec.setDate(this.moveIn.getDate());
+        rec.setSkladID(this.moveIn.getSkladID());
+        rec.setSkladName(this.moveIn.getSkladName());
+        rec.setPoluchID(this.moveIn.getPoluchID());
+        rec.setPoluchName(this.moveIn.getPoluchName());
+        rec.setContent(new MoveRecContentOutput[this.moveIn.getContent().length]);
+        int idx = 0;
+        for (MoveContentIn contentIn : this.moveIn.getContent()) {
+            MoveRecContentOutput contentOutput = new MoveRecContentOutput();
+            contentOutput.setPosition(contentIn.getPosition());
+            contentOutput.setNomenId(contentIn.getNomenId());
+            contentOutput.setQty(contentIn.getQty());
+
+            MoveRecContent recContent = (MoveRecContent) DaoMem.getDaoMem().getRecContentByPosition(this, contentIn.getPosition());
+            contentOutput.setQtyFact(recContent.getQtyAccepted());
+
+            Set<BaseRecContentMark> scannedMarkSet = new HashSet<>();
+            scannedMarkSet.addAll(recContent.getBaseRecContentMarkList());
+
+            contentOutput.setMarks(new String[scannedMarkSet.size()]);
+            int idx2 = 0;
+            for (BaseRecContentMark mark : scannedMarkSet) {
+                contentOutput.getMarks()[idx2] = mark.getMarkScanned();
+                idx2++;
+            }
+            rec.getContent()[idx] = contentOutput;
+            idx++;
+        }
+        return rec;
+
     }
 
     @Override

@@ -26,6 +26,7 @@ import com.glvz.egais.model.*;
 import com.glvz.egais.model.income.*;
 import com.glvz.egais.model.move.MoveRec;
 import com.glvz.egais.model.move.MoveRecContent;
+import com.glvz.egais.utils.BarcodeObject;
 import com.glvz.egais.utils.MessageUtils;
 
 import java.io.*;
@@ -333,12 +334,12 @@ public class DaoMem {
     }
 
     // Найти сканировалась ли уже эта марка
-    public Integer checkMarkScanned(IncomeRec incomeRec, String mark) {
+    public Integer checkMarkScanned(BaseRec rec, String mark) {
         // проверить сканирован ли этот ШК в накладной
         // пройтись по каждой позиции
-        for (IncomeRecContent incomeRecContent : incomeRec.getIncomeRecContentList()) {
+        for (BaseRecContent recContent : rec.getRecContentList()) {
             // в каждой позиции пройтись по сканированным маркам
-            for (BaseRecContentMark baseRecContentMark : incomeRecContent.getBaseRecContentMarkList()) {
+            for (BaseRecContentMark baseRecContentMark : recContent.getBaseRecContentMarkList()) {
                 if (baseRecContentMark.getMarkScanned().equals(mark)) {
                     return baseRecContentMark.getMarkScannedAsType();
                 }
@@ -600,6 +601,55 @@ public class DaoMem {
 
     public void syncWiFiFtpShopDocs() throws Exception {
         this.syncWiFiFtp.syncShopDocs(shopId);
+    }
+
+    public boolean isAlowedBarcode(BarcodeObject.BarCodeType barCodeType) {
+        ShopIn shopIn = findShopInById(shopId);
+        if ( (ShopIn.CHECKMARK_DM.equals(shopIn.getCheckMark()) && barCodeType != BarcodeObject.BarCodeType.DATAMATRIX) ||
+             (ShopIn.CHECKMARK_DMPDF.equals(shopIn.getCheckMark()) && barCodeType != BarcodeObject.BarCodeType.DATAMATRIX && barCodeType != BarcodeObject.BarCodeType.PDF417)) {
+            return false;
+        }
+        return true;
+    }
+
+    public MarkIn findMarkByBarcode(String barCode) {
+        for (MarkIn markIn : listM) {
+            if (markIn.getMark().equals(barCode)) {
+                return markIn;
+            }
+        }
+        return null;
+    }
+
+    public AlcCodeIn findAlcCode(String alcCode) {
+        for (AlcCodeIn alcCodeIn: listA) {
+            if (alcCodeIn.getAlcCode().equals(alcCode)) {
+                return alcCodeIn;
+            }
+        }
+        return null;
+    }
+
+    public NomenIn findNomenInAlcoByBarCode(String barCodeIn) {
+        for (NomenIn nomenIn: listN) {
+            if (nomenIn.getBarcode() != null && nomenIn.getNomenType() == NomenIn.NOMENTYPE_ALCO_MARK) {
+                for (String barcode : nomenIn.getBarcode()) {
+                    if (barCodeIn.equals(barcode)) {
+                        return nomenIn;
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    public NomenIn findNomenInAlcoByNomenId(String nomenId) {
+        for (NomenIn nomenIn: listN) {
+            if (nomenIn.getId().equals(nomenId) && nomenIn.getNomenType() == NomenIn.NOMENTYPE_ALCO_MARK) {
+                return nomenIn;
+            }
+        }
+        return null;
     }
 
     public static class MarkInBox {
