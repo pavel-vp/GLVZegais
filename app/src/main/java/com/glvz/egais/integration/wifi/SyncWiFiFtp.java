@@ -122,9 +122,10 @@ public class SyncWiFiFtp {
         WifiManager wifi = (WifiManager)(context.getApplicationContext().getSystemService(Context.WIFI_SERVICE));
         waitForWiFi(wifi, 2, setupFtp.getWifi_check_delay());
         //wifi is enabled
+        Log.v("DaoMem", "try connect to ftpclient :: " + setupFtp);
         FTPClient ftpClient = new FTPClient();
         ftpClient.connect(InetAddress.getByName(setupFtp.getFtp_server()));
-        ftpClient.login(setupFtp.getFtp_user(), setupFtp.getFtp_user());
+        ftpClient.login(setupFtp.getFtp_user(), setupFtp.getFtp_password());
         Log.v("DaoMem", "status :: " + ftpClient.getStatus());
         ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
         ftpClient.enterLocalPassiveMode();
@@ -136,51 +137,51 @@ public class SyncWiFiFtp {
         List<SyncFileRec> pathsIn = convertDirs(this.setupFtp.getPathsInArr(), shopId);
         List<SyncFileRec> pathsOut = convertDirs(this.setupFtp.getPathsOutArr(), shopId);
 
-        WifiManager wifi = (WifiManager)(context.getApplicationContext().getSystemService(Context.WIFI_SERVICE));
+        WifiManager wifi = (WifiManager) (context.getApplicationContext().getSystemService(Context.WIFI_SERVICE));
         waitForWiFi(wifi, 2, setupFtp.getWifi_check_delay());
-            //wifi is enabled
+        //wifi is enabled
         FTPClient ftpClient = initFTPClient();
 
 
-                Log.v("DaoMem", "IN===============================");
-                // IN
-                for (SyncFileRec rec : pathsIn) {
-                    if (!rec.isShared()) {
-                        syncFilesIn(ftpClient, rec);
-                    }
+        Log.v("DaoMem", "IN===============================");
+        // IN
+        for (SyncFileRec rec : pathsIn) {
+            if (!rec.isShared()) {
+                syncFilesIn(ftpClient, rec);
+            }
+        }
+        Log.v("DaoMem", "IN=DONE===============================");
+
+        Log.v("DaoMem", "OUT===============================");
+        // OUT
+        for (SyncFileRec rec : pathsOut) {
+            Log.v("DaoMem", "Local: " + rec.getLocalDir() + " -> Remote directory:" + rec.getRemoteDir());
+
+            File directory = new File(rec.getLocalDir());
+            ftpClient.makeDirectory("/" + rec.getRemoteDir());
+
+            // Get all CHNGED files from a local directory.
+            List<LocalFileRec> localFileList = syncro.getLocalChangedFiles(rec.getLocalDir());
+
+            for (LocalFileRec localFileRec : localFileList) {
+                if (localFileRec.isProcessed()) {
+                    Log.v("DaoMem", "Local file->: " + localFileRec);
+
+                    boolean isDeleted = ftpClient.deleteFile("/" + rec.getRemoteDir() + "/" + localFileRec.getFileName());
+                    int replyCode = ftpClient.getReplyCode();
+                    String replyString = ftpClient.getReplyString();
+                    Log.v("DaoMem", "isDeleted: " + isDeleted + ",replyCode:" + replyCode + ",replyString:" + replyString);
+                    InputStream inputStream = new FileInputStream(new File(localFileRec.getPath() + "/" + localFileRec.getFileName()));
+                    boolean isWritten = ftpClient.storeFile("/" + rec.getRemoteDir() + "/" + localFileRec.getFileName(), inputStream);
+                    replyCode = ftpClient.getReplyCode();
+                    replyString = ftpClient.getReplyString();
+                    Log.v("DaoMem", "isWritten: " + isWritten + ",replyCode:" + replyCode + ",replyString:" + replyString);
+                    inputStream.close();
                 }
-                Log.v("DaoMem", "IN=DONE===============================");
-
-                Log.v("DaoMem", "OUT===============================");
-                // OUT
-                for (SyncFileRec rec : pathsOut) {
-                    Log.v("DaoMem", "Local: " + rec.getLocalDir() + " -> Remote directory:"+rec.getRemoteDir());
-
-                    File directory = new File(rec.getLocalDir());
-                    ftpClient.makeDirectory("/" + rec.getRemoteDir());
-
-                    // Get all CHNGED files from a local directory.
-                    List<LocalFileRec> localFileList = syncro.getLocalChangedFiles(rec.getLocalDir());
-
-                    for (LocalFileRec localFileRec : localFileList) {
-                        if (localFileRec.isProcessed()) {
-                            Log.v("DaoMem", "Local file->: " + localFileRec);
-
-                            boolean isDeleted = ftpClient.deleteFile("/" + rec.getRemoteDir() + "/" + localFileRec.getFileName());
-                            int replyCode = ftpClient.getReplyCode();
-                            String replyString = ftpClient.getReplyString();
-                            Log.v("DaoMem", "isDeleted: " + isDeleted+",replyCode:"+replyCode+",replyString:"+replyString);
-                            InputStream inputStream = new FileInputStream(new File(localFileRec.getPath() + "/" + localFileRec.getFileName()));
-                            boolean isWritten = ftpClient.storeFile("/" + rec.getRemoteDir() + "/" + localFileRec.getFileName(), inputStream);
-                            replyCode = ftpClient.getReplyCode();
-                            replyString = ftpClient.getReplyString();
-                            Log.v("DaoMem", "isWritten: " + isWritten+",replyCode:"+replyCode+",replyString:"+replyString);
-                            inputStream.close();
-                        }
-                    }
-                    syncro.writeLocalChangedFiles(rec.getLocalDir(), localFileList);
-                }
-                Log.v("DaoMem", "OUT=DONE===============================");
+            }
+            syncro.writeLocalChangedFiles(rec.getLocalDir(), localFileList);
+        }
+        Log.v("DaoMem", "OUT=DONE===============================");
 
     }
 
