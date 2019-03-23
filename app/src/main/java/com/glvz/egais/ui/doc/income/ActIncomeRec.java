@@ -230,7 +230,7 @@ public class ActIncomeRec extends ActBaseDocRec implements PickBottliingDateCall
         // определить позицию в ТТН ЕГАИС и наличие по ней ранее отсканированного ШК номенклатуры
         // Статус данной ТТН перевести в состояние “Идет приемка”
         incomeRec.setStatus(BaseRecStatus.INPROGRESS);
-        DaoMem.getDaoMem().writeLocalDataIncomeRec(incomeRec);
+        DaoMem.getDaoMem().writeLocalDataBaseRec(incomeRec);
         return irc;
     }
 
@@ -295,9 +295,9 @@ public class ActIncomeRec extends ActBaseDocRec implements PickBottliingDateCall
 
     public static ActionOnScanPDF417Wrapper proceedPdf417(Activity activity, IncomeRec incomeRec, String barcode, TransferCallback transferCallback) {
         // Проверить что этот ШК ранее не сканировался в данной ТТН
-        Integer markScanned = DaoMem.getDaoMem().checkMarkScanned(incomeRec, barcode);
+        DaoMem.CheckMarkScannedResult markScanned = DaoMem.getDaoMem().checkMarkScanned(incomeRec, barcode);
         if (markScanned != null) {
-            if (markScanned == BaseRecContentMark.MARK_SCANNED_AS_MARK) {
+            if (markScanned.markScannedAsType == BaseRecContentMark.MARK_SCANNED_AS_MARK) {
                 MessageUtils.showToastMessage("Эта марка уже сканировалась!");
             }
             // Марка была сканирована - найти по ней позицию Rec
@@ -305,7 +305,7 @@ public class ActIncomeRec extends ActBaseDocRec implements PickBottliingDateCall
             baseRecContentMark.setMarkScannedAsType(BaseRecContentMark.MARK_SCANNED_AS_MARK);
             baseRecContentMark.setMarkScannedReal(barcode);
             // возвращать управление - переходим в карточку позиции
-            DaoMem.getDaoMem().writeLocalDataIncomeRec(incomeRec);
+            DaoMem.getDaoMem().writeLocalDataBaseRec(incomeRec);
             IncomeRecContent irc = DaoMem.getDaoMem().findIncomeRecContentByMarkScanned(incomeRec, barcode);
             return new ActionOnScanPDF417Wrapper(Collections.singletonList(irc), 0); // Просто возвращаем
         }
@@ -372,7 +372,7 @@ public class ActIncomeRec extends ActBaseDocRec implements PickBottliingDateCall
 
         // Статус данной ТТН перевести в состояние “Идет приемка”
         incomeRec.setStatus(BaseRecStatus.INPROGRESS);
-        DaoMem.getDaoMem().writeLocalDataIncomeRec(incomeRec);
+        DaoMem.getDaoMem().writeLocalDataBaseRec(incomeRec);
         return new ActionOnScanPDF417Wrapper(Collections.singletonList(incomeRecContent), 1);
 
     }
@@ -433,9 +433,9 @@ public class ActIncomeRec extends ActBaseDocRec implements PickBottliingDateCall
 
     public static ActionOnScanDataMatrixWrapper proceedDataMatrix(Activity activity, IncomeRec incomeRec, String barcode) {
         // Проверить что этот ШК ранее не сканировался в данной ТТН
-        Integer markScanned = DaoMem.getDaoMem().checkMarkScanned(incomeRec, barcode);
+        DaoMem.CheckMarkScannedResult markScanned = DaoMem.getDaoMem().checkMarkScanned(incomeRec, barcode);
         if (markScanned != null) {
-            if (markScanned == BaseRecContentMark.MARK_SCANNED_AS_MARK) {
+            if (markScanned.markScannedAsType == BaseRecContentMark.MARK_SCANNED_AS_MARK) {
                 MessageUtils.showToastMessage("Эта марка уже сканировалась!");
             }
             // Марка была сканирована - найти по ней позицию Rec
@@ -443,7 +443,7 @@ public class ActIncomeRec extends ActBaseDocRec implements PickBottliingDateCall
             baseRecContentMark.setMarkScannedAsType(BaseRecContentMark.MARK_SCANNED_AS_MARK);
             baseRecContentMark.setMarkScannedReal(barcode);
             // переходим в карточку
-            DaoMem.getDaoMem().writeLocalDataIncomeRec(incomeRec);
+            DaoMem.getDaoMem().writeLocalDataBaseRec(incomeRec);
             IncomeRecContent irc = DaoMem.getDaoMem().findIncomeRecContentByMarkScanned(incomeRec, barcode);
             return new ActionOnScanDataMatrixWrapper(irc,0);
         }
@@ -458,7 +458,7 @@ public class ActIncomeRec extends ActBaseDocRec implements PickBottliingDateCall
         }
         // Статус данной ТТН перевести в состояние “Идет приемка”
         incomeRec.setStatus(BaseRecStatus.INPROGRESS);
-        DaoMem.getDaoMem().writeLocalDataIncomeRec(incomeRec);
+        DaoMem.getDaoMem().writeLocalDataBaseRec(incomeRec);
         return new ActionOnScanDataMatrixWrapper(incomeRecContent, 1);
     }
 

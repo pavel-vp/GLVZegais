@@ -218,28 +218,31 @@ public class ActMoveRecContent extends Activity implements BarcodeReader.Barcode
                 }
                 // Проверить наличие этой марки среди ранее сохраненных марок всех товарных позиций этого задания.
                 // Проверить что этот ШК ранее не сканировался в данной ТТН
-                Integer markScanned = DaoMem.getDaoMem().checkMarkScanned(moveRec, barCode);
-                if (markScanned != null && markScanned == BaseRecContentMark.MARK_SCANNED_AS_MARK) {
+                DaoMem.CheckMarkScannedResult markScanned = DaoMem.getDaoMem().checkMarkScanned(moveRec, barCode);
+                if (markScanned != null && markScanned.markScannedAsType == BaseRecContentMark.MARK_SCANNED_AS_MARK) {
                     // Если марка найдена — модальное сообщение «», прервать обработку события
-                    MessageUtils.showModalMessage(this, "Внимание!", "Эта марка ранее уже была отсканирована в этом задании в позиции " + moveRecContent.getPosition() + " товара " + moveRecContent.getNomenIn().getName());
+                    MessageUtils.showModalMessage(this, "Внимание!", "Эта марка ранее уже была отсканирована в этом задании в позиции " + markScanned.recContent.getPosition() + " товара " + markScanned.recContent.getNomenIn().getName());
                     return;
                 }
                 // выполнить проверку допустимости добавления этой марки, типы проверяемых марок зависят от состояния CheckMark в справочнике магазинов shops.json:
                 //- «DataMatrix» - проверяются только марки DataMatrix (проверка PDF417 - пропускается)
                 //- «DataMatrixPDF417» - проверяются марки DataMatrix и PDF417
-                if (!DaoMem.getDaoMem().isAlowedBarcode(barCodeType)) {
-                    MessageUtils.showModalMessage(this, "Внимание!", "Эта марка не допустима для сканирования в этом магазине!");
-                    return;
-                }
-                //
-                // алгоритм допустимости добавления марки
-                //
-                // искать марку в справочнике «marks.json»
-                MarkIn markIn = DaoMem.getDaoMem().findMarkByBarcode(barCode);
-                if (markIn == null) {
-                    // если не найдена: модальное сообщение , прерывание обработки события.
-                    MessageUtils.showModalMessage(this, "Внимание!", "Марка не состоит на учете в магазине. Перемещение невозможно. Отложите эту бутылку для постановки на баланс и сканируйте другую!");
-                    return;
+                MarkIn markIn = null;
+                if (DaoMem.getDaoMem().isNeedToCheckMark(moveRec.getMoveIn().getCheckMark(), barCodeType)) {
+                    //
+                    // алгоритм допустимости добавления марки
+                    //
+                    // искать марку в справочнике «marks.json»
+                    markIn = DaoMem.getDaoMem().findMarkByBarcode(barCode);
+                    if (markIn == null) {
+                        // если не найдена: модальное сообщение , прерывание обработки события.
+                        MessageUtils.showModalMessage(this, "Внимание!", "Марка не состоит на учете в магазине. Перемещение невозможно. Отложите эту бутылку для постановки на баланс и сканируйте другую!");
+                        return;
+                    }
+                } else {
+                    // создаем фейковую марку
+                    markIn = new MarkIn();
+                    markIn.setMark(barCode);
                 }
                 this.scannedMarkIn = markIn;
                 // если NomenID не определен (может быть определен на предыдущих шагах) — попытка определения по справочнику «alccodes.json»
@@ -286,7 +289,7 @@ public class ActMoveRecContent extends Activity implements BarcodeReader.Barcode
             return;
         }
         //10) поле «Количество факт» добавить 1 шт к предыдущему значению
-        moveRecContent.setQtyAccepted(moveRecContent.getQtyAccepted() + 1);
+        moveRecContent.setQtyAccepted((moveRecContent.getQtyAccepted() == null ? 0 : moveRecContent.getQtyAccepted()) + 1);
         //11) добавить марку к списку марок текущей позиции.
         moveRecContent.getBaseRecContentMarkList().add(new BaseRecContentMark(scannedMarkIn.getMark(), BaseRecContentMark.MARK_SCANNED_AS_MARK, scannedMarkIn.getMark()));
         //12) проиграть файл «bottle_one.mp3»

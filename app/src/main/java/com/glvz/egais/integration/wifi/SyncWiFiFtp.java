@@ -17,6 +17,7 @@ import java.io.*;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 public class SyncWiFiFtp {
@@ -53,6 +54,7 @@ public class SyncWiFiFtp {
                     e.printStackTrace();
                 }
             }
+            cnt++;
         }
         if (!result) {
             throw new RuntimeException("Выполните обмен через USB-кабель (WiFi-подключение отсутствует)");
@@ -100,7 +102,7 @@ public class SyncWiFiFtp {
                     ftpClient.retrieveFile(rec.getRemoteDir() + "/" + fileNameRemote, outputStream);
                     outputStream.close();
                     if (localFileRec == null) {
-                        localFileRec = new LocalFileRec(rec.getLocalDir(), fileNameRemote, timeRemote);
+                        localFileRec = new LocalFileRec(rec.getLocalDir(), fileNameRemote, timeRemote, false);
                     } else {
                         localFileRec.setTimestamp(timeRemote);
                     }
@@ -164,7 +166,7 @@ public class SyncWiFiFtp {
             List<LocalFileRec> localFileList = syncro.getLocalChangedFiles(rec.getLocalDir());
 
             for (LocalFileRec localFileRec : localFileList) {
-                if (localFileRec.isProcessed()) {
+                if (localFileRec.isProcessed() || !localFileRec.isUploaded()) {
                     Log.v("DaoMem", "Local file->: " + localFileRec);
 
                     boolean isDeleted = ftpClient.deleteFile("/" + rec.getRemoteDir() + "/" + localFileRec.getFileName());
@@ -177,6 +179,7 @@ public class SyncWiFiFtp {
                     replyString = ftpClient.getReplyString();
                     Log.v("DaoMem", "isWritten: " + isWritten + ",replyCode:" + replyCode + ",replyString:" + replyString);
                     inputStream.close();
+                    localFileRec.setUploaded(isWritten);
                 }
             }
             syncro.writeLocalChangedFiles(rec.getLocalDir(), localFileList);

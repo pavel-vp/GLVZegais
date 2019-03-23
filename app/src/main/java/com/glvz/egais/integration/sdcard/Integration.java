@@ -1,6 +1,7 @@
 package com.glvz.egais.integration.sdcard;
 
 import com.glvz.egais.integration.model.*;
+import com.glvz.egais.integration.model.doc.DocIn;
 import com.glvz.egais.integration.model.doc.income.IncomeIn;
 import com.glvz.egais.integration.model.doc.move.MoveIn;
 import com.glvz.egais.model.BaseRec;
@@ -31,11 +32,11 @@ public interface Integration {
 
     File loadNewApk();
 
-    List<IncomeIn> clearOldData(int numDaysOld);
+    List<DocIn> clearOldData(int numDaysOld);
 
     List<AlcCodeIn> loadAlcCode();
 
-    List<MarkIn> loadMark();
+    List<MarkIn> loadMark(String shopId);
 
     SetupFtp loadSetupFtp();
 }

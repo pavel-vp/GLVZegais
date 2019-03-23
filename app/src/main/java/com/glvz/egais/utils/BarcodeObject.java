@@ -78,7 +78,7 @@ public class BarcodeObject implements BarcodeReader.BarcodeListener {
             // Set Symbologies On/Off
             properties.put(BarcodeReader.PROPERTY_CODE_128_ENABLED, true);
             properties.put(BarcodeReader.PROPERTY_GS1_128_ENABLED, true);
-            properties.put(BarcodeReader.PROPERTY_QR_CODE_ENABLED, true);
+            properties.put(BarcodeReader.PROPERTY_QR_CODE_ENABLED, false);
             properties.put(BarcodeReader.PROPERTY_CODE_39_ENABLED, true);
             properties.put(BarcodeReader.PROPERTY_DATAMATRIX_ENABLED, true);
             properties.put(BarcodeReader.PROPERTY_UPC_A_ENABLE, true);

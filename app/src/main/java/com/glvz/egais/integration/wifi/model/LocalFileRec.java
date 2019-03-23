@@ -5,11 +5,13 @@ public class LocalFileRec {
     private String fileName;
     private long timestamp;
     private boolean processed = false;
+    private boolean uploaded = false;
 
-    public LocalFileRec(String path, String fileName, long timestamp) {
+    public LocalFileRec(String path, String fileName, long timestamp, boolean uploaded) {
         this.path = path;
         this.fileName = fileName;
         this.timestamp = timestamp;
+        this.uploaded = uploaded;
     }
 
     public String getPath() {
@@ -43,6 +45,14 @@ public class LocalFileRec {
     public void setProcessed(boolean processed) {
         this.processed = processed;
     }
+    public boolean isUploaded() {
+        return uploaded;
+    }
+
+    public void setUploaded(boolean uploaded) {
+        this.uploaded = uploaded;
+    }
+
 
     @Override
     public String toString() {
@@ -51,6 +61,7 @@ public class LocalFileRec {
                 ", fileName='" + fileName + '\'' +
                 ", timestamp=" + timestamp +
                 ", processed=" + processed +
+                ", uploaded=" + uploaded +
                 '}';
     }
 }

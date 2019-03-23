@@ -18,7 +18,7 @@ public class ActMoveList extends ActBaseDocList {
 
     @Override
     protected void setResources() {
-        setContentView(R.layout.activity_incomelist);
+        setContentView(R.layout.activity_movelist);
         super.setResources();
     }
 

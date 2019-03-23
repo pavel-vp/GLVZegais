@@ -57,7 +57,7 @@ public class SyncroMem implements Syncro {
     private void writeList(String key, String path, List<LocalFileRec> localFileRecList) {
         Set<String> strings = new HashSet<>();
         for (LocalFileRec rec : localFileRecList) {
-            String s = rec.getFileName() + "|" + rec.getTimestamp();
+            String s = rec.getFileName() + "|" + rec.getTimestamp() + "|" + rec.isUploaded();
             strings.add(s);
         }
         SharedPreferences.Editor ed = sharedPreferences.edit();
@@ -80,7 +80,13 @@ public class SyncroMem implements Syncro {
         List<LocalFileRec> result = new ArrayList<>();
         for (String s : strings) {
             String[] sArr = s.split("\\|");
-            result.add(new LocalFileRec(path, sArr[0], Long.parseLong(sArr[1])));
+            boolean isUploaded = false;
+            try {
+                isUploaded = Boolean.parseBoolean(sArr[2]);
+            } catch (Exception e) {
+                // Для совместимости
+            }
+            result.add(new LocalFileRec(path, sArr[0], Long.parseLong(sArr[1]), isUploaded));
         }
         return result;
     }
@@ -105,7 +111,7 @@ public class SyncroMem implements Syncro {
             LocalFileRec localFileRec = findFileByName(localFileRecList, fileOnPath.getName());
             if (localFileRec == null) {
                 // Файл новый
-                localFileRec = new LocalFileRec(path, fileOnPath.getName(), fileOnPath.lastModified());
+                localFileRec = new LocalFileRec(path, fileOnPath.getName(), fileOnPath.lastModified(), false);
                 localFileRec.setProcessed(true);
                 localFileRecList.add(localFileRec);
             } else {

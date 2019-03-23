@@ -106,6 +106,17 @@ public class MoveRec extends BaseRec {
     }
 
     @Override
+    public String getStatusDesc() {
+        switch (status) {
+            case DONE:
+                return "Выполнено";
+            case INPROGRESS:
+                return "В работе";
+        }
+        return status.getMessage();
+    }
+
+    @Override
     public String getDocId() {
         return docId;
     }

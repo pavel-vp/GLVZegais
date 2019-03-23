@@ -14,17 +14,15 @@ public class DictionaryMem implements Dictionary {
     private List<PostIn> listPost;
     private List<NomenIn> listNomen;
     private List<AlcCodeIn> listAlcCode;
-    private List<MarkIn> listMark;
 
     private Map<String, NomenIn> mapNomen = new HashMap<>();
 
-    public DictionaryMem(List<UserIn> listU, List<ShopIn> listS, List<PostIn> listP, List<NomenIn> listN, List<AlcCodeIn> listA, List<MarkIn> listM) {
+    public DictionaryMem(List<UserIn> listU, List<ShopIn> listS, List<PostIn> listP, List<NomenIn> listN, List<AlcCodeIn> listA) {
         this.listUser = listU;
         this.listShop = listS;
         this.listPost = listP;
         this.listNomen = listN;
         this.listAlcCode = listA;
-        this.listMark = listM;
         // Трансформировать в мапу
         for (NomenIn nomen : listNomen) {
             if (nomen.getBarcode() != null && nomen.getBarcode().length > 0) {

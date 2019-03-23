@@ -33,8 +33,8 @@ public class ExampleUnitTest {
         List<PostIn> listP = integrationFile.loadPosts();
         List<NomenIn> listN = integrationFile.loadNomen();
         List<AlcCodeIn> listA = integrationFile.loadAlcCode();
-        List<MarkIn> listM = integrationFile.loadMark();
-        dictionary = new DictionaryMem(listU, listS, listP, listN, listA, listM);
+        List<MarkIn> listM = integrationFile.loadMark("00-000083");
+        dictionary = new DictionaryMem(listU, listS, listP, listN, listA);
         List<IncomeIn> listIncomeIn = integrationFile.loadIncome("00-000083") ;
         document = new DocumentMem(listIncomeIn);
         List<MoveIn> listMoveIn = integrationFile.loadMove("00-000083") ;

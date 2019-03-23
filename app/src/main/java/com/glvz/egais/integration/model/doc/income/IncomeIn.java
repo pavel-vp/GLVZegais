@@ -104,4 +104,8 @@ public class IncomeIn implements DocIn {
                 '}';
     }
 
+    @Override
+    public String getDocId() {
+        return wbRegId;
+    }
 }

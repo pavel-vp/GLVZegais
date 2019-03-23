@@ -41,6 +41,7 @@ public class ActWelcome extends Activity implements BarcodeReader.BarcodeListene
     private void setResources() {
         pg = new ProgressDialog(this);
         pg.setMessage("Синхронизация по WiFi...");
+        pg.setCancelable(false);
         tvVersion = (TextView) findViewById(R.id.tvVersion);
         tvVersion.setText("Версия: " + BuildConfig.VERSION_CODE);
     }

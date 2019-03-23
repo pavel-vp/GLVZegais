@@ -26,7 +26,6 @@ public abstract class ActBaseDocList extends Activity implements BarcodeReader.B
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_incomelist);
 
         setResources();
         updateList();

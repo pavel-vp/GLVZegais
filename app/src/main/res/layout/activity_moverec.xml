@@ -5,7 +5,7 @@
               android:layout_height="match_parent">
 
     <TextView
-            android:text="Сканируйте марку (или ШК коробки), или выберите позицию"
+            android:text="Сканируйте марку, или выберите позицию"
             android:gravity="center"
             android:layout_width="match_parent"
             android:textSize="18dp"
@@ -28,6 +28,7 @@
         <Button
                 android:text="Начать"
                 android:id="@+id/btnAction"
+                android:textStyle="bold"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"/>
 

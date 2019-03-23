@@ -80,6 +80,11 @@ public class IncomeRec extends BaseRec {
     }
 
     @Override
+    public String getStatusDesc() {
+        return status.getMessage();
+    }
+
+    @Override
     public String toString() {
         return "IncomeRec{" +
                 "wbRegId='" + wbRegId + '\'' +

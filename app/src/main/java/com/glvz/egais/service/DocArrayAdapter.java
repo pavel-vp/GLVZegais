@@ -107,7 +107,7 @@ public class DocArrayAdapter extends ArrayAdapter<BaseRec> {
                     tvStatus.setTextColor(Color.rgb(0, 200, 0));
                     break;
             }
-            this.tvStatus.setText("Статус: " + rec.getStatus().getMessage());
+            this.tvStatus.setText("Статус: " + rec.getStatusDesc());
             this.tvNameagent.setText(rec.getAgentName());
         }
 

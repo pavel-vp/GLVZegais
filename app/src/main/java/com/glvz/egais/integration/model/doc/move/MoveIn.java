@@ -27,6 +27,7 @@ public class MoveIn implements DocIn {
     @JsonProperty(value="Content")
     private MoveContentIn[] content;
 
+    @Override
     public String getDocId() {
         return docId;
     }

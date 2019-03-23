@@ -162,7 +162,7 @@ public class ActIncomeRecContent extends Activity implements BarcodeReader.Barco
                 }
             }
         }
-        DaoMem.getDaoMem().writeLocalDataIncomeRec(incomeRec);
+        DaoMem.getDaoMem().writeLocalDataBaseRec(incomeRec);
         if (addQty == 1) {
             MessageUtils.playSound(R.raw.bottle_one);
         }
@@ -524,7 +524,7 @@ public class ActIncomeRecContent extends Activity implements BarcodeReader.Barco
                 String newBarCode = (String) data.getExtras().get(NEWBARCODE);
                 final NomenIn nomenIn = DaoMem.getDaoMem().getDictionary().findNomenByBarcodeAlco(newBarCode);
                 incomeRecContent.setNomenIn(nomenIn, newBarCode);
-                DaoMem.getDaoMem().writeLocalDataIncomeRec(incomeRec);
+                DaoMem.getDaoMem().writeLocalDataBaseRec(incomeRec);
                 updateDisplayData();
             }
         }

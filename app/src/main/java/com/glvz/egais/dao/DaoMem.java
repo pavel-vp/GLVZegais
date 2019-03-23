@@ -13,6 +13,7 @@ import com.glvz.egais.BuildConfig;
 import com.glvz.egais.MainApp;
 import com.glvz.egais.R;
 import com.glvz.egais.integration.model.doc.DocContentIn;
+import com.glvz.egais.integration.model.doc.DocIn;
 import com.glvz.egais.integration.model.doc.income.IncomeContentBoxTreeIn;
 import com.glvz.egais.integration.model.doc.income.IncomeContentIn;
 import com.glvz.egais.integration.model.doc.income.IncomeContentMarkIn;
@@ -79,15 +80,13 @@ public class DaoMem {
         File path = new File(Environment.getExternalStorageDirectory(), MainApp.getContext().getResources().getString(R.string.path_exchange));
         sharedPreferences = MainApp.getContext().getSharedPreferences("settings", Activity.MODE_PRIVATE);
         integrationFile = new IntegrationSDCard(path.getAbsolutePath());
-        List<IncomeIn> allRemainRecs = integrationFile.clearOldData(Integer.valueOf(MainApp.getContext().getResources().getString(R.string.num_days_old)));
+        List<DocIn> allRemainRecs = integrationFile.clearOldData(Integer.valueOf(MainApp.getContext().getResources().getString(R.string.num_days_old)));
         clearStoredDataNotInList(allRemainRecs);
         listU = integrationFile.loadUsers();
         listS = integrationFile.loadShops();
         listP = integrationFile.loadPosts();
         listN = integrationFile.loadNomen();
         listA = integrationFile.loadAlcCode();
-        listM = integrationFile.loadMark();
-        dictionary = new DictionaryMem(listU, listS, listP, listN, listA, listM);
         String shopIdStored = sharedPreferences.getString(BaseRec.KEY_SHOPID, null);
         if (shopIdStored != null) {
             ShopIn shopInStored = findShopInById(shopIdStored);
@@ -95,6 +94,7 @@ public class DaoMem {
                 setShopId(shopInStored.getId());
             }
         }
+        dictionary = new DictionaryMem(listU, listS, listP, listN, listA);
         setupFtp = integrationFile.loadSetupFtp();
         syncWiFiFtp = new SyncWiFiFtp();
         syncWiFiFtp.init(MainApp.getContext(), path.getAbsolutePath(),
@@ -121,6 +121,7 @@ public class DaoMem {
         integrationFile.initDirectories(shopId);
         listIncomeIn = integrationFile.loadIncome(shopId);
         listMoveIn = integrationFile.loadMove(shopId);
+        listM = integrationFile.loadMark(shopId);
         document = new DocumentMem(listIncomeIn);
         documentMove = new DocumentMoveMem(listMoveIn);
 
@@ -186,13 +187,13 @@ public class DaoMem {
         }
     }
 
-    private void clearStoredDataNotInList(List<IncomeIn> incomeInList) {
+    private void clearStoredDataNotInList(List<DocIn> recList) {
         Map<String, ?> allPrefs = sharedPreferences.getAll();
-        for (IncomeIn ir : incomeInList) {
+        for (DocIn rec : recList) {
             Iterator<? extends Map.Entry<String, ?>> iter = allPrefs.entrySet().iterator();
             while(iter.hasNext()) {
                 Map.Entry<String,?> entry  = iter.next();
-                if (entry.getKey().contains("_" + ir.getWbRegId() + "_")) {
+                if (entry.getKey().contains("_" + rec.getDocId() + "_")) {
                     // Удалить
                     iter.remove();
                 }
@@ -209,14 +210,6 @@ public class DaoMem {
         }
         ed.apply();
 
-    }
-
-    public void writeLocalDataIncomeRec(IncomeRec incomeRec) {
-        writeLocalDataBaseRec(incomeRec);
-    }
-
-    public void writeLocalDataMoveRec(MoveRec moveRec) {
-        writeLocalDataBaseRec(moveRec);
     }
 
     public void writeLocalDataBaseRec(BaseRec baseRec) {
@@ -333,15 +326,25 @@ public class DaoMem {
         return dictionary;
     }
 
+    public static class CheckMarkScannedResult {
+        public Integer markScannedAsType;
+        public BaseRecContent recContent;
+
+        public CheckMarkScannedResult(Integer markScannedAsType, BaseRecContent recContent) {
+            this.markScannedAsType = markScannedAsType;
+            this.recContent = recContent;
+        }
+    }
+
     // Найти сканировалась ли уже эта марка
-    public Integer checkMarkScanned(BaseRec rec, String mark) {
+    public CheckMarkScannedResult checkMarkScanned(BaseRec rec, String mark) {
         // проверить сканирован ли этот ШК в накладной
         // пройтись по каждой позиции
         for (BaseRecContent recContent : rec.getRecContentList()) {
             // в каждой позиции пройтись по сканированным маркам
             for (BaseRecContentMark baseRecContentMark : recContent.getBaseRecContentMarkList()) {
                 if (baseRecContentMark.getMarkScanned().equals(mark)) {
-                    return baseRecContentMark.getMarkScannedAsType();
+                    return new CheckMarkScannedResult(baseRecContentMark.getMarkScannedAsType(), recContent);
                 }
             }
         }
@@ -443,7 +446,7 @@ public class DaoMem {
             }
         }
         incomeRec.setExported(true);
-        writeLocalDataIncomeRec(incomeRec);
+        writeLocalDataBaseRec(incomeRec);
         integrationFile.writeBaseRec(shopId, incomeRec);
         return true;
     }
@@ -603,13 +606,12 @@ public class DaoMem {
         this.syncWiFiFtp.syncShopDocs(shopId);
     }
 
-    public boolean isAlowedBarcode(BarcodeObject.BarCodeType barCodeType) {
-        ShopIn shopIn = findShopInById(shopId);
-        if ( (ShopIn.CHECKMARK_DM.equals(shopIn.getCheckMark()) && barCodeType != BarcodeObject.BarCodeType.DATAMATRIX) ||
-             (ShopIn.CHECKMARK_DMPDF.equals(shopIn.getCheckMark()) && barCodeType != BarcodeObject.BarCodeType.DATAMATRIX && barCodeType != BarcodeObject.BarCodeType.PDF417)) {
-            return false;
+    public boolean isNeedToCheckMark(String checkMark, BarcodeObject.BarCodeType barCodeType) {
+        if ( (ShopIn.CHECKMARK_DM.equals(checkMark) && barCodeType == BarcodeObject.BarCodeType.DATAMATRIX) ||
+                ShopIn.CHECKMARK_DMPDF.equals(checkMark)) {
+            return true;
         }
-        return true;
+        return false;
     }
 
     public MarkIn findMarkByBarcode(String barCode) {

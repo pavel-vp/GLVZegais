@@ -96,4 +96,6 @@ public abstract class BaseRec {
     public BaseRecContent tryGetNextRecContent() {
         return null;
     }
+
+    public abstract String getStatusDesc();
 }

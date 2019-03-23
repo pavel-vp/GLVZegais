@@ -7,9 +7,11 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.glvz.egais.MainApp;
 import com.glvz.egais.integration.model.*;
 import com.glvz.egais.integration.model.doc.BaseRecOutput;
+import com.glvz.egais.integration.model.doc.DocIn;
 import com.glvz.egais.integration.model.doc.income.IncomeIn;
 import com.glvz.egais.integration.model.doc.income.IncomeRecOutput;
 import com.glvz.egais.integration.model.doc.move.MoveIn;
+import com.glvz.egais.integration.model.doc.move.MoveRecOutput;
 import com.glvz.egais.model.BaseRec;
 import com.glvz.egais.model.income.IncomeRec;
 import com.glvz.egais.utils.StringUtils;
@@ -110,8 +112,8 @@ public class IntegrationSDCard implements Integration {
     }
 
     @Override
-    public List<MarkIn> loadMark() {
-        File pathToFile = new File(basePath + "/" + DIC_DIR, MARK_FILE);
+    public List<MarkIn> loadMark(String shopId) {
+        File pathToFile = new File(basePath + "/" + SHOPS_DIR + "/" + shopId + "/" + IN_DIR, MARK_FILE);
         List<MarkIn> listMark = new ArrayList<>();
         try {
             listMark = objectMapper.readValue(pathToFile, new TypeReference<ArrayList<MarkIn>>(){});
@@ -235,16 +237,17 @@ public class IntegrationSDCard implements Integration {
     }
 
     @Override
-    public List<IncomeIn> clearOldData(int numDaysOld) {
-        List<IncomeIn> res = new ArrayList<>();
+    public List<DocIn> clearOldData(int numDaysOld) {
+        List<DocIn> res = new ArrayList<>();
         Calendar calendar = Calendar.getInstance();
         calendar.add(Calendar.DAY_OF_MONTH, - numDaysOld);
         // Взять все файлы из директории
         List<File> files = new ArrayList<>();
         listf(basePath + "/" + SHOPS_DIR, files);
         for (File file : files) {
-            if (file.getName().toUpperCase().startsWith("/" + DOC_PREFIX_INCOME + "/")) {
-                boolean toDelete = false;
+            boolean toDelete = false;
+            // Приход
+            if (file.getName().toUpperCase().startsWith(DOC_PREFIX_INCOME)) {
                 // Если это импорт
                 if (file.getAbsolutePath().contains("/" + IN_DIR + "/")) {
                     try {
@@ -273,9 +276,41 @@ public class IntegrationSDCard implements Integration {
                         toDelete = true;
                     }
                 }
-                if (toDelete) {
-                    file.delete();
+            }
+            // Перемещение
+            if (file.getName().toUpperCase().startsWith(DOC_PREFIX_MOVE)) {
+                // Если это импорт
+                if (file.getAbsolutePath().contains("/" + IN_DIR + "/")) {
+                    try {
+                        MoveIn moveIn = objectMapper.readValue(file, MoveIn.class);
+                        Date d = StringUtils.jsonStringToDate(moveIn.getDate());
+                        if (d.before(calendar.getTime())) {
+                            toDelete = true;
+                        } else {
+                            res.add(moveIn);
+                        }
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        toDelete = true;
+                    }
                 }
+                // Если это экспорт
+                if (file.getAbsolutePath().contains("/" + OUT_DIR + "/")) {
+                    try {
+                        MoveRecOutput moveRecOutput = objectMapper.readValue(file, MoveRecOutput.class);
+                        Date d = StringUtils.jsonStringToDate(moveRecOutput.getDate());
+                        if (d.before(calendar.getTime())) {
+                            toDelete = true;
+                        }
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        toDelete = true;
+                    }
+                }
+            }
+
+            if (toDelete) {
+                file.delete();
             }
         }
 
