@@ -142,7 +142,7 @@ public class ActMainMenu extends Activity {
                 switch (mode){
                     case SyncWiFiFtp.SYNC_SUCCESS: MessageUtils.showToastMessage("Синхрониация по WiFi выполнена");
                             break;
-                    case SyncWiFiFtp.SYNC_NO_WIFI: break;
+                    case SyncWiFiFtp.SYNC_NO_WIFI:
                     case SyncWiFiFtp.SYNC_ERROR: MessageUtils.showModalMessage(ActMainMenu.this, "Ошибка", "Выполните обмен через USB-кабель (WiFi-подключение отсутствует)");
                         break;
                 }

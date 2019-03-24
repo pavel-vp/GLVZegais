@@ -139,17 +139,7 @@ public class ActMoveRec extends ActBaseDocRec {
             if (success) {
                 MessageUtils.showToastMessage("Накладная выгружена!");
                 updateData();
-                //- выполняется проверка подключенного WiFi, при наличии JSON-файл выгружается по FTP с записью в журнал.
-                new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            DaoMem.getDaoMem().syncWiFiFtpShopDocs();
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }).start();
+                syncDoc();
             } else {
                 MessageUtils.showModalMessage(this, "Внимание!", "Имеются строки не сопоставленные с номенклатурой 1С, но принятым количеством. Необходимо сопоставить номенклатуру или отказаться от приемки позиции");
             }

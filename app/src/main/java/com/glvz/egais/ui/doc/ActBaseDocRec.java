@@ -7,6 +7,7 @@ import android.os.Handler;
 import android.widget.CheckBox;
 import android.widget.ListView;
 import com.glvz.egais.MainApp;
+import com.glvz.egais.dao.DaoMem;
 import com.glvz.egais.model.BaseRec;
 import com.glvz.egais.model.BaseRecContent;
 import com.glvz.egais.service.DocArrayAdapter;
@@ -49,6 +50,22 @@ public abstract class ActBaseDocRec extends Activity implements BarcodeReader.Ba
     abstract protected void updateData();
 
     abstract protected void pickRec(Context ctx, String docId, BaseRecContent req, int addQty, String barcode, boolean isBoxScanned, boolean isOpenByScan);
+
+    protected void syncDoc() {
+        //- выполняется проверка подключенного WiFi, при наличии JSON-файл выгружается по FTP с записью в журнал.
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    DaoMem.getDaoMem().syncWiFiFtpShared();
+                    DaoMem.getDaoMem().initDictionary();
+                    DaoMem.getDaoMem().syncWiFiFtpShopDocs();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
+    }
 
     @Override
     public void onResume() {

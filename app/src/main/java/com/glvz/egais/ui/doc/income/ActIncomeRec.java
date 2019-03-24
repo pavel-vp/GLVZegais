@@ -116,6 +116,7 @@ public class ActIncomeRec extends ActBaseDocRec implements PickBottliingDateCall
                 if (success) {
                     MessageUtils.showToastMessage("Накладная выгружена!");
                     updateData();
+                    syncDoc();
                 } else {
                     MessageUtils.showModalMessage(this, "Внимание!", "Имеются строки не сопоставленные с номенклатурой 1С, но принятым количеством. Необходимо сопоставить номенклатуру или отказаться от приемки позиции");
                 }
