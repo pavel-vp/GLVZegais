@@ -6,6 +6,7 @@ import com.glvz.egais.integration.model.doc.income.IncomeIn;
 import com.glvz.egais.integration.model.doc.move.MoveIn;
 import com.glvz.egais.model.BaseRec;
 import com.glvz.egais.model.income.IncomeRec;
+import com.glvz.egais.model.writeoff.WriteoffRec;
 
 import java.io.File;
 import java.util.List;
@@ -27,6 +28,7 @@ public interface Integration {
 
     List<IncomeIn> loadIncome(String shopId);
     List<MoveIn> loadMove(String shopId);
+    List<WriteoffRec> loadWriteoff(String shopId);
 
     void writeBaseRec(String shopId, BaseRec rec);
 

@@ -16,7 +16,10 @@ import org.apache.commons.net.ftp.FTPFile;
 import java.io.*;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
@@ -31,6 +34,7 @@ public class SyncWiFiFtp {
     private Syncro syncro;
     private String basePath;
     private SetupFtp setupFtp;
+    private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmmss");
 
 
     public void init(Context context, String basePath, SetupFtp setupFtp) {
@@ -90,8 +94,10 @@ public class SyncWiFiFtp {
         for (FTPFile ftpFile : ftpFiles) {
             if (ftpFile.isFile()) {
                 String fileNameRemote = ftpFile.getName();
-                long timeRemote = ftpFile.getTimestamp().getTimeInMillis();
-                Log.v("DaoMem", "File remote: " + fileNameRemote + ", time:" + timeRemote);
+                String modTimeString = ftpClient.getModificationTime(rec.getRemoteDir()+"/"+fileNameRemote);
+                long timeRemote = decodeModeTime(modTimeString);
+                //long timeRemote = ftpFile.getTimestamp().getTimeInMillis();
+                Log.v("DaoMem", "File remote: " + fileNameRemote + ", time:" + timeRemote );
 
                 LocalFileRec localFileRec = syncro.findFileByName(localFileRecList, fileNameRemote);
 
@@ -118,6 +124,17 @@ public class SyncWiFiFtp {
                 syncro.deleteLocalFileRec(localFileRec.getPath(), localFileRec.getFileName());
             }
         }
+    }
+
+    private long decodeModeTime(String modTimeString) {
+            try {
+               // String timePart = modTimeString.split(" ")[1];
+                Date modificationTime = dateFormat.parse(modTimeString);
+                return modificationTime.getTime();
+            } catch (ParseException ex) {
+                ex.printStackTrace();
+            }
+            return 0;
     }
 
     private FTPClient initFTPClient() throws Exception {

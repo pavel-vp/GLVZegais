@@ -14,6 +14,7 @@ import com.glvz.egais.integration.model.doc.move.MoveIn;
 import com.glvz.egais.integration.model.doc.move.MoveRecOutput;
 import com.glvz.egais.model.BaseRec;
 import com.glvz.egais.model.income.IncomeRec;
+import com.glvz.egais.model.writeoff.WriteoffRec;
 import com.glvz.egais.utils.StringUtils;
 
 import java.io.*;
@@ -46,6 +47,7 @@ public class IntegrationSDCard implements Integration {
 
     private static final String DOC_PREFIX_INCOME = "TTN";
     private static final String DOC_PREFIX_MOVE = "DOCMOVE";
+    private static final String DOC_PREFIX_WRITEOFF = "WRITEOFF";
 
     private ObjectMapper objectMapper = new ObjectMapper();
 
@@ -198,6 +200,25 @@ public class IntegrationSDCard implements Integration {
             }
         }
         return listMoveIn;
+    }
+
+    @Override
+    public List<WriteoffRec> loadWriteoff(String shopId) {
+        List<WriteoffRec> listWriteoff = new ArrayList<>();
+        File path = new File(basePath + "/" + SHOPS_DIR + "/" + shopId + "/" + OUT_DIR);
+        if (path.listFiles() != null) {
+            for (File file : path.listFiles()) {
+                if (file.getName().toUpperCase().startsWith(DOC_PREFIX_WRITEOFF)) {
+                    try {
+                        WriteoffRec writeoffRec = objectMapper.readValue(file, WriteoffRec.class);
+                        listWriteoff.add(writeoffRec);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }
+        return listWriteoff;
     }
 
     @Override

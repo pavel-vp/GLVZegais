@@ -27,6 +27,7 @@ import com.glvz.egais.model.*;
 import com.glvz.egais.model.income.*;
 import com.glvz.egais.model.move.MoveRec;
 import com.glvz.egais.model.move.MoveRecContent;
+import com.glvz.egais.model.writeoff.WriteoffRec;
 import com.glvz.egais.utils.BarcodeObject;
 import com.glvz.egais.utils.MessageUtils;
 
@@ -67,9 +68,11 @@ public class DaoMem {
     List<MarkIn> listM;
     List<IncomeIn> listIncomeIn;
     List<MoveIn> listMoveIn;
+    List<WriteoffRec> listWriteoff;
 
     Map<String, IncomeRec> mapIncomeRec;
     Map<String, MoveRec> mapMoveRec;
+    Map<String, WriteoffRec> mapWriteoffRec;
     SharedPreferences sharedPreferences;
 
     private UserIn userIn;
@@ -121,6 +124,8 @@ public class DaoMem {
         integrationFile.initDirectories(shopId);
         listIncomeIn = integrationFile.loadIncome(shopId);
         listMoveIn = integrationFile.loadMove(shopId);
+        listWriteoff = integrationFile.loadWriteoff(shopId);
+
         listM = integrationFile.loadMark(shopId);
         document = new DocumentMem(listIncomeIn);
         documentMove = new DocumentMoveMem(listMoveIn);
@@ -128,6 +133,7 @@ public class DaoMem {
         // Прочитать локальные данные
         mapIncomeRec = readIncomeRec();
         mapMoveRec = readMoveRec();
+        mapWriteoffRec = readWriteoffRec();
         MessageUtils.showToastMessage("Данные загружены");
 
     }
@@ -139,6 +145,17 @@ public class DaoMem {
             MoveRec moveRec = new MoveRec(moveIn.getDocId(), moveIn);
             readLocalData(moveRec);
             map.put(moveIn.getDocId(), moveRec);
+        }
+
+        return map;
+    }
+
+    private Map<String,WriteoffRec> readWriteoffRec() {
+        Map<String, WriteoffRec> map = new HashMap<>();
+
+        for (WriteoffRec writeoffRec : listWriteoff) {
+            readLocalData(writeoffRec);
+            map.put(writeoffRec.getDocId(), writeoffRec);
         }
 
         return map;
@@ -453,6 +470,11 @@ public class DaoMem {
 
     public boolean exportData(MoveRec moveRec) {
         exportDataBaseRec(moveRec);
+        return true;
+    }
+
+    public boolean exportData(WriteoffRec writeoffRec) {
+        exportDataBaseRec(writeoffRec);
         return true;
     }
 
