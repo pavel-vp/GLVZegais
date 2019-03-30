@@ -12,6 +12,7 @@ import com.glvz.egais.model.BaseRec;
 import com.glvz.egais.model.BaseRecContent;
 import com.glvz.egais.service.DocArrayAdapter;
 import com.glvz.egais.service.DocContentArrayAdapter;
+import com.glvz.egais.service.DocRecHolder;
 import com.glvz.egais.utils.BarcodeObject;
 import com.honeywell.aidc.BarcodeFailureEvent;
 import com.honeywell.aidc.BarcodeReadEvent;
@@ -29,7 +30,7 @@ public abstract class ActBaseDocRec extends Activity implements BarcodeReader.Ba
     public static final String RECCONTENT_ISBOXSCANNED = "ISBOXSCANNED";
     public static final String RECCONTENT_ISOPENBYSCAN = "ISOPENBYSCAN";
 
-    protected DocArrayAdapter.DocRecHolder docRecHolder;
+    protected DocRecHolder docRecHolder;
     protected CheckBox cbFilter;
     protected ListView lvContent;
     protected List<BaseRecContent> list = new ArrayList<>();

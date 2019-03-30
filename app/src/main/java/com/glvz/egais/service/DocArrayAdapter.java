@@ -16,7 +16,7 @@ import com.glvz.egais.utils.StringUtils;
 import java.util.Date;
 import java.util.List;
 
-public class DocArrayAdapter extends ArrayAdapter<BaseRec> {
+public abstract class DocArrayAdapter extends ArrayAdapter<BaseRec> {
 
     List<BaseRec> recList;
     final Context context;
@@ -35,6 +35,8 @@ public class DocArrayAdapter extends ArrayAdapter<BaseRec> {
         return recList.size();
     }
 
+    abstract protected DocRecHolder getHolderOfRow(View row, boolean needCreate);
+
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         DocRecHolder holder = null;
@@ -43,7 +45,7 @@ public class DocArrayAdapter extends ArrayAdapter<BaseRec> {
         if (row == null) {
             LayoutInflater inflater = ((Activity) context).getLayoutInflater();
             row = inflater.inflate(layoutResID, parent, false);
-            holder = new DocRecHolder(row);
+            holder = getHolderOfRow(row, true);
         } else {
             holder = (DocRecHolder) row.getTag();
         }
@@ -61,57 +63,6 @@ public class DocArrayAdapter extends ArrayAdapter<BaseRec> {
 
     }
 
-    public static class DocRecHolder {
-
-        TextView tvNumnakl;
-        TextView tvDatenakl;
-        TextView tvCntRows;
-        TextView tvNameagent;
-        TextView tvStatus;
-        TextView tvExported;
-        BaseRec rec;
-
-        public DocRecHolder(View v) {
-            super();
-            this.tvNumnakl = (TextView) v.findViewById(R.id.tvNumnakl);
-            this.tvDatenakl = (TextView) v.findViewById(R.id.tvDateNakl);
-            this.tvCntRows = (TextView) v.findViewById(R.id.tvCntRows);
-            this.tvNameagent = (TextView) v.findViewById(R.id.tvNameagent);
-            this.tvStatus = (TextView) v.findViewById(R.id.tvStatus);
-            this.tvExported = (TextView) v.findViewById(R.id.tvExported);
-            v.setTag(this);
-        }
-
-        public void setItem(BaseRec rec) {
-            this.rec = rec;
-            this.tvNumnakl.setText(rec.getDocNum());
-            Date d = rec.getDate();
-            this.tvDatenakl.setText("на " + StringUtils.formatDateDisplay(d));
-            this.tvCntRows.setText("Строк: " + rec.getCntDone() + "/" + rec.getDocContentInList().size());
-            if (this.rec.isExported()) {
-                tvExported.setVisibility(View.VISIBLE);
-            } else {
-                tvExported.setVisibility(View.INVISIBLE);
-            }
-            switch (rec.getStatus()) {
-                case NEW:
-                    tvStatus.setTextColor(Color.BLACK);
-                    break;
-                case INPROGRESS:
-                    tvStatus.setTextColor(Color.BLUE);
-                    break;
-                case REJECTED:
-                    tvStatus.setTextColor(Color.RED);
-                    break;
-                case DONE:
-                    tvStatus.setTextColor(Color.rgb(0, 200, 0));
-                    break;
-            }
-            this.tvStatus.setText("Статус: " + rec.getStatusDesc());
-            this.tvNameagent.setText(rec.getAgentName());
-        }
-
-    }
 
 
 }

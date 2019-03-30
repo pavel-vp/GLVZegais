@@ -1,4 +1,4 @@
-package com.glvz.egais.ui.doc.move;
+package com.glvz.egais.ui.doc.writeoff;
 
 import android.content.Context;
 import android.content.DialogInterface;
@@ -12,91 +12,94 @@ import android.widget.Button;
 import android.widget.ListView;
 import com.glvz.egais.R;
 import com.glvz.egais.dao.DaoMem;
+import com.glvz.egais.integration.model.MarkIn;
 import com.glvz.egais.model.BaseRecContent;
 import com.glvz.egais.model.BaseRecStatus;
-import com.glvz.egais.model.move.MoveRec;
-import com.glvz.egais.model.move.MoveRecContent;
-import com.glvz.egais.service.DocArrayAdapter;
-import com.glvz.egais.service.move.MoveContentArrayAdapter;
-import com.glvz.egais.service.move.MoveRecHolder;
+import com.glvz.egais.model.writeoff.WriteoffRec;
+import com.glvz.egais.model.writeoff.WriteoffRecContent;
+import com.glvz.egais.service.writeoff.WriteoffContentArrayAdapter;
+import com.glvz.egais.service.writeoff.WriteoffRecHolder;
+import com.glvz.egais.ui.ActCommentEdit;
 import com.glvz.egais.ui.doc.ActBaseDocRec;
 import com.glvz.egais.utils.MessageUtils;
+import com.honeywell.aidc.BarcodeFailureEvent;
+import com.honeywell.aidc.BarcodeReadEvent;
 
 import java.util.Collection;
 
-public class ActMoveRec extends ActBaseDocRec {
+public class ActWriteoffRec extends ActBaseDocRec {
 
-    private MoveRec moveRec;
-    private Button btnAction;
+    private final static int STATE_SCAN_MARK = 1;
+    private final static int STATE_SCAN_EAN = 2;
+
+    private final static int COMMENT_RETCODE = 1;
+
+    private int currentState = STATE_SCAN_MARK;
+    private MarkIn scannedMarkIn = null;
+
+    private WriteoffRec writeoffRec;
+    Button btnChangeComment;
 
     @Override
     protected void initRec() {
         Bundle extras = getIntent().getExtras();
         String key = extras.getString(ActBaseDocRec.REC_DOCID);
-        this.moveRec = DaoMem.getDaoMem().getMapMoveRec().get(key);
+        this.writeoffRec = DaoMem.getDaoMem().getMapWriteoffRec().get(key);
     }
 
     @Override
     protected void setResources() {
-        setContentView(R.layout.activity_moverec);
+        setContentView(R.layout.activity_writeoffrec);
 
-        View container = findViewById(R.id.inclRecMove);
-        docRecHolder = new MoveRecHolder(container);
+        View container = findViewById(R.id.inclRecWriteoff);
+        docRecHolder = new WriteoffRecHolder(container);
 
         lvContent = (ListView) findViewById(R.id.lvContent);
+
+        btnChangeComment = (Button)findViewById(R.id.btnChangeComment);
+        btnChangeComment.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Открыть форму с редактироанием комментария
+                Intent i = new Intent(ActWriteoffRec.this, ActCommentEdit.class);
+                i.putExtra(ActCommentEdit.COMMENT_VALUE, writeoffRec.getComment());
+                startActivityForResult(i, COMMENT_RETCODE);
+            }
+        });
 
         lvContent.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                pickRec(ActMoveRec.this, moveRec.getDocId(), list.get(position), 0, null, false, false);
+                pickRec(ActWriteoffRec.this, writeoffRec.getDocId(), list.get(position), 0, null, false, false);
             }
         });
-        adapter = new MoveContentArrayAdapter(this, R.layout.rec_move_position, list);
+        adapter = new WriteoffContentArrayAdapter(this, R.layout.rec_writeoff_position, list);
         lvContent.setAdapter(adapter);
-
-        btnAction = (Button)findViewById(R.id.btnAction);
-        btnAction.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                switch (moveRec.getStatus()) {
-                    case NEW:
-                    case INPROGRESS:
-                        proceedNextRow();
-                        break;
-                    case DONE:
-                        exportDoc();
-                        break;
-                }
-            }
-        });
 
     }
 
     @Override
     protected void updateData() {
-        docRecHolder.setItem(moveRec);
+        docRecHolder.setItem(writeoffRec);
         // Достать список позиций по накладной
-        Collection<MoveRecContent> newList = DaoMem.getDaoMem().getMoveRecContentList(moveRec.getDocId());
+        Collection<WriteoffRecContent> newList = DaoMem.getDaoMem().getWriteoffRecContentList(writeoffRec.getDocId());
         list.clear();
         list.addAll(newList);
         adapter.notifyDataSetChanged();
-        // В зависимости от состояния - вывести текст на кнопке
-        btnAction.setEnabled(true);
-        switch (moveRec.getStatus()) {
-            case NEW: btnAction.setText("Начать");
-                break;
-            case INPROGRESS: btnAction.setText("Продолжить");
-                break;
-            case DONE: btnAction.setText("Выгрузить");
-                break;
-            default:
-                btnAction.setEnabled(false);
+    }
+
+    public void onActivityResult(int requestCode, int resultCode, Intent i){
+        if(requestCode == COMMENT_RETCODE ){
+            if(resultCode==RESULT_OK){
+                writeoffRec.setComment(i.getData().toString());
+                DaoMem.getDaoMem().writeLocalWriteoffRec(writeoffRec);
+            }
         }
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu_moverec, menu);
+        getMenuInflater().inflate(R.menu.menu_writeoffrec, menu);
         return true;
     }
 
@@ -118,7 +121,7 @@ public class ActMoveRec extends ActBaseDocRec {
                         new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
-                                DaoMem.getDaoMem().rejectData(moveRec);
+                                DaoMem.getDaoMem().rejectData(writeoffRec);
                                 MessageUtils.showToastMessage("Данные по накладной удалены!");
                                 updateData();
                             }
@@ -132,11 +135,11 @@ public class ActMoveRec extends ActBaseDocRec {
     private void exportDoc() {
         // - проверить, что все строки задания выполнены (или статус задания — завершено). Если проверка не пройдена — модальное сообщение
         //   «Задание еще не выполнено, выгрузка невозможна» и завершение обработки.
-        if ( !(moveRec.getStatus() == BaseRecStatus.DONE || DaoMem.getDaoMem().isQtyAcceptedFull(moveRec)) ) {
+        if ( !(writeoffRec.getStatus() == BaseRecStatus.DONE || DaoMem.getDaoMem().isQtyAcceptedFull(writeoffRec)) ) {
             MessageUtils.showModalMessage(this, "Внимание!", "Задание еще не выполнено, выгрузка невозможна");
         } else {
             //- собранные данные выгружаются в JSON-файл во внутреннюю память терминала в каталог «GLVZ\Shops\#ShopID#\Out»
-            boolean success = DaoMem.getDaoMem().exportData(moveRec);
+            boolean success = DaoMem.getDaoMem().exportData(writeoffRec);
             if (success) {
                 MessageUtils.showToastMessage("Накладная выгружена!");
                 updateData();
@@ -147,27 +150,19 @@ public class ActMoveRec extends ActBaseDocRec {
         }
     }
 
-    private void proceedNextRow() {
-        MoveRecContent nextRecContent = (MoveRecContent) moveRec.tryGetNextRecContent();
-      // переход к форме «Товарная позиция задания на перемещение», активируется первая невыполненная строка задания.
-        if (nextRecContent != null) {
-            moveRec.setStatus(BaseRecStatus.INPROGRESS);
-            DaoMem.getDaoMem().writeLocalDataBaseRec(moveRec);
-            pickRec(this, moveRec.getDocId(), nextRecContent, 0, null, false, false);
-        }
+    @Override
+    public void onBarcodeEvent(BarcodeReadEvent barcodeReadEvent) {
+
     }
 
     @Override
-    protected void pickRec(Context ctx, String docId, BaseRecContent req, int addQty, String barcode, boolean isBoxScanned, boolean isOpenByScan) {
-        // Открыть форму строки
-        // Перейти в форму одной строки позиции
-        Intent in = new Intent();
-        in.setClass(ctx, ActMoveRecContent.class);
-        in.putExtra(ActMoveRec.REC_DOCID, docId);
-        in.putExtra(ActMoveRec.RECCONTENT_POSITION, req.getPosition().toString());
-        ctx.startActivity(in);
+    public void onFailureEvent(BarcodeFailureEvent barcodeFailureEvent) {
 
     }
 
 
+    @Override
+    protected void pickRec(Context ctx, String docId, BaseRecContent req, int addQty, String barcode, boolean isBoxScanned, boolean isOpenByScan) {
+        // no action
+    }
 }

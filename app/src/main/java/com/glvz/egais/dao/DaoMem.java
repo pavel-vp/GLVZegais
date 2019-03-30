@@ -28,6 +28,7 @@ import com.glvz.egais.model.income.*;
 import com.glvz.egais.model.move.MoveRec;
 import com.glvz.egais.model.move.MoveRecContent;
 import com.glvz.egais.model.writeoff.WriteoffRec;
+import com.glvz.egais.model.writeoff.WriteoffRecContent;
 import com.glvz.egais.utils.BarcodeObject;
 import com.glvz.egais.utils.MessageUtils;
 
@@ -36,6 +37,9 @@ import java.util.*;
 
 public class DaoMem {
 
+
+    public static final String KEY_LAST_DOCID = "last_docid";
+    public static final String KEY_WRITEOFF = "writeoff";
 
     private static DaoMem daoMem = null;
 
@@ -47,6 +51,7 @@ public class DaoMem {
     }
 
     private DaoMem() {
+        sharedPreferences = MainApp.getContext().getSharedPreferences("settings", Activity.MODE_PRIVATE);
         initDictionary();
     }
 
@@ -68,7 +73,6 @@ public class DaoMem {
     List<MarkIn> listM;
     List<IncomeIn> listIncomeIn;
     List<MoveIn> listMoveIn;
-    List<WriteoffRec> listWriteoff;
 
     Map<String, IncomeRec> mapIncomeRec;
     Map<String, MoveRec> mapMoveRec;
@@ -81,7 +85,6 @@ public class DaoMem {
 
     public void initDictionary() {
         File path = new File(Environment.getExternalStorageDirectory(), MainApp.getContext().getResources().getString(R.string.path_exchange));
-        sharedPreferences = MainApp.getContext().getSharedPreferences("settings", Activity.MODE_PRIVATE);
         integrationFile = new IntegrationSDCard(path.getAbsolutePath());
         List<DocIn> allRemainRecs = integrationFile.clearOldData(Integer.valueOf(MainApp.getContext().getResources().getString(R.string.num_days_old)));
         clearStoredDataNotInList(allRemainRecs);
@@ -120,11 +123,23 @@ public class DaoMem {
         return null;
     }
 
+    public String getNewDocId() {
+        String lastDocId = sharedPreferences.getString(KEY_LAST_DOCID, "0");
+        String newDocId =  String.valueOf(Long.parseLong(lastDocId) + 1);
+        storeLastDocId(newDocId);
+        return newDocId;
+    }
+
+    private void storeLastDocId(String docId) {
+        SharedPreferences.Editor ed = sharedPreferences.edit();
+        ed.putString(KEY_LAST_DOCID, docId);
+        ed.apply();
+    }
+
     public void initDocuments() {
         integrationFile.initDirectories(shopId);
         listIncomeIn = integrationFile.loadIncome(shopId);
         listMoveIn = integrationFile.loadMove(shopId);
-        listWriteoff = integrationFile.loadWriteoff(shopId);
 
         listM = integrationFile.loadMark(shopId);
         document = new DocumentMem(listIncomeIn);
@@ -133,7 +148,7 @@ public class DaoMem {
         // Прочитать локальные данные
         mapIncomeRec = readIncomeRec();
         mapMoveRec = readMoveRec();
-        mapWriteoffRec = readWriteoffRec();
+        mapWriteoffRec = readWriteoffRec(shopId);
         MessageUtils.showToastMessage("Данные загружены");
 
     }
@@ -150,11 +165,15 @@ public class DaoMem {
         return map;
     }
 
-    private Map<String,WriteoffRec> readWriteoffRec() {
+    private Map<String,WriteoffRec> readWriteoffRec(String shopId) {
         Map<String, WriteoffRec> map = new HashMap<>();
 
-        for (WriteoffRec writeoffRec : listWriteoff) {
+        Set<String> docIds = sharedPreferences.getStringSet(KEY_WRITEOFF+"_"+shopId, Collections.<String>emptySet());
+
+        for (String docId : docIds ) {
+            WriteoffRec writeoffRec = new WriteoffRec(docId);
             readLocalData(writeoffRec);
+            readLocalDataExt(writeoffRec);
             map.put(writeoffRec.getDocId(), writeoffRec);
         }
 
@@ -204,6 +223,16 @@ public class DaoMem {
         }
     }
 
+    private void readLocalDataExt(WriteoffRec writeoffRec) {
+        writeoffRec.setDocNum(sharedPreferences.getString(KEY_WRITEOFF + "_" + WriteoffRec.KEY_DOCNUM + "_" + writeoffRec.getDocId() + "_", ""));
+        writeoffRec.setDateStr(sharedPreferences.getString(KEY_WRITEOFF + "_" + WriteoffRec.KEY_DATE + "_" + writeoffRec.getDocId() + "_", ""));
+        writeoffRec.setTypeDoc(sharedPreferences.getString(KEY_WRITEOFF + "_" + WriteoffRec.KEY_TYPEDOC + "_" + writeoffRec.getDocId() + "_", ""));
+        writeoffRec.setSkladId(sharedPreferences.getString(KEY_WRITEOFF + "_" + WriteoffRec.KEY_SKLADID + "_" + writeoffRec.getDocId() + "_", ""));
+        writeoffRec.setSkladName(sharedPreferences.getString(KEY_WRITEOFF + "_" + WriteoffRec.KEY_SKLADNAME + "_" + writeoffRec.getDocId() + "_", ""));
+        writeoffRec.setComment(sharedPreferences.getString(KEY_WRITEOFF + "_" + WriteoffRec.KEY_COMMENT + "_" + writeoffRec.getDocId() + "_", ""));
+
+    }
+
     private void clearStoredDataNotInList(List<DocIn> recList) {
         Map<String, ?> allPrefs = sharedPreferences.getAll();
         for (DocIn rec : recList) {
@@ -221,7 +250,9 @@ public class DaoMem {
         SharedPreferences.Editor ed = sharedPreferences.edit();
         for (Map.Entry<String,?> entry : allPrefs.entrySet()) {
             // НЕ связанные с документами
-            if (!entry.getKey().equals(BaseRec.KEY_SHOPID)) {
+            if (!entry.getKey().equals(BaseRec.KEY_SHOPID) &&
+                    !entry.getKey().equals(KEY_LAST_DOCID) &&
+                    !entry.getKey().startsWith(KEY_WRITEOFF)) {
                 ed.putString(entry.getKey(), null);
             }
         }
@@ -266,6 +297,17 @@ public class DaoMem {
         }
     }
 
+    private void writeLocalDataBaseRecExt(WriteoffRec writeoffRec) {
+        SharedPreferences.Editor ed = sharedPreferences.edit();
+        ed.putString(KEY_WRITEOFF + "_" + WriteoffRec.KEY_DOCNUM + "_" + writeoffRec.getDocId() + "_", writeoffRec.getDocNum());
+        ed.putString(KEY_WRITEOFF + "_" + WriteoffRec.KEY_DATE + "_" + writeoffRec.getDocId() + "_", writeoffRec.getDateStr());
+        ed.putString(KEY_WRITEOFF + "_" + WriteoffRec.KEY_TYPEDOC + "_" + writeoffRec.getDocId() + "_", writeoffRec.getTypeDoc());
+        ed.putString(KEY_WRITEOFF + "_" + WriteoffRec.KEY_SKLADID + "_" + writeoffRec.getDocId() + "_", writeoffRec.getSkladId());
+        ed.putString(KEY_WRITEOFF + "_" + WriteoffRec.KEY_SKLADNAME + "_" + writeoffRec.getDocId() + "_", writeoffRec.getSkladName());
+        ed.putString(KEY_WRITEOFF + "_" + WriteoffRec.KEY_COMMENT + "_" + writeoffRec.getDocId() + "_", writeoffRec.getComment());
+        ed.apply();
+    }
+
     private void writeLocalDataBaseRecContent(String docId, BaseRecContent recContent) {
         SharedPreferences.Editor ed = sharedPreferences.edit();
         ed.putString(BaseRec.KEY_POS_ID1C+"_"+docId+"_"+recContent.getPosition(), recContent.getId1c());
@@ -295,7 +337,7 @@ public class DaoMem {
             Date d1 = lhs.getDate();
             Date d2 = rhs.getDate();
 
-            if (d1.before(d2)) return 1;
+            if (d1 == null || d2 == null || d1.before(d2)) return 1;
             if (d1.after(d2)) return -1;
 
             int res = lhs.getAgentName().compareTo(rhs.getAgentName());
@@ -314,6 +356,15 @@ public class DaoMem {
         return list;
     }
 
+    public Collection<WriteoffRec> getWriteoffRecListOrdered() {
+        List<WriteoffRec> list = new ArrayList<>();
+        list.addAll(mapWriteoffRec.values());
+
+        Collections.sort(list, docRecDateComparator);
+        return list;
+    }
+
+
     public Map<String, IncomeRec> getMapIncomeRec() {
         return mapIncomeRec;
     }
@@ -322,12 +373,21 @@ public class DaoMem {
         return mapMoveRec;
     }
 
+    public Map<String, WriteoffRec> getMapWriteoffRec() {
+        return mapWriteoffRec;
+    }
+
+
     public Collection<IncomeRecContent> getIncomeRecContentList(String wbRegId) {
         return mapIncomeRec.get(wbRegId).getIncomeRecContentList();
     }
 
     public Collection<MoveRecContent> getMoveRecContentList(String docId) {
         return mapMoveRec.get(docId).getMoveRecContentList();
+    }
+
+    public Collection<WriteoffRecContent> getWriteoffRecContentList(String docId) {
+        return mapWriteoffRec.get(docId).getWriteoffRecContentList();
     }
 
     public BaseRecContent getRecContentByPosition(BaseRec rec, String position) {
@@ -341,6 +401,25 @@ public class DaoMem {
 
     public Dictionary getDictionary() {
         return dictionary;
+    }
+
+    public WriteoffRec addNewWriteoffRec(String shopId, String shopInName, String type) {
+        WriteoffRec newRec = new WriteoffRec(shopId, shopInName, type);
+        mapWriteoffRec.put(newRec.getDocId(),newRec);
+        writeLocalWriteoffRec(newRec);
+        return newRec;
+    }
+
+    public void writeLocalWriteoffRec(WriteoffRec newRec) {
+        SharedPreferences.Editor ed = sharedPreferences.edit();
+        Set<String> docIds = new HashSet<>();
+        for (WriteoffRec writeoffRec : mapWriteoffRec.values()) {
+            docIds.add(writeoffRec.getDocId());
+        }
+        ed.putStringSet(KEY_WRITEOFF+"_"+shopId, docIds);
+        ed.apply();
+        writeLocalDataBaseRec(newRec);
+        writeLocalDataBaseRecExt(newRec);
     }
 
     public static class CheckMarkScannedResult {

@@ -28,7 +28,6 @@ public interface Integration {
 
     List<IncomeIn> loadIncome(String shopId);
     List<MoveIn> loadMove(String shopId);
-    List<WriteoffRec> loadWriteoff(String shopId);
 
     void writeBaseRec(String shopId, BaseRec rec);
 

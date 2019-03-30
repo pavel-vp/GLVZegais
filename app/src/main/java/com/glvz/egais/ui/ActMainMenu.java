@@ -17,6 +17,7 @@ import com.glvz.egais.dao.DaoMem;
 import com.glvz.egais.integration.wifi.SyncWiFiFtp;
 import com.glvz.egais.ui.doc.income.ActIncomeList;
 import com.glvz.egais.ui.doc.move.ActMoveList;
+import com.glvz.egais.ui.doc.writeoff.ActWriteoffList;
 import com.glvz.egais.utils.MessageUtils;
 
 public class ActMainMenu extends Activity {
@@ -60,6 +61,15 @@ public class ActMainMenu extends Activity {
             public void onClick(View v) {
                 Intent intent = new Intent();
                 intent.setClass(ActMainMenu.this, ActMoveList.class);
+                startActivity(intent);
+            }
+        });
+        Button buttonWriteoff = (Button) findViewById(R.id.buttonWriteoff);
+        buttonWriteoff.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent();
+                intent.setClass(ActMainMenu.this, ActWriteoffList.class);
                 startActivity(intent);
             }
         });

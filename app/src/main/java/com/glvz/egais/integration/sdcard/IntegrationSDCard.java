@@ -203,25 +203,6 @@ public class IntegrationSDCard implements Integration {
     }
 
     @Override
-    public List<WriteoffRec> loadWriteoff(String shopId) {
-        List<WriteoffRec> listWriteoff = new ArrayList<>();
-        File path = new File(basePath + "/" + SHOPS_DIR + "/" + shopId + "/" + OUT_DIR);
-        if (path.listFiles() != null) {
-            for (File file : path.listFiles()) {
-                if (file.getName().toUpperCase().startsWith(DOC_PREFIX_WRITEOFF)) {
-                    try {
-                        WriteoffRec writeoffRec = objectMapper.readValue(file, WriteoffRec.class);
-                        listWriteoff.add(writeoffRec);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-        }
-        return listWriteoff;
-    }
-
-    @Override
     public void writeBaseRec(String shopId, BaseRec rec) {
         File path = new File(basePath + "/" + SHOPS_DIR + "/" + shopId + "/" + OUT_DIR);
         File file = new File(path, rec.getDocId() + "_out.json");

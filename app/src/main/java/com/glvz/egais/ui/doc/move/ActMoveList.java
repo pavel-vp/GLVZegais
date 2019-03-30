@@ -6,6 +6,7 @@ import com.glvz.egais.R;
 import com.glvz.egais.dao.DaoMem;
 import com.glvz.egais.model.BaseRec;
 import com.glvz.egais.model.move.MoveRec;
+import com.glvz.egais.service.move.MoveArrayAdapter;
 import com.glvz.egais.ui.doc.ActBaseDocList;
 import com.glvz.egais.ui.doc.ActBaseDocRec;
 
@@ -19,6 +20,7 @@ public class ActMoveList extends ActBaseDocList {
     @Override
     protected void setResources() {
         setContentView(R.layout.activity_movelist);
+        adapter = new MoveArrayAdapter(this, R.layout.rec_doc, list);
         super.setResources();
     }
 

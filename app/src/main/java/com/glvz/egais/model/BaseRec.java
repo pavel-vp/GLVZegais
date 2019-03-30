@@ -98,4 +98,5 @@ public abstract class BaseRec {
     }
 
     public abstract String getStatusDesc();
+
 }

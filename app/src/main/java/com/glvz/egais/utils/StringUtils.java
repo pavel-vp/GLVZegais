@@ -25,6 +25,16 @@ public class StringUtils {
         return date;
     }
 
+    public static Date simpleStringToDate(String string) {
+        Date date = null;
+        try {
+            date = dateFormatterDisplay.parse(string);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        return date;
+    }
+
     public static Date jsonBottlingStringToDate(String jsonString) {
         Date date = null;
         try {

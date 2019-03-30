@@ -6,6 +6,7 @@ import com.glvz.egais.R;
 import com.glvz.egais.dao.DaoMem;
 import com.glvz.egais.model.BaseRec;
 import com.glvz.egais.model.income.IncomeRec;
+import com.glvz.egais.service.income.IncomeArrayAdapter;
 import com.glvz.egais.ui.doc.ActBaseDocList;
 
 public class ActIncomeList extends ActBaseDocList {
@@ -14,6 +15,7 @@ public class ActIncomeList extends ActBaseDocList {
     @Override
     protected void setResources() {
         setContentView(R.layout.activity_incomelist);
+        adapter = new IncomeArrayAdapter(this, R.layout.rec_doc, list);
         super.setResources();
     }
 

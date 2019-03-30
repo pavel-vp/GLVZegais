@@ -26,6 +26,7 @@ import com.glvz.egais.service.DocContentArrayAdapter;
 import com.glvz.egais.service.PickBottliingDateCallback;
 import com.glvz.egais.service.TransferCallback;
 import com.glvz.egais.service.income.IncomeContentArrayAdapter;
+import com.glvz.egais.service.income.IncomeRecHolder;
 import com.glvz.egais.ui.doc.ActBaseDocRec;
 import com.glvz.egais.utils.BarcodeObject;
 import com.glvz.egais.utils.MessageUtils;
@@ -51,7 +52,7 @@ public class ActIncomeRec extends ActBaseDocRec implements PickBottliingDateCall
         setContentView(R.layout.activity_incomerec);
 
         View container = findViewById(R.id.inclRecPrih);
-        docRecHolder = new DocArrayAdapter.DocRecHolder(container);
+        docRecHolder = new IncomeRecHolder(container);
 
         cbFilter = (CheckBox) findViewById(R.id.cbFilter);
         cbFilter.setOnClickListener(new View.OnClickListener() {

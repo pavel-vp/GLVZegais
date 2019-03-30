@@ -13,6 +13,10 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content" android:id="@+id/buttonMove"/>
     <Button
+            android:text="Списание продукции"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" android:id="@+id/buttonWriteoff"/>
+    <Button
             android:text="К выбору магазина"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" android:id="@+id/buttonBack"/>

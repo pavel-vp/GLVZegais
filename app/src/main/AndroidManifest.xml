@@ -52,6 +52,10 @@
         <activity android:name=".ui.doc.move.ActMoveRec" android:screenOrientation="portrait"/>
         <activity android:name=".ui.doc.move.ActMoveRecContent" android:screenOrientation="portrait"/>
 
+        <activity android:name=".ui.doc.writeoff.ActWriteoffList" android:screenOrientation="portrait"/>
+        <activity android:name=".ui.doc.writeoff.ActWriteoffRec" android:screenOrientation="portrait"/>
+
+        <activity android:name=".ui.ActCommentEdit" android:screenOrientation="portrait"/>
 
 
 

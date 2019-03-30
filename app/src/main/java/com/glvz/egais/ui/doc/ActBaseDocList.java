@@ -19,7 +19,7 @@ import java.util.List;
 
 public abstract class ActBaseDocList extends Activity implements BarcodeReader.BarcodeListener {
 
-    ListView lv;
+    protected ListView lv;
     protected volatile List<BaseRec> list = new ArrayList<>();
     protected DocArrayAdapter adapter;
 
@@ -39,7 +39,6 @@ public abstract class ActBaseDocList extends Activity implements BarcodeReader.B
                 pickRec(list.get(position));
             }
         });
-        adapter = new DocArrayAdapter(this, R.layout.rec_doc, list);
         lv.setAdapter(adapter);
     }
 
