@@ -6,9 +6,7 @@ import com.glvz.egais.integration.model.doc.DocContentIn;
 import com.glvz.egais.integration.model.doc.DocIn;
 import com.glvz.egais.integration.model.doc.writeoff.WriteoffRecContentOutput;
 import com.glvz.egais.integration.model.doc.writeoff.WriteoffRecOutput;
-import com.glvz.egais.model.BaseRec;
-import com.glvz.egais.model.BaseRecContent;
-import com.glvz.egais.model.BaseRecContentMark;
+import com.glvz.egais.model.*;
 import com.glvz.egais.utils.StringUtils;
 
 import java.util.*;
@@ -23,6 +21,7 @@ public class WriteoffRec extends BaseRec {
     public static final String KEY_SKLADID = "key_skladid";
     public static final String KEY_SKLADNAME = "key_skladname";
     public static final String KEY_COMMENT = "key_comment";
+    public static final String KEY_CONTENT_SIZE = "key_content_size";
 
     String docId;
     String docNum;
@@ -177,6 +176,12 @@ public class WriteoffRec extends BaseRec {
 
     public String getDateStr() {
         return date;
+    }
+
+    @Override
+    public void rejectData() {
+        recContentList.clear();
+        setStatus(BaseRecStatus.REJECTED);
     }
 
 }

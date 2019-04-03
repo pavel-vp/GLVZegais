@@ -33,7 +33,7 @@ public interface Integration {
 
     File loadNewApk();
 
-    List<DocIn> clearOldData(int numDaysOld);
+    List<String> clearOldData(int numDaysOld);
 
     List<AlcCodeIn> loadAlcCode();
 

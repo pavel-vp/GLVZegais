@@ -41,8 +41,8 @@ public class WriteoffRecContentHolder extends DocRecContentHolder {
         } else {
             tvName.setText("");
         }
-        if (writeoffRecContent.getContentIn().getQty() != null) {
-            tvQty.setText(StringUtils.formatQty(writeoffRecContent.getContentIn().getQty() + addMark ));
+        if (writeoffRecContent.getQtyAccepted() != null) {
+            tvQty.setText(StringUtils.formatQty(writeoffRecContent.getQtyAccepted() + addMark ));
         } else {
             tvQty.setText(addMark ==0 ? "" : String.valueOf(addMark));
         }

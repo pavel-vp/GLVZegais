@@ -239,8 +239,8 @@ public class IntegrationSDCard implements Integration {
     }
 
     @Override
-    public List<DocIn> clearOldData(int numDaysOld) {
-        List<DocIn> res = new ArrayList<>();
+    public List<String> clearOldData(int numDaysOld) {
+        List<String> res = new ArrayList<>();
         Calendar calendar = Calendar.getInstance();
         calendar.add(Calendar.DAY_OF_MONTH, - numDaysOld);
         // Взять все файлы из директории
@@ -258,7 +258,7 @@ public class IntegrationSDCard implements Integration {
                         if (d.before(calendar.getTime())) {
                             toDelete = true;
                         } else {
-                            res.add(incomeIn);
+                            res.add(incomeIn.getDocId());
                         }
                     } catch (IOException e) {
                         e.printStackTrace();
@@ -289,7 +289,7 @@ public class IntegrationSDCard implements Integration {
                         if (d.before(calendar.getTime())) {
                             toDelete = true;
                         } else {
-                            res.add(moveIn);
+                            res.add(moveIn.getDocId());
                         }
                     } catch (IOException e) {
                         e.printStackTrace();

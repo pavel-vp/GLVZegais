@@ -13,7 +13,6 @@ import com.glvz.egais.BuildConfig;
 import com.glvz.egais.MainApp;
 import com.glvz.egais.R;
 import com.glvz.egais.integration.model.doc.DocContentIn;
-import com.glvz.egais.integration.model.doc.DocIn;
 import com.glvz.egais.integration.model.doc.income.IncomeContentBoxTreeIn;
 import com.glvz.egais.integration.model.doc.income.IncomeContentIn;
 import com.glvz.egais.integration.model.doc.income.IncomeContentMarkIn;
@@ -86,7 +85,7 @@ public class DaoMem {
     public void initDictionary() {
         File path = new File(Environment.getExternalStorageDirectory(), MainApp.getContext().getResources().getString(R.string.path_exchange));
         integrationFile = new IntegrationSDCard(path.getAbsolutePath());
-        List<DocIn> allRemainRecs = integrationFile.clearOldData(Integer.valueOf(MainApp.getContext().getResources().getString(R.string.num_days_old)));
+        List<String> allRemainRecs = integrationFile.clearOldData(Integer.valueOf(MainApp.getContext().getResources().getString(R.string.num_days_old)));
         clearStoredDataNotInList(allRemainRecs);
         listU = integrationFile.loadUsers();
         listS = integrationFile.loadShops();
@@ -172,8 +171,7 @@ public class DaoMem {
 
         for (String docId : docIds ) {
             WriteoffRec writeoffRec = new WriteoffRec(docId);
-            readLocalData(writeoffRec);
-            readLocalDataExt(writeoffRec);
+            readLocalDataWriteoff(writeoffRec);
             map.put(writeoffRec.getDocId(), writeoffRec);
         }
 
@@ -223,23 +221,54 @@ public class DaoMem {
         }
     }
 
-    private void readLocalDataExt(WriteoffRec writeoffRec) {
+    private void readLocalDataWriteoff(WriteoffRec writeoffRec) {
         writeoffRec.setDocNum(sharedPreferences.getString(KEY_WRITEOFF + "_" + WriteoffRec.KEY_DOCNUM + "_" + writeoffRec.getDocId() + "_", ""));
         writeoffRec.setDateStr(sharedPreferences.getString(KEY_WRITEOFF + "_" + WriteoffRec.KEY_DATE + "_" + writeoffRec.getDocId() + "_", ""));
         writeoffRec.setTypeDoc(sharedPreferences.getString(KEY_WRITEOFF + "_" + WriteoffRec.KEY_TYPEDOC + "_" + writeoffRec.getDocId() + "_", ""));
         writeoffRec.setSkladId(sharedPreferences.getString(KEY_WRITEOFF + "_" + WriteoffRec.KEY_SKLADID + "_" + writeoffRec.getDocId() + "_", ""));
         writeoffRec.setSkladName(sharedPreferences.getString(KEY_WRITEOFF + "_" + WriteoffRec.KEY_SKLADNAME + "_" + writeoffRec.getDocId() + "_", ""));
         writeoffRec.setComment(sharedPreferences.getString(KEY_WRITEOFF + "_" + WriteoffRec.KEY_COMMENT + "_" + writeoffRec.getDocId() + "_", ""));
-
+        int contentSize = sharedPreferences.getInt(KEY_WRITEOFF + "_" + WriteoffRec.KEY_CONTENT_SIZE + "_" + writeoffRec.getDocId() + "_", 0);
+        for (int i = 1; i<= contentSize; i++) {
+            WriteoffRecContent recContent = readLocalDataWriteoffContent(writeoffRec, i);
+            writeoffRec.getRecContentList().add(recContent);
+        }
     }
 
-    private void clearStoredDataNotInList(List<DocIn> recList) {
+    private WriteoffRecContent readLocalDataWriteoffContent(WriteoffRec writeoffRec, int position) {
+
+        WriteoffRecContent recContent = new WriteoffRecContent(String.valueOf(position), null);
+
+        String id1c = sharedPreferences.getString(KEY_WRITEOFF + "_" + BaseRec.KEY_POS_ID1C+"_"+writeoffRec.getDocId()+"_"+position, "");
+        recContent.setId1c(id1c);
+        String barcode = sharedPreferences.getString(KEY_WRITEOFF + "_" + BaseRec.KEY_POS_BARCODE+"_"+writeoffRec.getDocId()+"_"+position, "");
+        recContent.setNomenIn(findNomenInAlcoByNomenId(id1c), barcode);
+
+        String posStatus = sharedPreferences.getString(KEY_WRITEOFF + "_" + BaseRec.KEY_POS_STATUS+"_"+writeoffRec.getDocId()+"_"+position, BaseRecContentStatus.IN_PROGRESS.toString());
+        recContent.setStatus(BaseRecContentStatus.valueOf(posStatus));
+
+        float qtyAccepted = sharedPreferences.getFloat(KEY_WRITEOFF + "_" + BaseRec.KEY_POS_QTYACCEPTED+"_"+writeoffRec.getDocId()+"_"+position, 0);
+        recContent.setQtyAccepted(Double.valueOf(qtyAccepted));
+
+        int markScannedSize = sharedPreferences.getInt(KEY_WRITEOFF + "_" + BaseRec.KEY_POS_MARKSCANNED_CNT + "_"+writeoffRec.getDocId()+"_"+position, 0);
+        for (int idx = 1; idx <= markScannedSize; idx++) {
+            BaseRecContentMark baseRecContentMark = new BaseRecContentMark(
+                sharedPreferences.getString(KEY_WRITEOFF + "_" + BaseRec.KEY_POS_MARKSCANNED + "_"+writeoffRec.getDocId()+"_"+position+"_"+idx, ""),
+                sharedPreferences.getInt(KEY_WRITEOFF + "_" + BaseRec.KEY_POS_MARKSCANNED_ASTYPE + "_"+writeoffRec.getDocId()+"_"+position+"_"+idx, 0),
+                sharedPreferences.getString(KEY_WRITEOFF + "_" + BaseRec.KEY_POS_MARKSCANNEDREAL + "_"+writeoffRec.getDocId()+"_"+position+"_"+idx, "")
+            );
+            recContent.getBaseRecContentMarkList().add(baseRecContentMark);
+        }
+        return recContent;
+    }
+
+    private void clearStoredDataNotInList(List<String> docIdList) {
         Map<String, ?> allPrefs = sharedPreferences.getAll();
-        for (DocIn rec : recList) {
+        for (String docId : docIdList) {
             Iterator<? extends Map.Entry<String, ?>> iter = allPrefs.entrySet().iterator();
             while(iter.hasNext()) {
                 Map.Entry<String,?> entry  = iter.next();
-                if (entry.getKey().contains("_" + rec.getDocId() + "_")) {
+                if (entry.getKey().contains("_" + docId + "_")) {
                     // Удалить
                     iter.remove();
                 }
@@ -297,17 +326,6 @@ public class DaoMem {
         }
     }
 
-    private void writeLocalDataBaseRecExt(WriteoffRec writeoffRec) {
-        SharedPreferences.Editor ed = sharedPreferences.edit();
-        ed.putString(KEY_WRITEOFF + "_" + WriteoffRec.KEY_DOCNUM + "_" + writeoffRec.getDocId() + "_", writeoffRec.getDocNum());
-        ed.putString(KEY_WRITEOFF + "_" + WriteoffRec.KEY_DATE + "_" + writeoffRec.getDocId() + "_", writeoffRec.getDateStr());
-        ed.putString(KEY_WRITEOFF + "_" + WriteoffRec.KEY_TYPEDOC + "_" + writeoffRec.getDocId() + "_", writeoffRec.getTypeDoc());
-        ed.putString(KEY_WRITEOFF + "_" + WriteoffRec.KEY_SKLADID + "_" + writeoffRec.getDocId() + "_", writeoffRec.getSkladId());
-        ed.putString(KEY_WRITEOFF + "_" + WriteoffRec.KEY_SKLADNAME + "_" + writeoffRec.getDocId() + "_", writeoffRec.getSkladName());
-        ed.putString(KEY_WRITEOFF + "_" + WriteoffRec.KEY_COMMENT + "_" + writeoffRec.getDocId() + "_", writeoffRec.getComment());
-        ed.apply();
-    }
-
     private void writeLocalDataBaseRecContent(String docId, BaseRecContent recContent) {
         SharedPreferences.Editor ed = sharedPreferences.edit();
         ed.putString(BaseRec.KEY_POS_ID1C+"_"+docId+"_"+recContent.getPosition(), recContent.getId1c());
@@ -324,6 +342,43 @@ public class DaoMem {
             ed.putString(BaseRec.KEY_POS_MARKSCANNED + "_"+docId+"_"+recContent.getPosition()+"_"+idx, baseRecContentMark.getMarkScanned());
             ed.putInt(BaseRec.KEY_POS_MARKSCANNED_ASTYPE + "_"+docId+"_"+recContent.getPosition()+"_"+idx, baseRecContentMark.getMarkScannedAsType());
             ed.putString(BaseRec.KEY_POS_MARKSCANNEDREAL + "_"+docId+"_"+recContent.getPosition()+"_"+idx, baseRecContentMark.getMarkScannedReal());
+            idx++;
+        }
+        ed.apply();
+    }
+
+    private void writeLocalDataWriteoffRec(WriteoffRec writeoffRec) {
+        SharedPreferences.Editor ed = sharedPreferences.edit();
+        ed.putString(KEY_WRITEOFF + "_" + WriteoffRec.KEY_DOCNUM + "_" + writeoffRec.getDocId() + "_", writeoffRec.getDocNum());
+        ed.putString(KEY_WRITEOFF + "_" + WriteoffRec.KEY_DATE + "_" + writeoffRec.getDocId() + "_", writeoffRec.getDateStr());
+        ed.putString(KEY_WRITEOFF + "_" + WriteoffRec.KEY_TYPEDOC + "_" + writeoffRec.getDocId() + "_", writeoffRec.getTypeDoc());
+        ed.putString(KEY_WRITEOFF + "_" + WriteoffRec.KEY_SKLADID + "_" + writeoffRec.getDocId() + "_", writeoffRec.getSkladId());
+        ed.putString(KEY_WRITEOFF + "_" + WriteoffRec.KEY_SKLADNAME + "_" + writeoffRec.getDocId() + "_", writeoffRec.getSkladName());
+        ed.putString(KEY_WRITEOFF + "_" + WriteoffRec.KEY_COMMENT + "_" + writeoffRec.getDocId() + "_", writeoffRec.getComment());
+        ed.putInt(KEY_WRITEOFF + "_" + WriteoffRec.KEY_CONTENT_SIZE + "_" + writeoffRec.getDocId() + "_", writeoffRec.getRecContentList().size());
+        ed.apply();
+        // записать данные по строкам
+        for (WriteoffRecContent recContent : writeoffRec.getWriteoffRecContentList()) {
+            writeLocalDataWriteoffRecContent(writeoffRec.getDocId(), recContent);
+        }
+    }
+
+    private void writeLocalDataWriteoffRecContent(String docId, WriteoffRecContent recContent) {
+        SharedPreferences.Editor ed = sharedPreferences.edit();
+        ed.putString(KEY_WRITEOFF + "_" + BaseRec.KEY_POS_ID1C+"_"+docId+"_"+recContent.getPosition(), recContent.getId1c());
+        ed.putString(KEY_WRITEOFF + "_" + BaseRec.KEY_POS_BARCODE+"_"+docId+"_"+recContent.getPosition(), recContent.getBarcode());
+        ed.putString(KEY_WRITEOFF + "_" + BaseRec.KEY_POS_STATUS+"_"+docId+"_"+recContent.getPosition(), recContent.getStatus().toString());
+        float qty = 0;
+        if (recContent.getQtyAccepted() != null) {
+            qty = recContent.getQtyAccepted().floatValue();
+        }
+        ed.putFloat(KEY_WRITEOFF + "_" + BaseRec.KEY_POS_QTYACCEPTED+"_"+docId+"_"+recContent.getPosition(), qty);
+        ed.putInt(KEY_WRITEOFF + "_" + BaseRec.KEY_POS_MARKSCANNED_CNT + "_"+docId+"_"+recContent.getPosition(), recContent.getBaseRecContentMarkList().size());
+        int idx = 1;
+        for (BaseRecContentMark baseRecContentMark : recContent.getBaseRecContentMarkList()) {
+            ed.putString(KEY_WRITEOFF + "_" + BaseRec.KEY_POS_MARKSCANNED + "_"+docId+"_"+recContent.getPosition()+"_"+idx, baseRecContentMark.getMarkScanned());
+            ed.putInt(KEY_WRITEOFF + "_" + BaseRec.KEY_POS_MARKSCANNED_ASTYPE + "_"+docId+"_"+recContent.getPosition()+"_"+idx, baseRecContentMark.getMarkScannedAsType());
+            ed.putString(KEY_WRITEOFF + "_" + BaseRec.KEY_POS_MARKSCANNEDREAL + "_"+docId+"_"+recContent.getPosition()+"_"+idx, baseRecContentMark.getMarkScannedReal());
             idx++;
         }
         ed.apply();
@@ -418,8 +473,7 @@ public class DaoMem {
         }
         ed.putStringSet(KEY_WRITEOFF+"_"+shopId, docIds);
         ed.apply();
-        writeLocalDataBaseRec(newRec);
-        writeLocalDataBaseRecExt(newRec);
+        writeLocalDataWriteoffRec(newRec);
     }
 
     public static class CheckMarkScannedResult {
@@ -553,7 +607,9 @@ public class DaoMem {
     }
 
     public boolean exportData(WriteoffRec writeoffRec) {
-        exportDataBaseRec(writeoffRec);
+        writeoffRec.setExported(true);
+        writeLocalDataWriteoffRec(writeoffRec);
+        integrationFile.writeBaseRec(shopId, writeoffRec);
         return true;
     }
 
@@ -589,6 +645,12 @@ public class DaoMem {
         rec.rejectData();
         writeLocalDataBaseRec(rec);
         exportDataBaseRec(rec);
+    }
+
+    public void rejectData(WriteoffRec rec) {
+        rec.rejectData();
+        mapWriteoffRec.remove(rec.getDocId());
+        writeLocalWriteoffRec(rec);
     }
 
     public int calculateQtyToAdd(IncomeRec incomeRec, IncomeRecContent incomeRecContent, String barcode) {
@@ -710,6 +772,19 @@ public class DaoMem {
     public boolean isNeedToCheckMark(String checkMark, BarcodeObject.BarCodeType barCodeType) {
         if ( (ShopIn.CHECKMARK_DM.equals(checkMark) && barCodeType == BarcodeObject.BarCodeType.DATAMATRIX) ||
                 ShopIn.CHECKMARK_DMPDF.equals(checkMark)) {
+            return true;
+        }
+        return false;
+    }
+
+    public boolean isNeedToCheckMarkForWriteoff(String typeDoc, BarcodeObject.BarCodeType barCodeType) {
+        if (WriteoffRec.TYEDOC_WRIEOFF.equals(typeDoc) ) {
+            return barCodeType == BarcodeObject.BarCodeType.DATAMATRIX;
+        }
+        // return
+        ShopIn shopIn = findShopInById(shopId);
+        if ( (ShopIn.CHECKMARK_DM.equals(shopIn.getCheckMark()) && barCodeType == BarcodeObject.BarCodeType.DATAMATRIX) ||
+                ShopIn.CHECKMARK_DMPDF.equals(shopIn.getCheckMark())) {
             return true;
         }
         return false;
