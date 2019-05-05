@@ -3,8 +3,10 @@ package com.glvz.egais.ui;
 import android.Manifest;
 import android.app.Activity;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
@@ -129,6 +131,8 @@ public class ActWelcome extends Activity implements BarcodeReader.BarcodeListene
     }
 
     private void loadShared() {
+        WifiManager wifi = (WifiManager)(getApplicationContext().getSystemService(Context.WIFI_SERVICE));
+        if (wifi != null && wifi.isWifiEnabled()) {
             pg.show();
             new Thread(new Runnable() {
                 @Override
@@ -137,12 +141,13 @@ public class ActWelcome extends Activity implements BarcodeReader.BarcodeListene
                     try {
                         DaoMem.getDaoMem().syncWiFiFtpShared();
                     } catch (Exception e) {
-                        Log.e(getLocalClassName(), "error at wifi" ,e);
+                        Log.e(getLocalClassName(), "error at wifi", e);
                     }
                     pg.dismiss();
                     DaoMem.getDaoMem().initDictionary();
                 }
             }).start();
+        }
     }
 
 }

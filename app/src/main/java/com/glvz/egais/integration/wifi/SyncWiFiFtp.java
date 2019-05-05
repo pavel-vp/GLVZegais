@@ -50,7 +50,7 @@ public class SyncWiFiFtp {
         int cnt = 1;
         boolean result = false;
         while (!result && cnt < times) {
-            result = wifiManager.isWifiEnabled();
+            result = wifiManager.isWifiEnabled() &&  wifiManager.getConnectionInfo() != null;
             if (!result) {
                 try {
                     Thread.sleep(delay * 1000);
