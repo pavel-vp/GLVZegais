@@ -13,6 +13,7 @@ import com.glvz.egais.BuildConfig;
 import com.glvz.egais.MainApp;
 import com.glvz.egais.R;
 import com.glvz.egais.integration.model.doc.DocContentIn;
+import com.glvz.egais.integration.model.doc.checkmark.CheckMarkIn;
 import com.glvz.egais.integration.model.doc.income.IncomeContentBoxTreeIn;
 import com.glvz.egais.integration.model.doc.income.IncomeContentIn;
 import com.glvz.egais.integration.model.doc.income.IncomeContentMarkIn;
@@ -23,6 +24,7 @@ import com.glvz.egais.integration.sdcard.IntegrationSDCard;
 import com.glvz.egais.integration.model.*;
 import com.glvz.egais.integration.wifi.SyncWiFiFtp;
 import com.glvz.egais.model.*;
+import com.glvz.egais.model.checkmark.CheckMarkRec;
 import com.glvz.egais.model.income.*;
 import com.glvz.egais.model.move.MoveRec;
 import com.glvz.egais.model.move.MoveRecContent;
@@ -72,10 +74,13 @@ public class DaoMem {
     List<MarkIn> listM;
     List<IncomeIn> listIncomeIn;
     List<MoveIn> listMoveIn;
+    List<CheckMarkIn> listCheckMarkIn;
 
     Map<String, IncomeRec> mapIncomeRec;
     Map<String, MoveRec> mapMoveRec;
     Map<String, WriteoffRec> mapWriteoffRec;
+    Map<String, CheckMarkRec> mapCheckMarkRec;
+
     SharedPreferences sharedPreferences;
 
     private UserIn userIn;
@@ -139,6 +144,7 @@ public class DaoMem {
         integrationFile.initDirectories(shopId);
         listIncomeIn = integrationFile.loadIncome(shopId);
         listMoveIn = integrationFile.loadMove(shopId);
+        listCheckMarkIn = integrationFile.loadCheckMark(shopId);
 
         listM = integrationFile.loadMark(shopId);
         document = new DocumentMem(listIncomeIn);
@@ -147,6 +153,7 @@ public class DaoMem {
         // Прочитать локальные данные
         mapIncomeRec = readIncomeRec();
         mapMoveRec = readMoveRec();
+        mapCheckMarkRec = readCheckMarkRec();
         mapWriteoffRec = readWriteoffRec(shopId);
         MessageUtils.showToastMessage("Данные загружены");
 
@@ -159,6 +166,18 @@ public class DaoMem {
             MoveRec moveRec = new MoveRec(moveIn.getDocId(), moveIn);
             readLocalData(moveRec);
             map.put(moveIn.getDocId(), moveRec);
+        }
+
+        return map;
+    }
+
+    private Map<String,CheckMarkRec> readCheckMarkRec() {
+        Map<String, CheckMarkRec> map = new HashMap<>();
+
+        for (CheckMarkIn checkMarkIn : listCheckMarkIn) {
+            CheckMarkRec rec = new CheckMarkRec(checkMarkIn.getDocId(), checkMarkIn);
+            readLocalData(rec);
+            map.put(checkMarkIn.getDocId(), rec);
         }
 
         return map;
@@ -419,6 +438,13 @@ public class DaoMem {
         return list;
     }
 
+    public Collection<CheckMarkRec> getCheckMarkRecListOrdered() {
+        List<CheckMarkRec> list = new ArrayList<>();
+        list.addAll(mapCheckMarkRec.values());
+
+        Collections.sort(list, docRecDateComparator);
+        return list;
+    }
 
     public Map<String, IncomeRec> getMapIncomeRec() {
         return mapIncomeRec;

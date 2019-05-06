@@ -55,6 +55,9 @@
         <activity android:name=".ui.doc.writeoff.ActWriteoffList" android:screenOrientation="portrait"/>
         <activity android:name=".ui.doc.writeoff.ActWriteoffRec" android:screenOrientation="portrait"/>
 
+        <activity android:name=".ui.doc.checkmark.ActCheckMarkList" android:screenOrientation="portrait"/>
+        <activity android:name=".ui.doc.checkmark.ActCheckMarkRec" android:screenOrientation="portrait"/>
+
         <activity android:name=".ui.ActCommentEdit" android:screenOrientation="portrait"/>
 
 

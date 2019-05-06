@@ -2,6 +2,7 @@ package com.glvz.egais.integration.sdcard;
 
 import com.glvz.egais.integration.model.*;
 import com.glvz.egais.integration.model.doc.DocIn;
+import com.glvz.egais.integration.model.doc.checkmark.CheckMarkIn;
 import com.glvz.egais.integration.model.doc.income.IncomeIn;
 import com.glvz.egais.integration.model.doc.move.MoveIn;
 import com.glvz.egais.model.BaseRec;
@@ -28,6 +29,7 @@ public interface Integration {
 
     List<IncomeIn> loadIncome(String shopId);
     List<MoveIn> loadMove(String shopId);
+    List<CheckMarkIn> loadCheckMark(String shopId);
 
     void writeBaseRec(String shopId, BaseRec rec);
 
@@ -40,4 +42,5 @@ public interface Integration {
     List<MarkIn> loadMark(String shopId);
 
     SetupFtp loadSetupFtp();
+
 }

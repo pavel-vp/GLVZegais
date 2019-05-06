@@ -8,6 +8,7 @@ import com.glvz.egais.MainApp;
 import com.glvz.egais.integration.model.*;
 import com.glvz.egais.integration.model.doc.BaseRecOutput;
 import com.glvz.egais.integration.model.doc.DocIn;
+import com.glvz.egais.integration.model.doc.checkmark.CheckMarkIn;
 import com.glvz.egais.integration.model.doc.income.IncomeIn;
 import com.glvz.egais.integration.model.doc.income.IncomeRecOutput;
 import com.glvz.egais.integration.model.doc.move.MoveIn;
@@ -47,6 +48,7 @@ public class IntegrationSDCard implements Integration {
 
     private static final String DOC_PREFIX_INCOME = "TTN";
     private static final String DOC_PREFIX_MOVE = "DOCMOVE";
+    private static final String DOC_PREFIX_CHECKMARK = "CHECK";
     private static final String DOC_PREFIX_WRITEOFF = "WRITEOFF";
 
     private ObjectMapper objectMapper = new ObjectMapper();
@@ -200,6 +202,25 @@ public class IntegrationSDCard implements Integration {
             }
         }
         return listMoveIn;
+    }
+
+    @Override
+    public List<CheckMarkIn> loadCheckMark(String shopId) {
+        List<CheckMarkIn> listCheckMarkIn = new ArrayList<>();
+        File path = new File(basePath + "/" + SHOPS_DIR + "/" + shopId + "/" + IN_DIR);
+        if (path.listFiles() != null) {
+            for (File file : path.listFiles()) {
+                if (file.getName().toUpperCase().startsWith(DOC_PREFIX_CHECKMARK)) {
+                    try {
+                        CheckMarkIn checkMarkIn = objectMapper.readValue(file, CheckMarkIn.class);
+                        listCheckMarkIn.add(checkMarkIn);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }
+        return listCheckMarkIn;
     }
 
     @Override
