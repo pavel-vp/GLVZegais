@@ -130,6 +130,8 @@ public class ActMainMenu extends Activity {
             @Override
             public void run() {
                 try {
+                    DaoMem.getDaoMem().syncWiFiFtpShared();
+                    DaoMem.getDaoMem().initDictionary();
                     DaoMem.getDaoMem().syncWiFiFtpShopDocs();
                     handleResult(SyncWiFiFtp.SYNC_SUCCESS);
                 } catch (RuntimeException e) {
