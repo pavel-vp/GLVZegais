@@ -174,6 +174,9 @@ public class IntegrationSDCard implements Integration {
     @Override
     public SetupFtp loadSetupFtp() {
         File pathToFile = new File(basePath , SETUP_FTP_FILE);
+        if (!pathToFile.exists()) {
+            pathToFile = new File(basePath + "/" + DIC_DIR, SETUP_FTP_FILE);
+        }
         SetupFtp setupFtp = null;
         try {
             setupFtp = objectMapper.readValue(pathToFile, SetupFtp.class);
