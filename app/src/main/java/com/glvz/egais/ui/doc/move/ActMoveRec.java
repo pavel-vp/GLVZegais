@@ -10,6 +10,7 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ListView;
+import android.widget.TextView;
 import com.glvz.egais.R;
 import com.glvz.egais.dao.DaoMem;
 import com.glvz.egais.model.BaseRecContent;
@@ -21,6 +22,7 @@ import com.glvz.egais.service.move.MoveContentArrayAdapter;
 import com.glvz.egais.service.move.MoveRecHolder;
 import com.glvz.egais.ui.doc.ActBaseDocRec;
 import com.glvz.egais.utils.MessageUtils;
+import com.honeywell.aidc.BarcodeReadEvent;
 
 import java.util.Collection;
 
@@ -28,6 +30,7 @@ public class ActMoveRec extends ActBaseDocRec {
 
     private MoveRec moveRec;
     private Button btnAction;
+    private TextView tvCaption;
 
     @Override
     protected void initRec() {
@@ -69,6 +72,7 @@ public class ActMoveRec extends ActBaseDocRec {
                 }
             }
         });
+        tvCaption = (TextView) findViewById(R.id.tvCaption);
 
     }
 
@@ -92,6 +96,7 @@ public class ActMoveRec extends ActBaseDocRec {
             default:
                 btnAction.setEnabled(false);
         }
+        tvCaption.setText("Нажмите кнопку "+btnAction.getText()+" или выберите позицию вручную");
     }
 
     @Override
@@ -169,5 +174,9 @@ public class ActMoveRec extends ActBaseDocRec {
 
     }
 
+    @Override
+    public void onBarcodeEvent(BarcodeReadEvent barcodeReadEvent) {
+        MessageUtils.playSound(R.raw.tap_position);
+    }
 
 }
