@@ -11,6 +11,7 @@ import com.glvz.egais.integration.wifi.model.LocalFileRec;
 import com.glvz.egais.integration.wifi.model.SyncFileRec;
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
+import org.apache.commons.net.ftp.FTPConnectionClosedException;
 import org.apache.commons.net.ftp.FTPFile;
 
 import java.io.*;
@@ -148,6 +149,8 @@ public class SyncWiFiFtp {
         Log.v("DaoMem", "status :: " + ftpClient.getStatus());
         ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
         ftpClient.enterLocalPassiveMode();
+        if (!ftpClient.isConnected() || ftpClient.getStatus() == null)
+            throw new FTPConnectionClosedException();
         return ftpClient;
     }
 

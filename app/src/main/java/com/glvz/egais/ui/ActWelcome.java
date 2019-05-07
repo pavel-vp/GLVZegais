@@ -22,6 +22,7 @@ import com.glvz.egais.utils.MessageUtils;
 import com.honeywell.aidc.BarcodeFailureEvent;
 import com.honeywell.aidc.BarcodeReadEvent;
 import com.honeywell.aidc.BarcodeReader;
+import org.apache.commons.net.ftp.FTPConnectionClosedException;
 
 public class ActWelcome extends Activity implements BarcodeReader.BarcodeListener {
 
@@ -140,6 +141,9 @@ public class ActWelcome extends Activity implements BarcodeReader.BarcodeListene
                     DaoMem.getDaoMem().initDictionary();
                     try {
                         DaoMem.getDaoMem().syncWiFiFtpShared();
+                    } catch (FTPConnectionClosedException e) {
+                        Log.e(getLocalClassName(), "error at wifi" ,e);
+                        MessageUtils.showModalMessage(ActWelcome.this, "Ошибка", "Выполните обмен через USB-кабель (WiFi-подключение отсутствует)");
                     } catch (Exception e) {
                         Log.e(getLocalClassName(), "error at wifi", e);
                     }
