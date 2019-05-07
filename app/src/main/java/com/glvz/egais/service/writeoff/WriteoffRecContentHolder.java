@@ -14,8 +14,11 @@ public class WriteoffRecContentHolder extends DocRecContentHolder {
 
     LinearLayout llPosition;
     TextView tvPosition;
+    TextView tvNomenId;
     TextView tvName;
     TextView tvQty;
+    TextView tvVolume;
+    TextView tvAlc;
 
     public WriteoffRecContentHolder(View v) {
         super(v);
@@ -23,19 +26,17 @@ public class WriteoffRecContentHolder extends DocRecContentHolder {
         tvPosition = (TextView)v.findViewById(R.id.tvPosition);
         tvName = (TextView)v.findViewById(R.id.tvName);
         tvQty = (TextView)v.findViewById(R.id.tvQty);
+        tvNomenId = (TextView)v.findViewById(R.id.tvNomenId);
+        tvVolume = (TextView)v.findViewById(R.id.tvVolume);
+        tvAlc = (TextView)v.findViewById(R.id.tvAlc);
         v.setTag(this);
     }
 
     @Override
     public void setItem(BaseRecContent recContent, int addMark, int mode) {
         WriteoffRecContent writeoffRecContent = (WriteoffRecContent) recContent;
-        if (mode == DocContentArrayAdapter.RECLIST_MODE) {
-            llPosition.setVisibility(View.GONE);
-        } else {
-            llPosition.setVisibility(View.VISIBLE);
-            tvPosition.setText(recContent.getPosition().toString());
-            //tvStatus.setText(recContent.getStatus().getMessage());
-        }
+        llPosition.setVisibility(View.VISIBLE);
+        tvPosition.setText(recContent.getPosition().toString());
         if (writeoffRecContent.getNomenIn() != null) {
             tvName.setText(writeoffRecContent.getNomenIn().getName());
         } else {
@@ -45,6 +46,17 @@ public class WriteoffRecContentHolder extends DocRecContentHolder {
             tvQty.setText(StringUtils.formatQty(writeoffRecContent.getQtyAccepted() + addMark ));
         } else {
             tvQty.setText(addMark ==0 ? "" : String.valueOf(addMark));
+        }
+        tvNomenId.setText(recContent.getNomenIn().getId());
+        if (writeoffRecContent.getNomenIn().getCapacity() != null) {
+            tvVolume.setText(StringUtils.formatQty(writeoffRecContent.getNomenIn().getCapacity() ));
+        } else {
+            tvVolume.setText("");
+        }
+        if (writeoffRecContent.getNomenIn().getAlcVolume() != null) {
+            tvAlc.setText(StringUtils.formatQty(writeoffRecContent.getNomenIn().getAlcVolume() ));
+        } else {
+            tvAlc.setText("");
         }
     }
 }
