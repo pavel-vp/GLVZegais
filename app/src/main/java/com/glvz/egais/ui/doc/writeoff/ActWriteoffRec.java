@@ -150,9 +150,6 @@ public class ActWriteoffRec extends ActBaseDocRec {
     private void exportDoc() {
         // - проверить, что все строки задания выполнены (или статус задания — завершено). Если проверка не пройдена — модальное сообщение
         //   «Задание еще не выполнено, выгрузка невозможна» и завершение обработки.
-        if ( !(writeoffRec.getStatus() == BaseRecStatus.DONE || DaoMem.getDaoMem().isQtyAcceptedFull(writeoffRec)) ) {
-            MessageUtils.showModalMessage(this, "Внимание!", "Задание еще не выполнено, выгрузка невозможна");
-        } else {
             //- собранные данные выгружаются в JSON-файл во внутреннюю память терминала в каталог «GLVZ\Shops\#ShopID#\Out»
             boolean success = DaoMem.getDaoMem().exportData(writeoffRec);
             if (success) {
@@ -162,7 +159,6 @@ public class ActWriteoffRec extends ActBaseDocRec {
             } else {
                 MessageUtils.showModalMessage(this, "Внимание!", "Имеются строки не сопоставленные с номенклатурой 1С, но принятым количеством. Необходимо сопоставить номенклатуру или отказаться от приемки позиции");
             }
-        }
     }
 
     @Override

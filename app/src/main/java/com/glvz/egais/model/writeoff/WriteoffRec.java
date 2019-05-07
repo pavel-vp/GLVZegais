@@ -92,7 +92,7 @@ public class WriteoffRec extends BaseRec {
         rec.setSkladName(this.skladName);
         rec.setTypeDoc(this.typeDoc);
         rec.setComment(this.comment);
-        rec.setContent(new WriteoffRecContentOutput[this.writeoffRecContentOutputList.size()]);
+        rec.setContent(new WriteoffRecContentOutput[this.recContentList.size()]);
         int idx = 0;
         for (WriteoffRecContent writeoffRecContent : this.getWriteoffRecContentList()) {
             WriteoffRecContentOutput contentOutput = new WriteoffRecContentOutput();
