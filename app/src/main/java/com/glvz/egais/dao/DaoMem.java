@@ -675,7 +675,6 @@ public class DaoMem {
 
     public void rejectData(WriteoffRec rec) {
         rec.rejectData();
-        mapWriteoffRec.remove(rec.getDocId());
         writeLocalWriteoffRec(rec);
     }
 

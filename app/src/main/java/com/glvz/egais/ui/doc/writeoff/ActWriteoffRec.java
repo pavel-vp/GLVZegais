@@ -138,7 +138,6 @@ public class ActWriteoffRec extends ActBaseDocRec {
                             public void onClick(DialogInterface dialog, int which) {
                                 DaoMem.getDaoMem().rejectData(writeoffRec);
                                 MessageUtils.showToastMessage("Данные по накладной удалены!");
-                                ActWriteoffRec.this.finish();
                             }
                         });
                 return true;
