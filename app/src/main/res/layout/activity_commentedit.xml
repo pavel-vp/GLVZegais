@@ -9,10 +9,15 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content" android:id="@+id/textView2"/>
     <EditText
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_width="fill_parent"
+            android:layout_height="0dp"
             android:layout_weight="1"
-            android:inputType="textMultiLine"
+            android:gravity="top"
+            android:imeOptions="actionDone"
+            android:inputType="textMultiLine|textFilter|textVisiblePassword|textNoSuggestions"
+            android:maxLength="200"
+            android:padding="5dp"
+            android:textAppearance="?android:attr/textAppearanceMedium"
             android:ems="10"
             android:id="@+id/etComment"/>
     <LinearLayout
