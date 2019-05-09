@@ -229,7 +229,7 @@ public class IntegrationSDCard implements Integration {
     @Override
     public void writeBaseRec(String shopId, BaseRec rec) {
         File path = new File(basePath + "/" + SHOPS_DIR + "/" + shopId + "/" + OUT_DIR);
-        File file = new File(path, rec.getDocId() + "_out.json");
+        File file = new File(path, rec.getDocIdForExport() + "_out.json");
             try {
                 BaseRecOutput out = rec.formatAsOutput();
                 objectMapper.writeValue(file, out);

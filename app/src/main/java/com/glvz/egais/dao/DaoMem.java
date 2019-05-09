@@ -8,6 +8,7 @@ import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
+import android.provider.Settings;
 import android.support.v4.content.FileProvider;
 import com.glvz.egais.BuildConfig;
 import com.glvz.egais.MainApp;
@@ -54,6 +55,7 @@ public class DaoMem {
     private DaoMem() {
         sharedPreferences = MainApp.getContext().getSharedPreferences("settings", Activity.MODE_PRIVATE);
         initDictionary();
+        deviceId = Settings.Secure.getString(MainApp.getContext().getContentResolver(), Settings.Secure.ANDROID_ID);
     }
 
     Integration integrationFile;
@@ -82,6 +84,8 @@ public class DaoMem {
     Map<String, CheckMarkRec> mapCheckMarkRec;
 
     SharedPreferences sharedPreferences;
+
+    private String deviceId;
 
     private UserIn userIn;
     private String shopId;
@@ -500,6 +504,10 @@ public class DaoMem {
         ed.putStringSet(KEY_WRITEOFF+"_"+shopId, docIds);
         ed.apply();
         writeLocalDataWriteoffRec(newRec);
+    }
+
+    public String getDeviceId() {
+        return deviceId;
     }
 
     public static class CheckMarkScannedResult {

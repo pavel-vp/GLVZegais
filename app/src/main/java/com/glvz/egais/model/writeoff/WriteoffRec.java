@@ -1,5 +1,6 @@
 package com.glvz.egais.model.writeoff;
 
+import android.net.wifi.WifiInfo;
 import com.glvz.egais.dao.DaoMem;
 import com.glvz.egais.integration.model.doc.BaseRecOutput;
 import com.glvz.egais.integration.model.doc.DocContentIn;
@@ -53,6 +54,11 @@ public class WriteoffRec extends BaseRec {
     }
 
     @Override
+    public String getDocIdForExport() {
+        return getDocId() + "-" + DaoMem.getDaoMem().getDeviceId();
+    }
+
+    @Override
     public String getAgentName() {
         return skladName;
     }
@@ -87,7 +93,7 @@ public class WriteoffRec extends BaseRec {
         WriteoffRecOutput rec = new WriteoffRecOutput();
         rec.setDocId(this.getDocId());
         rec.setNumber(this.getDocNum());
-        rec.setDate(this.date);
+        rec.setDate(StringUtils.formatDateJson(StringUtils.simpleStringToDate(this.date)));
         rec.setSkladID(this.skladId);
         rec.setSkladName(this.skladName);
         rec.setTypeDoc(this.typeDoc);

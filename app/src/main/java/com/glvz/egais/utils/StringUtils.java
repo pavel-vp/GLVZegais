@@ -65,4 +65,11 @@ public class StringUtils {
         return (val == null ||
                 val.trim().equals(""));
     }
+
+    public static String formatDateJson(Date date) {
+        if (date == null)
+            return "";
+        String s = dateBottlingFormatterJson.format(date);
+        return s;
+    }
 }

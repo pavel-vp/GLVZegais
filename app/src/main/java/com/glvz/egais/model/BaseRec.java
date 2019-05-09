@@ -34,6 +34,9 @@ public abstract class BaseRec {
 
 
     abstract public String getDocId();
+    public String getDocIdForExport(){
+        return getDocId();
+    }
     abstract public String getAgentName();
 
     abstract public Date getDate();
