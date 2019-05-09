@@ -176,7 +176,7 @@ public class ActMoveRec extends ActBaseDocRec {
 
     @Override
     public void onBarcodeEvent(BarcodeReadEvent barcodeReadEvent) {
-        MessageUtils.playSound(R.raw.tap_position);
+        MessageUtils.playSound(R.raw.docmove_tap_position);
     }
 
 }
