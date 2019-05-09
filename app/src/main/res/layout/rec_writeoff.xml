@@ -56,8 +56,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textAppearance="?android:attr/textAppearanceMedium"
-                android:text="Строк: 15"
-                android:layout_weight="1"
+                android:text="Стр: 15 / Шт: 100"
+                android:layout_weight="0"
                 android:id="@+id/tvCntRows" />
 
         <TextView
@@ -67,12 +67,12 @@
                 android:text="Статус:"
                 android:maxLines="1"
                 android:id="@+id/tvStatus"
-                android:layout_weight="1" />
+                android:layout_weight="0" />
         <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textAppearance="?android:attr/textAppearanceMedium"
-                android:text="Эксп"
+                android:text="В работе"
                 android:layout_weight="1"
                 android:id="@+id/tvExported" />
 

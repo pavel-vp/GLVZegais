@@ -4,6 +4,7 @@ import android.view.View;
 import android.widget.TextView;
 import com.glvz.egais.R;
 import com.glvz.egais.model.BaseRec;
+import com.glvz.egais.model.BaseRecContent;
 import com.glvz.egais.service.DocRecHolder;
 
 public class MoveRecHolder extends DocRecHolder {
