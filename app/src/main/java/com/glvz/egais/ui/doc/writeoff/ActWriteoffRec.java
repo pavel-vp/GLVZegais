@@ -10,6 +10,7 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ListView;
+import android.widget.TextView;
 import com.glvz.egais.R;
 import com.glvz.egais.dao.DaoMem;
 import com.glvz.egais.integration.model.AlcCodeIn;
@@ -49,6 +50,7 @@ public class ActWriteoffRec extends ActBaseDocRec {
 
     private WriteoffRec writeoffRec;
     Button btnChangeComment;
+    TextView tvCaption;
 
     @Override
     protected void initRec() {
@@ -85,6 +87,7 @@ public class ActWriteoffRec extends ActBaseDocRec {
         });
         adapter = new WriteoffContentArrayAdapter(this, R.layout.rec_writeoff_position, list);
         lvContent.setAdapter(adapter);
+        tvCaption = (TextView)findViewById(R.id.tvCaption);
 
     }
 
@@ -99,6 +102,12 @@ public class ActWriteoffRec extends ActBaseDocRec {
                 list.clear();
                 list.addAll(newList);
                 adapter.notifyDataSetChanged();
+                switch (currentState) {
+                    case STATE_SCAN_MARK:
+                        tvCaption.setText("Сканиуйте марку");
+                    case STATE_SCAN_EAN:
+                        tvCaption.setText("Сканиуйте штрихкод");
+                }
             }
         });
     }
