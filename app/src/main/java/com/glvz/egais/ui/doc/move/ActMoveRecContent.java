@@ -285,7 +285,13 @@ public class ActMoveRecContent extends Activity implements BarcodeReader.Barcode
         // 9) проверить соответствие определенного NomenID текущей товарной позиции:
         if (!nomenIn.getId().equals(moveRecContent.getNomenIn().getId())) {
             //9.1) если не соответствует: модальное сообщение «», прерывание обработки события.
-            MessageUtils.showModalMessage(this, "Внимание!", "Сканированная номенклатура "+nomenIn.getName()+" не соответствует текущей позиции на перемещение, Эту бутылку перемещать не надо. Сканируйте марку с "+moveRecContent.getNomenIn().getName()+"!");
+            // Сканированная номенклатура [Наименование сканированной номенклатуры], емкость [Емкость сканированной номенклатуры], спирт [Спирт сканированной номенклатуры] % не соответствует текущей позиции на перемещение, Эту бутылку перемещать не надо.
+            //
+            //Сканируйте марку с [Наименование номенклатуры текущей позиции], емкость [Емкость номенклатуры текущей позиции], спирт [Спирт номенклатуры текущей позиции] %»
+            MessageUtils.showModalMessage(this, "Внимание!", "Сканированная номенклатура "+nomenIn.getName()+", емкость "+StringUtils.formatQty(nomenIn.getCapacity())+
+                    ", спирт "+ StringUtils.formatQty(nomenIn.getAlcVolume())+"% не соответствует текущей позиции на перемещение, Эту бутылку перемещать не надо.\n\n" +
+                    "Сканируйте марку с "+moveRecContent.getNomenIn().getName()+", емкость "+StringUtils.formatQty(moveRecContent.getNomenIn().getCapacity())+
+                    ", спирт "+ StringUtils.formatQty(moveRecContent.getNomenIn().getAlcVolume())+"%  !");
             return;
         }
         //10) поле «Количество факт» добавить 1 шт к предыдущему значению
