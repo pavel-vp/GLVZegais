@@ -69,6 +69,7 @@ public class MoveRec extends BaseRec {
         rec.setPoluchID(this.moveIn.getPoluchID());
         rec.setPoluchName(this.moveIn.getPoluchName());
         rec.setContent(new MoveRecContentOutput[this.moveIn.getContent().length]);
+        rec.setCheckMark(this.moveIn.getCheckMark());
         int idx = 0;
         for (MoveContentIn contentIn : this.moveIn.getContent()) {
             MoveRecContentOutput contentOutput = new MoveRecContentOutput();
@@ -79,8 +80,7 @@ public class MoveRec extends BaseRec {
             MoveRecContent recContent = (MoveRecContent) DaoMem.getDaoMem().getRecContentByPosition(this, contentIn.getPosition());
             contentOutput.setQtyFact(recContent.getQtyAccepted());
 
-            Set<BaseRecContentMark> scannedMarkSet = new HashSet<>();
-            scannedMarkSet.addAll(recContent.getBaseRecContentMarkList());
+            Set<BaseRecContentMark> scannedMarkSet = new HashSet<>(recContent.getBaseRecContentMarkList());
 
             contentOutput.setMarks(new String[scannedMarkSet.size()]);
             int idx2 = 0;

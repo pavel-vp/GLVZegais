@@ -1,7 +1,11 @@
 package com.glvz.egais.integration.sdcard;
 
 import android.media.MediaScannerConnection;
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.io.IOContext;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.glvz.egais.MainApp;
@@ -52,7 +56,6 @@ public class IntegrationSDCard implements Integration {
     private static final String DOC_PREFIX_WRITEOFF = "WRITEOFF";
 
     private ObjectMapper objectMapper = new ObjectMapper();
-
 
     public IntegrationSDCard(String basePath) {
         this.basePath = basePath;
@@ -232,7 +235,7 @@ public class IntegrationSDCard implements Integration {
         File file = new File(path, rec.getDocIdForExport() + "_out.json");
             try {
                 BaseRecOutput out = rec.formatAsOutput();
-                objectMapper.writeValue(file, out);
+                objectMapper.writerWithDefaultPrettyPrinter().writeValue(file, out);
             } catch (IOException e) {
                 e.printStackTrace();
             }
