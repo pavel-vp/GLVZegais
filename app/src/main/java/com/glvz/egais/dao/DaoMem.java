@@ -681,6 +681,11 @@ public class DaoMem {
         exportDataBaseRec(rec);
     }
 
+    public void rejectData(MoveRec rec) {
+        rec.rejectData();
+        writeLocalDataBaseRec(rec);
+    }
+
     public void rejectData(WriteoffRec rec) {
         rec.rejectData();
         writeLocalWriteoffRec(rec);

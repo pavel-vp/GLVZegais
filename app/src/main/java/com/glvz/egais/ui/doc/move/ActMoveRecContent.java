@@ -121,7 +121,7 @@ public class ActMoveRecContent extends Activity implements BarcodeReader.Barcode
                                 moveRecContent.setQtyAccepted((double) 0);
                                 moveRecContent.setStatus(BaseRecContentStatus.NOT_ENTERED);
                                 moveRecContent.getBaseRecContentMarkList().clear();
-                                moveRec.setStatus(BaseRecStatus.INPROGRESS);
+                                moveRec.setStatus(BaseRecStatus.NEW);
                                 DaoMem.getDaoMem().writeLocalDataBaseRec(moveRec);
                                 scannedMarkIn = null;
                                 currentState = STATE_SCAN_MARK;

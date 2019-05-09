@@ -146,6 +146,7 @@ public class ActWriteoffRec extends ActBaseDocRec {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
                                 DaoMem.getDaoMem().rejectData(writeoffRec);
+                                currentState = STATE_SCAN_MARK;
                                 MessageUtils.showToastMessage("Данные по накладной удалены!");
                                 updateData();
                             }

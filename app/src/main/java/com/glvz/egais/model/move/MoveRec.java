@@ -117,6 +117,17 @@ public class MoveRec extends BaseRec {
     }
 
     @Override
+    public void rejectData() {
+        // Пройтись по всем строкам, и проставить везде нули
+        for (BaseRecContent recContent : getRecContentList()) {
+            recContent.setQtyAccepted(null);
+            recContent.getBaseRecContentMarkList().clear();
+            recContent.setStatus(BaseRecContentStatus.NOT_ENTERED);
+        }
+        setStatus(BaseRecStatus.NEW);
+    }
+
+    @Override
     public String getDocId() {
         return docId;
     }
