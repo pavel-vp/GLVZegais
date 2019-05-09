@@ -179,7 +179,7 @@ public class ActWriteoffRec extends ActBaseDocRec {
             case EAN13:
                 // 1) Если форма находилась в режиме ожидания сканирования ШК PDF-417 (DataMatrix): вывести модальное сообщение , прервать обработку события.
                 if (currentState == STATE_SCAN_MARK) {
-                    MessageUtils.showModalMessage(this, "Внимание!", "Сканируйте марку с " + writeoffRecContentLocal.getNomenIn().getName());
+                    MessageUtils.showModalMessage(this, "Внимание!", "Сканируйте марку");
                     return;
                 }
                 if (currentState == STATE_SCAN_EAN) {
@@ -197,7 +197,7 @@ public class ActWriteoffRec extends ActBaseDocRec {
             case PDF417:
             case DATAMATRIX:
                 if (currentState == STATE_SCAN_EAN) {
-                    MessageUtils.showModalMessage(this, "Внимание!", "Сканируйте штрихкод с " + writeoffRecContentLocal.getNomenIn().getName());
+                    MessageUtils.showModalMessage(this, "Внимание!", "Сканируйте штрихкод, с той же бутылки с которой только что сканировали марку");
                     return;
                 }
                 // выполнить проверку корректности ШК по длине:  PDF-417 должна быть 68 символов,  DataMatrix – 150
