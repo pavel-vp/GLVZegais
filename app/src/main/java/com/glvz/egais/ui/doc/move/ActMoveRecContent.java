@@ -301,7 +301,9 @@ public class ActMoveRecContent extends Activity implements BarcodeReader.Barcode
         this.currentState = STATE_SCAN_MARK;
         this.scannedMarkIn = null;
         updateData();
-
+        if (moveRecContent.getQtyAccepted() >= moveRecContent.getContentIn().getQty()) {
+            MessageUtils.playSound(R.raw.position_done);
+        }
     }
 
 
