@@ -19,6 +19,7 @@ public class MoveRecContentHolder extends DocRecContentHolder {
     TextView tvName;
     TextView tvQty;
     TextView tvQtyAccepted;
+    TextView tvStatusRow;
 
     public MoveRecContentHolder(View v) {
         super(v);
@@ -28,6 +29,7 @@ public class MoveRecContentHolder extends DocRecContentHolder {
         tvName = (TextView)v.findViewById(R.id.tvName);
         tvQty = (TextView)v.findViewById(R.id.tvQty);
         tvQtyAccepted = (TextView)v.findViewById(R.id.tvQtyAccepted);
+        tvStatusRow = (TextView)v.findViewById(R.id.tvStatusRow);
         v.setTag(this);
     }
 
@@ -67,6 +69,16 @@ public class MoveRecContentHolder extends DocRecContentHolder {
                 tvStatus.setTextColor(Color.GREEN);
                 break;
         }*/
-
+        if (recContent.getQtyAccepted() == null || recContent.getQtyAccepted() == 0) {
+            tvStatusRow.setText("");
+        } else {
+            if (recContent.getQtyAccepted() >= moveRecContent.getContentIn().getQty()) {
+                tvStatusRow.setText("Выполнено");
+                tvStatusRow.setTextColor(Color.GREEN);
+            } else {
+                tvStatusRow.setText("В работе");
+                tvStatusRow.setTextColor(Color.RED);
+            }
+        }
     }
 }

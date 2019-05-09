@@ -105,6 +105,14 @@
                                 android:id="@+id/tvQtyAccepted"
                                 android:textStyle="bold"
                                 android:paddingRight="10dp"/>
+                        <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:gravity="right"
+                                android:textAppearance="?android:attr/textAppearanceMedium"
+                                android:text="В работе"
+                                android:id="@+id/tvStatusRow"
+                                android:paddingRight="10dp"/>
 
                     </LinearLayout>
                 </LinearLayout>
