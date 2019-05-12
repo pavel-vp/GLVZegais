@@ -36,7 +36,7 @@ public class ActMainMenu extends Activity {
     @Override
     protected void onStart() {
         super.onStart();
-        DaoMem.getDaoMem().initDocuments();
+        DaoMem.getDaoMem().initDocuments(false);
         DaoMem.getDaoMem().checkIsNeedToUpdate(this);
         DaoMem.getDaoMem().initDictionary();
 
@@ -141,7 +141,7 @@ public class ActMainMenu extends Activity {
                     Log.e(getLocalClassName(), "error at wifi", e);
                     handleResult(SyncWiFiFtp.SYNC_ERROR);
                 }
-                DaoMem.getDaoMem().initDocuments();
+                DaoMem.getDaoMem().initDocuments(false);
             }
         }).start();
     }

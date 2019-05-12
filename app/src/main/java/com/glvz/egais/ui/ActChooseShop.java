@@ -87,7 +87,7 @@ public class ActChooseShop extends Activity {
         buttonLoadDocs.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                DaoMem.getDaoMem().initDocuments();
+                DaoMem.getDaoMem().initDocuments(true);
             }
         });
 

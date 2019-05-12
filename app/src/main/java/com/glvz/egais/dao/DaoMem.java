@@ -150,7 +150,7 @@ public class DaoMem {
         ed.apply();
     }
 
-    public void initDocuments() {
+    public void initDocuments(boolean notify) {
         integrationFile.initDirectories(shopId);
         listIncomeIn = integrationFile.loadIncome(shopId);
         listMoveIn = integrationFile.loadMove(shopId);
@@ -165,7 +165,9 @@ public class DaoMem {
         mapMoveRec = readMoveRec();
         mapCheckMarkRec = readCheckMarkRec();
         mapWriteoffRec = readWriteoffRec(shopId);
-        MessageUtils.showToastMessage("Данные загружены");
+        if (notify) {
+            MessageUtils.showToastMessage("Данные загружены");
+        }
 
     }
 
