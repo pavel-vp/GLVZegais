@@ -104,9 +104,11 @@ public class ActWriteoffRec extends ActBaseDocRec {
                 adapter.notifyDataSetChanged();
                 switch (currentState) {
                     case STATE_SCAN_MARK:
-                        tvCaption.setText("Сканиуйте марку");
+                        tvCaption.setText("Сканируйте марку");
+                        break;
                     case STATE_SCAN_EAN:
-                        tvCaption.setText("Сканиуйте штрихкод");
+                        tvCaption.setText("Сканируйте штрихкод");
+                        break;
                 }
             }
         });
