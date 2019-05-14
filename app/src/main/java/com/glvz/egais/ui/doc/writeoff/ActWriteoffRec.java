@@ -93,6 +93,10 @@ public class ActWriteoffRec extends ActBaseDocRec {
 
     @Override
     protected void updateData() {
+        updateDataWithScroll(null);
+    }
+
+    private void updateDataWithScroll(final Integer position) {
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -102,6 +106,9 @@ public class ActWriteoffRec extends ActBaseDocRec {
                 list.clear();
                 list.addAll(newList);
                 adapter.notifyDataSetChanged();
+                if (position != null) {
+                    lvContent.smoothScrollToPosition(position);
+                }
                 switch (currentState) {
                     case STATE_SCAN_MARK:
                         tvCaption.setText("Сканируйте марку");
@@ -262,7 +269,21 @@ public class ActWriteoffRec extends ActBaseDocRec {
                     this.currentState = STATE_SCAN_EAN;
                     // 8.2) Звуковое сообщение «Сканируйте штрихкод»
                     MessageUtils.playSound(R.raw.scan_ean);
-                    updateData();
+                    int position = 0;
+                    for (WriteoffRecContent recContent : writeoffRec.getWriteoffRecContentList()) {
+                        boolean found = false;
+                        for (BaseRecContentMark mark : recContent.getBaseRecContentMarkList()) {
+                            if (mark.getMarkScanned().equals(markIn.getMark())) {
+                                found = true;
+                                break;
+                            }
+                        }
+                        if (found) {
+                            break;
+                        }
+                        position++;
+                    }
+                    updateDataWithScroll(position);
                     return;
                 }
                 NomenIn nomenIn = DaoMem.getDaoMem().findNomenInAlcoByNomenId(markIn.getNomenId());
@@ -285,11 +306,13 @@ public class ActWriteoffRec extends ActBaseDocRec {
         for (WriteoffRecContent recContent : writeoffRec.getWriteoffRecContentList()) {
             if (recContent.getNomenIn().getId().equals(nomenIn.getId())) {
                 writeoffRecContentLocal = recContent;
+                break;
             }
             position++;
         }
         if (writeoffRecContentLocal == null) {
-            writeoffRecContentLocal = new WriteoffRecContent(String.valueOf(position+1), null);
+            position++;
+            writeoffRecContentLocal = new WriteoffRecContent(String.valueOf(position), null);
             writeoffRecContentLocal.setNomenIn(nomenIn, null);
             writeoffRec.getRecContentList().add(writeoffRecContentLocal);
         }
@@ -305,9 +328,8 @@ public class ActWriteoffRec extends ActBaseDocRec {
         DaoMem.getDaoMem().writeLocalWriteoffRec(writeoffRec);
         this.currentState = STATE_SCAN_MARK;
         this.scannedMarkIn = null;
-        updateData();
+        updateDataWithScroll(position);
         // 9.0) желательно как-то выделить эту позицию для пользователя
-        lvContent.smoothScrollToPosition(position);
     }
 
 
