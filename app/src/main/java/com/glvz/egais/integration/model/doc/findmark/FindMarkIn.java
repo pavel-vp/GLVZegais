@@ -1,11 +1,11 @@
-package com.glvz.egais.integration.model.doc.checkmark;
+package com.glvz.egais.integration.model.doc.findmark;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.glvz.egais.integration.model.doc.DocIn;
 
 import java.util.Arrays;
 
-public class CheckMarkIn implements DocIn {
+public class FindMarkIn implements DocIn {
 
     @JsonProperty(value="DOCId")
     private String docId;
@@ -15,9 +15,12 @@ public class CheckMarkIn implements DocIn {
     private String date;
     @JsonProperty(value="SkladID")
     private String skladID;
+    @JsonProperty(value="SkladName")
+    private String skladName;
+    @JsonProperty(value="Comment")
+    private String comment;
     @JsonProperty(value="Content")
-    private CheckMarkContentIn[] content;
-
+    private FindMarkContentIn[] content;
 
     @Override
     public String getDocId() {
@@ -52,21 +55,39 @@ public class CheckMarkIn implements DocIn {
         this.skladID = skladID;
     }
 
-    public CheckMarkContentIn[] getContent() {
+    public String getSkladName() {
+        return skladName;
+    }
+
+    public void setSkladName(String skladName) {
+        this.skladName = skladName;
+    }
+
+    public String getComment() {
+        return comment;
+    }
+
+    public void setComment(String comment) {
+        this.comment = comment;
+    }
+
+    public FindMarkContentIn[] getContent() {
         return content;
     }
 
-    public void setContent(CheckMarkContentIn[] content) {
+    public void setContent(FindMarkContentIn[] content) {
         this.content = content;
     }
 
     @Override
     public String toString() {
-        return "CheckMarkIn{" +
+        return "FindMarkIn{" +
                 "docId='" + docId + '\'' +
                 ", number='" + number + '\'' +
                 ", date='" + date + '\'' +
                 ", skladID='" + skladID + '\'' +
+                ", skladName='" + skladName + '\'' +
+                ", comment='" + comment + '\'' +
                 ", content=" + Arrays.toString(content) +
                 '}';
     }

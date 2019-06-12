@@ -15,6 +15,8 @@ import android.widget.Button;
 import com.glvz.egais.R;
 import com.glvz.egais.dao.DaoMem;
 import com.glvz.egais.integration.wifi.SyncWiFiFtp;
+import com.glvz.egais.ui.doc.checkmark.ActCheckMarkList;
+import com.glvz.egais.ui.doc.findmark.ActFindMarkList;
 import com.glvz.egais.ui.doc.income.ActIncomeList;
 import com.glvz.egais.ui.doc.move.ActMoveList;
 import com.glvz.egais.ui.doc.writeoff.ActWriteoffList;
@@ -70,6 +72,25 @@ public class ActMainMenu extends Activity {
             public void onClick(View v) {
                 Intent intent = new Intent();
                 intent.setClass(ActMainMenu.this, ActWriteoffList.class);
+                startActivity(intent);
+            }
+        });
+
+        Button buttonCheckMark = (Button) findViewById(R.id.buttonCheckMark);
+        buttonCheckMark.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent();
+                intent.setClass(ActMainMenu.this, ActCheckMarkList.class);
+                startActivity(intent);
+            }
+        });
+        Button buttonFindMark = (Button) findViewById(R.id.buttonFindMark);
+        buttonFindMark.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent();
+                intent.setClass(ActMainMenu.this, ActFindMarkList.class);
                 startActivity(intent);
             }
         });

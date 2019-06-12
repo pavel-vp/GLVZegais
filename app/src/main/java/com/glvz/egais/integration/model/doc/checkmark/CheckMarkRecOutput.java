@@ -14,10 +14,6 @@ public class CheckMarkRecOutput extends BaseRecOutput {
     private String date;
     @JsonProperty(value="SkladID")
     private String skladID;
-    @JsonProperty(value="SkladName")
-    private String skladName;
-    @JsonProperty(value="Comment")
-    private String comment;
     @JsonProperty(value="Content")
     private CheckMarkRecContentOutput[] content;
 
@@ -54,22 +50,6 @@ public class CheckMarkRecOutput extends BaseRecOutput {
         this.skladID = skladID;
     }
 
-    public String getSkladName() {
-        return skladName;
-    }
-
-    public void setSkladName(String skladName) {
-        this.skladName = skladName;
-    }
-
-    public String getComment() {
-        return comment;
-    }
-
-    public void setComment(String comment) {
-        this.comment = comment;
-    }
-
     public CheckMarkRecContentOutput[] getContent() {
         return content;
     }
@@ -85,8 +65,6 @@ public class CheckMarkRecOutput extends BaseRecOutput {
                 ", number='" + number + '\'' +
                 ", date='" + date + '\'' +
                 ", skladID='" + skladID + '\'' +
-                ", skladName='" + skladName + '\'' +
-                ", comment='" + comment + '\'' +
                 ", content=" + Arrays.toString(content) +
                 '}';
     }

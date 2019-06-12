@@ -1,35 +1,33 @@
-package com.glvz.egais.service.checkmark;
+package com.glvz.egais.service.findmark;
 
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import com.glvz.egais.R;
 import com.glvz.egais.model.BaseRecContent;
-import com.glvz.egais.model.checkmark.CheckMarkRecContent;
+import com.glvz.egais.model.findmark.FindMarkRecContent;
 import com.glvz.egais.service.DocContentArrayAdapter;
 import com.glvz.egais.service.DocRecContentHolder;
 import com.glvz.egais.utils.StringUtils;
 
-public class CheckMarkRecContentHolder extends DocRecContentHolder {
+public class FindMarkRecContentHolder extends DocRecContentHolder {
 
     LinearLayout llPosition;
     TextView tvPosition;
     TextView tvName;
     TextView tvQty;
     TextView tvQtyFound;
-    TextView tvQtyFoundNew;
     TextView tvNomenId;
     TextView tvVolume;
     TextView tvAlc;
 
-    public CheckMarkRecContentHolder(View v) {
+    public FindMarkRecContentHolder(View v) {
         super(v);
         llPosition = (LinearLayout)v.findViewById(R.id.llPosition);
         tvPosition = (TextView)v.findViewById(R.id.tvPosition);
         tvName = (TextView)v.findViewById(R.id.tvName);
         tvQty = (TextView)v.findViewById(R.id.tvQty);
         tvQtyFound = (TextView)v.findViewById(R.id.tvQtyFound);
-        tvQtyFoundNew = (TextView)v.findViewById(R.id.tvQtyFoundNew);
         tvNomenId = (TextView)v.findViewById(R.id.tvNomenId);
         tvVolume = (TextView)v.findViewById(R.id.tvVolume);
         tvAlc = (TextView)v.findViewById(R.id.tvAlc);
@@ -39,7 +37,7 @@ public class CheckMarkRecContentHolder extends DocRecContentHolder {
 
     @Override
     public void setItem(BaseRecContent recContent, int addMark, int mode) {
-        CheckMarkRecContent checkMarkRecContent = (CheckMarkRecContent) recContent;
+        FindMarkRecContent findMarkRecContent = (FindMarkRecContent) recContent;
         if (mode == DocContentArrayAdapter.RECLIST_MODE) {
             llPosition.setVisibility(View.GONE);
         } else {
@@ -47,35 +45,29 @@ public class CheckMarkRecContentHolder extends DocRecContentHolder {
             tvPosition.setText(recContent.getPosition().toString());
             //tvStatus.setText(recContent.getStatus().getMessage());
         }
-        if (checkMarkRecContent.getNomenIn() != null) {
-            tvName.setText(checkMarkRecContent.getNomenIn().getName());
+        if (findMarkRecContent.getNomenIn() != null) {
+            tvName.setText(findMarkRecContent.getNomenIn().getName());
         } else {
             tvName.setText("");
         }
         tvNomenId.setText(recContent.getNomenIn().getId());
-        if (checkMarkRecContent.getNomenIn().getCapacity() != null) {
-            tvVolume.setText(StringUtils.formatQty(checkMarkRecContent.getNomenIn().getCapacity() ));
+        if (findMarkRecContent.getNomenIn().getCapacity() != null) {
+            tvVolume.setText(StringUtils.formatQty(findMarkRecContent.getNomenIn().getCapacity() ));
         } else {
             tvVolume.setText("");
         }
-        if (checkMarkRecContent.getNomenIn().getAlcVolume() != null) {
-            tvAlc.setText(StringUtils.formatQty(checkMarkRecContent.getNomenIn().getAlcVolume() ));
+        if (findMarkRecContent.getNomenIn().getAlcVolume() != null) {
+            tvAlc.setText(StringUtils.formatQty(findMarkRecContent.getNomenIn().getAlcVolume() ));
         } else {
             tvAlc.setText("");
         }
 
-        tvQty.setText(StringUtils.formatQty(checkMarkRecContent.getContentIn().getQty()));
+        tvQty.setText(StringUtils.formatQty(findMarkRecContent.getContentIn().getQty()));
 
-        if (checkMarkRecContent.getQtyAccepted() != null) {
-            tvQtyFound.setText(StringUtils.formatQty(checkMarkRecContent.getQtyAccepted() + addMark ));
+        if (findMarkRecContent.getQtyAccepted() != null) {
+            tvQtyFound.setText(StringUtils.formatQty(findMarkRecContent.getQtyAccepted() + addMark ));
         } else {
             tvQtyFound.setText(addMark ==0 ? "" : String.valueOf(addMark));
         }
-        if (checkMarkRecContent.getQtyAcceptedNew() != null) {
-            tvQtyFoundNew.setText(StringUtils.formatQty(checkMarkRecContent.getQtyAcceptedNew()));
-        } else {
-            tvQtyFoundNew.setText("");
-        }
-
     }
 }

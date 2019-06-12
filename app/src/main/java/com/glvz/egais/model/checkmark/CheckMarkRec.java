@@ -4,13 +4,8 @@ import com.glvz.egais.dao.DaoMem;
 import com.glvz.egais.integration.model.doc.BaseRecOutput;
 import com.glvz.egais.integration.model.doc.DocContentIn;
 import com.glvz.egais.integration.model.doc.DocIn;
-import com.glvz.egais.integration.model.doc.checkmark.CheckMarkContentIn;
-import com.glvz.egais.integration.model.doc.checkmark.CheckMarkIn;
-import com.glvz.egais.integration.model.doc.checkmark.CheckMarkRecContentOutput;
-import com.glvz.egais.integration.model.doc.checkmark.CheckMarkRecOutput;
-import com.glvz.egais.model.BaseRec;
-import com.glvz.egais.model.BaseRecContent;
-import com.glvz.egais.model.BaseRecContentMark;
+import com.glvz.egais.integration.model.doc.checkmark.*;
+import com.glvz.egais.model.*;
 import com.glvz.egais.utils.StringUtils;
 
 import java.util.*;
@@ -74,7 +69,6 @@ public class CheckMarkRec extends BaseRec {
         rec.setNumber(this.checkMarkIn.getNumber());
         rec.setDate(this.checkMarkIn.getDate());
         rec.setSkladID(this.checkMarkIn.getSkladID());
-        rec.setSkladName(this.checkMarkIn.getSkladName());
         rec.setContent(new CheckMarkRecContentOutput[this.checkMarkIn.getContent().length]);
         int idx = 0;
         for (CheckMarkContentIn contentIn : this.checkMarkIn.getContent()) {
@@ -84,16 +78,20 @@ public class CheckMarkRec extends BaseRec {
             contentOutput.setQty(contentIn.getQty());
 
             CheckMarkRecContent recContent = (CheckMarkRecContent) DaoMem.getDaoMem().getRecContentByPosition(this, contentIn.getPosition());
+            contentOutput.setQtyFact(recContent.getQtyAccepted());
+            contentOutput.setQtyNewFact(recContent.getQtyAcceptedNew());
 
-            Set<BaseRecContentMark> scannedMarkSet = new HashSet<>();
-            scannedMarkSet.addAll(recContent.getBaseRecContentMarkList());
-
-            contentOutput.setMarks(new String[scannedMarkSet.size()]);
+            CheckMarkMark[] scannedMarkArr = new CheckMarkMark[recContent.getCheckMarkRecContentMarkList().size()];
             int idx2 = 0;
-            for (BaseRecContentMark mark : scannedMarkSet) {
-                contentOutput.getMarks()[idx2] = mark.getMarkScanned();
+            for (CheckMarkRecContentMark checkMarkContentMark : recContent.getCheckMarkRecContentMarkList()) {
+                CheckMarkMark checkMarkMark = new CheckMarkMark();
+                checkMarkMark.setMark(checkMarkContentMark.getMarkScanned());
+                checkMarkMark.setState(checkMarkContentMark.getState());
+                scannedMarkArr[idx2] = checkMarkMark;
                 idx2++;
             }
+            contentOutput.setMarks(scannedMarkArr);
+
             rec.getContent()[idx] = contentOutput;
             idx++;
         }
@@ -117,6 +115,28 @@ public class CheckMarkRec extends BaseRec {
             list.add((CheckMarkRecContent) recContent);
         }
         return list;
+    }
+
+    @Override
+    public void rejectData() {
+        // Пройтись по всем строкам, очистить связки с товаром и проставить везде нули
+        for (CheckMarkRecContent recContent : getCheckMarkRecContentList()) {
+            recContent.setNomenIn(null, null);
+            recContent.setQtyAccepted(Double.valueOf(0));
+            recContent.setQtyAcceptedNew(Double.valueOf(0));
+
+            recContent.getCheckMarkRecContentMarkList().clear();
+            recContent.setStatus(BaseRecContentStatus.NOT_ENTERED);
+        }
+        setStatus(BaseRecStatus.NEW);
+    }
+
+    public String getSkladId() {
+        return checkMarkIn.getSkladID();
+    }
+
+    public String getDateStr() {
+        return checkMarkIn.getDate();
     }
 
 }

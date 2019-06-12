@@ -19,10 +19,12 @@ public abstract class BaseRec {
     public static final String KEY_POS_BARCODE = "pos_barcode";
     public static final String KEY_POS_STATUS = "pos_status";
     public static final String KEY_POS_QTYACCEPTED = "pos_qtyaccepted";
+    public static final String KEY_POS_QTYACCEPTED_NEW = "pos_qtyaccepted_new";
     public static final String KEY_POS_MARKSCANNED_CNT = "pos_markscanned_cnt";
     public static final String KEY_POS_MARKSCANNED = "pos_markscanned";
     public static final String KEY_POS_MARKSCANNED_ASTYPE = "pos_markscanned_astype";
     public static final String KEY_POS_MARKSCANNEDREAL = "pos_markscannedreal";
+    public static final String KEY_POS_MARKSTATE = "pos_markstate";
 
 
     // данные заполненные локально на терминале

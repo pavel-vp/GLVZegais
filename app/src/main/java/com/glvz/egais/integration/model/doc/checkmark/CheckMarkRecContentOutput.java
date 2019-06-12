@@ -12,14 +12,18 @@ public class CheckMarkRecContentOutput extends BaseRecContentOutput {
     private String nomenId;
     @JsonProperty(value="QTY")
     private Double qty;
+    @JsonProperty(value="QTYFact")
+    private Double qtyFact;
+    @JsonProperty(value="QTYNewFact")
+    private Double qtyNewFact;
     @JsonProperty(value="NomenName")
     private String nomenName;
     @JsonProperty(value="Capacity")
     private Double capacity;
     @JsonProperty(value="AlcVolume")
     private Double alcVolume;
-    @JsonProperty(value="Mark")
-    private String[] marks;
+    @JsonProperty(value="Marks")
+    private CheckMarkMark[] marks;
 
     public String getPosition() {
         return position;
@@ -69,11 +73,11 @@ public class CheckMarkRecContentOutput extends BaseRecContentOutput {
         this.alcVolume = alcVolume;
     }
 
-    public String[] getMarks() {
+    public CheckMarkMark[] getMarks() {
         return marks;
     }
 
-    public void setMarks(String[] marks) {
+    public void setMarks(CheckMarkMark[] marks) {
         this.marks = marks;
     }
 
@@ -88,5 +92,21 @@ public class CheckMarkRecContentOutput extends BaseRecContentOutput {
                 ", alcVolume=" + alcVolume +
                 ", marks=" + Arrays.toString(marks) +
                 '}';
+    }
+
+    public Double getQtyFact() {
+        return qtyFact;
+    }
+
+    public void setQtyFact(Double qtyFact) {
+        this.qtyFact = qtyFact;
+    }
+
+    public Double getQtyNewFact() {
+        return qtyNewFact;
+    }
+
+    public void setQtyNewFact(Double qtyNewFact) {
+        this.qtyNewFact = qtyNewFact;
     }
 }

@@ -1,30 +1,26 @@
-package com.glvz.egais.integration.model.doc.checkmark;
+package com.glvz.egais.integration.model.doc.findmark;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.glvz.egais.integration.model.doc.DocContentIn;
 
 import java.util.Arrays;
 
-public class CheckMarkContentIn implements DocContentIn {
+public class FindMarkContentIn implements DocContentIn {
+
     @JsonProperty(value="position")
     private String position;
     @JsonProperty(value="NomenID")
     private String nomenId;
     @JsonProperty(value="QTY")
     private Double qty;
-    @JsonProperty(value="QTYFact")
-    private Double qtyFact;
-    @JsonProperty(value="QTYNewFact")
-    private Double qtyNewFact;
     @JsonProperty(value="NomenName")
     private String nomenName;
     @JsonProperty(value="Capacity")
     private Double capacity;
     @JsonProperty(value="AlcVolume")
     private Double alcVolume;
-    @JsonProperty(value="Marks")
-    private CheckMarkMark[] marks;
-
+    @JsonProperty(value="Mark")
+    private String[] mark;
 
     @Override
     public Double getQty() {
@@ -75,40 +71,24 @@ public class CheckMarkContentIn implements DocContentIn {
         this.alcVolume = alcVolume;
     }
 
-    public CheckMarkMark[] getMarks() {
-        return marks;
+    public String[] getMark() {
+        return mark;
     }
 
-    public void setMarks(CheckMarkMark[] marks) {
-        this.marks = marks;
+    public void setMark(String[] mark) {
+        this.mark = mark;
     }
 
     @Override
     public String toString() {
-        return "CheckMarkContentIn{" +
+        return "FindMarkContentIn{" +
                 "position='" + position + '\'' +
                 ", nomenId='" + nomenId + '\'' +
                 ", qty=" + qty +
                 ", nomenName='" + nomenName + '\'' +
                 ", capacity=" + capacity +
                 ", alcVolume=" + alcVolume +
-                ", marks=" + Arrays.toString(marks) +
+                ", mark=" + Arrays.toString(mark) +
                 '}';
-    }
-
-    public Double getQtyFact() {
-        return qtyFact;
-    }
-
-    public void setQtyFact(Double qtyFact) {
-        this.qtyFact = qtyFact;
-    }
-
-    public Double getQtyNewFact() {
-        return qtyNewFact;
-    }
-
-    public void setQtyNewFact(Double qtyNewFact) {
-        this.qtyNewFact = qtyNewFact;
     }
 }

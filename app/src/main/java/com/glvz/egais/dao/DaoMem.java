@@ -19,7 +19,11 @@ import com.glvz.egais.BuildConfig;
 import com.glvz.egais.MainApp;
 import com.glvz.egais.R;
 import com.glvz.egais.integration.model.doc.DocContentIn;
+import com.glvz.egais.integration.model.doc.checkmark.CheckMarkContentIn;
 import com.glvz.egais.integration.model.doc.checkmark.CheckMarkIn;
+import com.glvz.egais.integration.model.doc.checkmark.CheckMarkMark;
+import com.glvz.egais.integration.model.doc.findmark.FindMarkContentIn;
+import com.glvz.egais.integration.model.doc.findmark.FindMarkIn;
 import com.glvz.egais.integration.model.doc.income.IncomeContentBoxTreeIn;
 import com.glvz.egais.integration.model.doc.income.IncomeContentIn;
 import com.glvz.egais.integration.model.doc.income.IncomeContentMarkIn;
@@ -31,6 +35,10 @@ import com.glvz.egais.integration.model.*;
 import com.glvz.egais.integration.wifi.SyncWiFiFtp;
 import com.glvz.egais.model.*;
 import com.glvz.egais.model.checkmark.CheckMarkRec;
+import com.glvz.egais.model.checkmark.CheckMarkRecContent;
+import com.glvz.egais.model.checkmark.CheckMarkRecContentMark;
+import com.glvz.egais.model.findmark.FindMarkRec;
+import com.glvz.egais.model.findmark.FindMarkRecContent;
 import com.glvz.egais.model.income.*;
 import com.glvz.egais.model.move.MoveRec;
 import com.glvz.egais.model.move.MoveRecContent;
@@ -47,6 +55,8 @@ public class DaoMem {
 
     public static final String KEY_LAST_DOCID = "last_docid";
     public static final String KEY_WRITEOFF = "writeoff";
+    private static final String KEY_CHECKMARK = "checkmark";
+    private static final String KEY_FINDMARK = "findmark";
 
     private static DaoMem daoMem = null;
 
@@ -83,11 +93,13 @@ public class DaoMem {
     List<IncomeIn> listIncomeIn;
     List<MoveIn> listMoveIn;
     List<CheckMarkIn> listCheckMarkIn;
+    List<FindMarkIn> listFindMarkIn;
 
     Map<String, IncomeRec> mapIncomeRec;
     Map<String, MoveRec> mapMoveRec;
     Map<String, WriteoffRec> mapWriteoffRec;
     Map<String, CheckMarkRec> mapCheckMarkRec;
+    Map<String, FindMarkRec> mapFindMarkRec;
 
     SharedPreferences sharedPreferences;
 
@@ -155,6 +167,7 @@ public class DaoMem {
         listIncomeIn = integrationFile.loadIncome(shopId);
         listMoveIn = integrationFile.loadMove(shopId);
         listCheckMarkIn = integrationFile.loadCheckMark(shopId);
+        listFindMarkIn = integrationFile.loadFindMark(shopId);
 
         listM = integrationFile.loadMark(shopId);
         document = new DocumentMem(listIncomeIn);
@@ -165,6 +178,7 @@ public class DaoMem {
         mapMoveRec = readMoveRec();
         mapCheckMarkRec = readCheckMarkRec();
         mapWriteoffRec = readWriteoffRec(shopId);
+        mapFindMarkRec = readFindMarkRec(shopId);
         if (notify) {
             MessageUtils.showToastMessage("Данные загружены");
         }
@@ -188,7 +202,7 @@ public class DaoMem {
 
         for (CheckMarkIn checkMarkIn : listCheckMarkIn) {
             CheckMarkRec rec = new CheckMarkRec(checkMarkIn.getDocId(), checkMarkIn);
-            readLocalData(rec);
+            readLocalDataCheckMark(rec);
             map.put(checkMarkIn.getDocId(), rec);
         }
 
@@ -204,6 +218,28 @@ public class DaoMem {
             WriteoffRec writeoffRec = new WriteoffRec(docId);
             readLocalDataWriteoff(writeoffRec);
             map.put(writeoffRec.getDocId(), writeoffRec);
+        }
+
+        return map;
+    }
+
+    private Map<String,FindMarkRec> readFindMarkRec(String shopId) {
+        Map<String, FindMarkRec> map = new HashMap<>();
+
+        Set<String> docIds = sharedPreferences.getStringSet(KEY_FINDMARK+"_"+shopId, Collections.<String>emptySet());
+
+        for (String docId : docIds ) {
+            FindMarkIn findMarkIn = null;
+            for (FindMarkIn m : listFindMarkIn) {
+                if (m.getDocId().equals(docId)) {
+                    findMarkIn = m;
+                }
+            }
+            if (findMarkIn != null) {
+                FindMarkRec findMarkRec = new FindMarkRec(docId, findMarkIn);
+                readLocalDataFindMark(findMarkRec);
+                map.put(findMarkRec.getDocId(), findMarkRec);
+            }
         }
 
         return map;
@@ -291,6 +327,39 @@ public class DaoMem {
             recContent.getBaseRecContentMarkList().add(baseRecContentMark);
         }
         return recContent;
+    }
+
+    private void readLocalDataCheckMark(CheckMarkRec rec) {
+        rec.setExported(sharedPreferences.getBoolean(KEY_CHECKMARK + "_" + BaseRec.KEY_EXPORTED + "_" + rec.getDocId() + "_", false));
+        rec.setStatus(BaseRecStatus.valueOf(sharedPreferences.getString(KEY_CHECKMARK + "_" + BaseRec.KEY_STATUS + "_" + rec.getDocId() + "_", "0")));
+        // пройтись по строкам и прочитать доп.данные
+        rec.getRecContentList().clear();
+        for (DocContentIn docContentIn : rec.getDocContentInList()) {
+            CheckMarkRecContent recContent = (CheckMarkRecContent) rec.buildRecContent(docContentIn);
+            // прочитать данные по строке локальные
+            float qty = sharedPreferences.getFloat(KEY_CHECKMARK + "_" + BaseRec.KEY_POS_QTYACCEPTED + "_" + rec.getDocId() + "_" + recContent.getPosition(), 0);
+            if (qty != 0) {
+                recContent.setQtyAccepted(Double.valueOf(qty));
+            }
+            float qtyNew = sharedPreferences.getFloat(KEY_CHECKMARK + "_" + BaseRec.KEY_POS_QTYACCEPTED_NEW + "_" + rec.getDocId() + "_" + recContent.getPosition(), 0);
+            if (qtyNew != 0) {
+                recContent.setQtyAcceptedNew(Double.valueOf(qtyNew));
+            }
+            int cnt = sharedPreferences.getInt(KEY_CHECKMARK + "_" + BaseRec.KEY_POS_MARKSCANNED_CNT + "_" + rec.getDocId() + "_" + recContent.getPosition(), 0);
+            if (cnt > 0) {
+                for (int i = 1; i <= cnt; i++) {
+                    String mark = sharedPreferences.getString(KEY_CHECKMARK + "_" + BaseRec.KEY_POS_MARKSCANNED + "_" + rec.getDocId() + "_" + recContent.getPosition() + "_" + i, null);
+                    int state = sharedPreferences.getInt(KEY_CHECKMARK + "_" + BaseRec.KEY_POS_MARKSTATE + "_" + rec.getDocId() + "_" + recContent.getPosition() + "_" + i, 0);
+                    recContent.getBaseRecContentMarkList().add(new CheckMarkRecContentMark(mark, BaseRecContentMark.MARK_SCANNED_AS_MARK, mark, state));
+                }
+            }
+            rec.getRecContentList().add(recContent);
+        }
+
+    }
+
+    private void readLocalDataFindMark(FindMarkRec rec) {
+        rec.setStatus(BaseRecStatus.valueOf(sharedPreferences.getString(KEY_FINDMARK + "_" + BaseRec.KEY_STATUS + "_" + rec.getDocId() + "_", "0")));
     }
 
     private void clearStoredDataNotInList(List<String> docIdList) {
@@ -415,6 +484,40 @@ public class DaoMem {
         ed.apply();
     }
 
+    public void writeLocalDataCheckMarkRec(CheckMarkRec checkMarkRec) {
+        SharedPreferences.Editor ed = sharedPreferences.edit();
+        ed.putBoolean(KEY_CHECKMARK + "_" + BaseRec.KEY_EXPORTED+"_"+checkMarkRec.getDocId()+"_", checkMarkRec.isExported());
+        ed.putString(KEY_CHECKMARK + "_" + BaseRec.KEY_STATUS+"_"+checkMarkRec.getDocId()+"_", checkMarkRec.getStatus().toString());
+        ed.apply();
+        // записать данные по строкам
+        for (CheckMarkRecContent recContent : checkMarkRec.getCheckMarkRecContentList()) {
+            writeLocalDataCheckMarkRecContent(checkMarkRec.getDocId(), recContent);
+        }
+    }
+
+    private void writeLocalDataCheckMarkRecContent(String docId, CheckMarkRecContent recContent) {
+        SharedPreferences.Editor ed = sharedPreferences.edit();
+        float qty = 0;
+        if (recContent.getQtyAccepted() != null) {
+            qty = recContent.getQtyAccepted().floatValue();
+        }
+        ed.putFloat(KEY_CHECKMARK + "_" + BaseRec.KEY_POS_QTYACCEPTED+"_"+docId+"_"+recContent.getPosition(), qty);
+        float qtyNew = 0;
+        if (recContent.getQtyAcceptedNew() != null) {
+            qtyNew = recContent.getQtyAcceptedNew().floatValue();
+        }
+        ed.putFloat(KEY_CHECKMARK + "_" + BaseRec.KEY_POS_QTYACCEPTED_NEW+"_"+docId+"_"+recContent.getPosition(), qtyNew);
+        ed.putInt(KEY_CHECKMARK + "_" + BaseRec.KEY_POS_MARKSCANNED_CNT + "_"+docId+"_"+recContent.getPosition(), recContent.getBaseRecContentMarkList().size());
+        int idx = 1;
+        for (CheckMarkRecContentMark contentMark : recContent.getCheckMarkRecContentMarkList()) {
+            ed.putString(KEY_CHECKMARK + "_" + BaseRec.KEY_POS_MARKSCANNED + "_"+docId+"_"+recContent.getPosition()+"_"+idx, contentMark.getMarkScanned());
+            ed.putInt(KEY_CHECKMARK + "_" + BaseRec.KEY_POS_MARKSTATE + "_"+docId+"_"+recContent.getPosition()+"_"+idx, contentMark.getState());
+            idx++;
+        }
+        ed.apply();
+    }
+
+
     Comparator docRecDateComparator = new Comparator<BaseRec>() {
         @Override
         public int compare(BaseRec lhs, BaseRec rhs) {
@@ -458,6 +561,16 @@ public class DaoMem {
         return list;
     }
 
+    public Collection<FindMarkRec> getFindMarkRecListOrdered() {
+        List<FindMarkRec> list = new ArrayList<>();
+        list.addAll(mapFindMarkRec.values());
+
+        Collections.sort(list, docRecDateComparator);
+        return list;
+    }
+
+
+
     public Map<String, IncomeRec> getMapIncomeRec() {
         return mapIncomeRec;
     }
@@ -470,6 +583,9 @@ public class DaoMem {
         return mapWriteoffRec;
     }
 
+    public Map<String, CheckMarkRec> getMapCheckMarkRec() {
+        return mapCheckMarkRec;
+    }
 
     public Collection<IncomeRecContent> getIncomeRecContentList(String wbRegId) {
         return mapIncomeRec.get(wbRegId).getIncomeRecContentList();
@@ -481,6 +597,14 @@ public class DaoMem {
 
     public Collection<WriteoffRecContent> getWriteoffRecContentList(String docId) {
         return mapWriteoffRec.get(docId).getWriteoffRecContentList();
+    }
+
+    public Collection<CheckMarkRecContent> getCheckMarkRecContentList(String docId) {
+        return mapCheckMarkRec.get(docId).getCheckMarkRecContentList();
+    }
+
+    public Collection<FindMarkRecContent> getFindMarkRecContentList(String docId) {
+        return mapFindMarkRec.get(docId).getFindMarkRecContentList();
     }
 
     public BaseRecContent getRecContentByPosition(BaseRec rec, String position) {
@@ -514,8 +638,24 @@ public class DaoMem {
         writeLocalDataWriteoffRec(newRec);
     }
 
+    private void writeLocalCheckMarkRec(CheckMarkRec rec) {
+        SharedPreferences.Editor ed = sharedPreferences.edit();
+        Set<String> docIds = new HashSet<>();
+        for (CheckMarkRec checkMarkRec : mapCheckMarkRec.values()) {
+            docIds.add(checkMarkRec.getDocId());
+        }
+        ed.putStringSet(KEY_CHECKMARK+"_"+shopId, docIds);
+        ed.apply();
+        writeLocalDataCheckMarkRec(rec);
+    }
+
+
     public String getDeviceId() {
         return deviceId;
+    }
+
+    public Map<String, FindMarkRec> getMapFindMarkRec() {
+        return mapFindMarkRec;
     }
 
     public static class CheckMarkScannedResult {
@@ -541,6 +681,77 @@ public class DaoMem {
             }
         }
         return null; // ничего не нашли - не сканирован
+    }
+
+    public static class CheckMarkScannedResultForCheckMark {
+        public Integer state;
+        public BaseRecContent recContent;
+
+        public CheckMarkScannedResultForCheckMark(Integer state, BaseRecContent recContent) {
+            this.state = state;
+            this.recContent = recContent;
+        }
+    }
+
+    // Найти сканировалась ли уже эта марка (для задания сканиования марок)
+    public CheckMarkScannedResultForCheckMark checkMarkScannedForCheckMark(CheckMarkRec rec, String mark) {
+        // сначала проверим, сканиовали ли эту марку уже
+        for (CheckMarkRecContent recContent : rec.getCheckMarkRecContentList()) {
+            // в каждой позиции пройтись по сканированным маркам
+            for (CheckMarkRecContentMark checkMarkRecContentMark : recContent.getCheckMarkRecContentMarkList()) {
+                if (checkMarkRecContentMark.getMarkScanned().equals(mark)) {
+                    return new CheckMarkScannedResultForCheckMark(checkMarkRecContentMark.getState(), recContent);
+                }
+            }
+        }
+        // Если не нашли
+        // поищем в начальном документе
+        for (CheckMarkRecContent recContent : rec.getCheckMarkRecContentList()) {
+            // в каждой позиции пройтись по маркам во входном документе
+            CheckMarkContentIn checkMarkContentIn = (CheckMarkContentIn) recContent.getContentIn();
+
+            for (CheckMarkMark checkMarkMark :  checkMarkContentIn.getMarks()) {
+                if (checkMarkMark.getMark().equals(mark)) {
+                    return new CheckMarkScannedResultForCheckMark(checkMarkMark.getState(), recContent);
+                }
+            }
+        }
+        return null; // ничего не нашли - не сканирован и нет во входном документе
+    }
+
+    public static class CheckMarkScannedResultForFindMark {
+        public boolean scanned;
+        public FindMarkRecContent recContent;
+
+        public CheckMarkScannedResultForFindMark(FindMarkRecContent recContent, boolean scanned) {
+            this.recContent = recContent;
+            this.scanned = scanned;
+        }
+    }
+    public CheckMarkScannedResultForFindMark checkMarkScannedForFindMark(FindMarkRec rec, String barCode) {
+        // сначала проверим, сканиовали ли эту марку уже
+        for (FindMarkRecContent recContent : rec.getFindMarkRecContentList()) {
+            // в каждой позиции пройтись по сканированным маркам
+            for (BaseRecContentMark findMarkRecContentMark : recContent.getBaseRecContentMarkList()) {
+                if (findMarkRecContentMark.getMarkScanned().equals(barCode)) {
+                    return new CheckMarkScannedResultForFindMark(recContent, true);
+                }
+            }
+        }
+        // Если не нашли
+        // поищем в начальном документе
+        for (FindMarkRecContent recContent : rec.getFindMarkRecContentList()) {
+            // в каждой позиции пройтись по маркам во входном документе
+            FindMarkContentIn findMarkContentIn = (FindMarkContentIn) recContent.getContentIn();
+
+            for (String mark :  findMarkContentIn.getMark()) {
+                if (mark.equals(mark)) {
+                    return new CheckMarkScannedResultForFindMark(recContent, false);
+                }
+            }
+        }
+        return null; // ничего не нашли - не сканирован и нет во входном документе
+
     }
 
     // Найти непринятные позиции по алкокоду (может быть несколько)
@@ -655,6 +866,11 @@ public class DaoMem {
         return true;
     }
 
+    public boolean exportData(CheckMarkRec moveRec) {
+        exportDataBaseRec(moveRec);
+        return true;
+    }
+
     private void exportDataBaseRec(BaseRec rec) {
         rec.setExported(true);
         writeLocalDataBaseRec(rec);
@@ -697,6 +913,11 @@ public class DaoMem {
     public void rejectData(WriteoffRec rec) {
         rec.rejectData();
         writeLocalWriteoffRec(rec);
+    }
+
+    public void rejectData(CheckMarkRec rec) {
+        rec.rejectData();
+        writeLocalCheckMarkRec(rec);
     }
 
     public int calculateQtyToAdd(IncomeRec incomeRec, IncomeRecContent incomeRecContent, String barcode) {
