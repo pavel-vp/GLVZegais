@@ -16,6 +16,7 @@ import com.glvz.egais.integration.model.doc.checkmark.CheckMarkIn;
 import com.glvz.egais.integration.model.doc.findmark.FindMarkIn;
 import com.glvz.egais.integration.model.doc.income.IncomeIn;
 import com.glvz.egais.integration.model.doc.income.IncomeRecOutput;
+import com.glvz.egais.integration.model.doc.inv.InvIn;
 import com.glvz.egais.integration.model.doc.move.MoveIn;
 import com.glvz.egais.integration.model.doc.move.MoveRecOutput;
 import com.glvz.egais.model.BaseRec;
@@ -56,6 +57,7 @@ public class IntegrationSDCard implements Integration {
     private static final String DOC_PREFIX_CHECKMARK = "CHECK";
     private static final String DOC_PREFIX_WRITEOFF = "WRITEOFF";
     private static final String DOC_PREFIX_FINDMARK = "FINDMARK";
+    private static final String DOC_PREFIX_INV = "INV";
 
     private ObjectMapper objectMapper = new ObjectMapper();
 
@@ -248,6 +250,25 @@ public class IntegrationSDCard implements Integration {
             }
         }
         return listFindMarkIn;
+    }
+
+    @Override
+    public List<InvIn> loadInv(String shopId) {
+        List<InvIn> listInvIn = new ArrayList<>();
+        File path = new File(basePath + "/" + SHOPS_DIR + "/" + shopId + "/" + IN_DIR);
+        if (path.listFiles() != null) {
+            for (File file : path.listFiles()) {
+                if (file.getName().toUpperCase().startsWith(DOC_PREFIX_INV)) {
+                    try {
+                        InvIn InvIn = objectMapper.readValue(file, InvIn.class);
+                        listInvIn.add(InvIn);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }
+        return listInvIn;
     }
 
     @Override

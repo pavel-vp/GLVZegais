@@ -5,6 +5,7 @@ import com.glvz.egais.integration.model.doc.DocIn;
 import com.glvz.egais.integration.model.doc.checkmark.CheckMarkIn;
 import com.glvz.egais.integration.model.doc.findmark.FindMarkIn;
 import com.glvz.egais.integration.model.doc.income.IncomeIn;
+import com.glvz.egais.integration.model.doc.inv.InvIn;
 import com.glvz.egais.integration.model.doc.move.MoveIn;
 import com.glvz.egais.model.BaseRec;
 import com.glvz.egais.model.income.IncomeRec;
@@ -32,6 +33,7 @@ public interface Integration {
     List<MoveIn> loadMove(String shopId);
     List<CheckMarkIn> loadCheckMark(String shopId);
     List<FindMarkIn> loadFindMark(String shopId);
+    List<InvIn> loadInv(String shopId);
 
     void writeBaseRec(String shopId, BaseRec rec);
 

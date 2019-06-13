@@ -25,6 +25,10 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content" android:id="@+id/buttonFindMark"/>
     <Button
+            android:text="Инвентаризация"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" android:id="@+id/buttonInv"/>
+    <Button
             android:text="К выбору магазина"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" android:id="@+id/buttonBack"/>

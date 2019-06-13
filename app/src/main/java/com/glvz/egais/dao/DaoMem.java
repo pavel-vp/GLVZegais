@@ -1,8 +1,6 @@
 package com.glvz.egais.dao;
 
-import android.Manifest;
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
@@ -10,11 +8,7 @@ import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
-import android.provider.Settings;
-import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.FileProvider;
-import android.telephony.TelephonyManager;
-import android.util.Log;
 import com.glvz.egais.BuildConfig;
 import com.glvz.egais.MainApp;
 import com.glvz.egais.R;
@@ -28,6 +22,8 @@ import com.glvz.egais.integration.model.doc.income.IncomeContentBoxTreeIn;
 import com.glvz.egais.integration.model.doc.income.IncomeContentIn;
 import com.glvz.egais.integration.model.doc.income.IncomeContentMarkIn;
 import com.glvz.egais.integration.model.doc.income.IncomeIn;
+import com.glvz.egais.integration.model.doc.inv.InvContentIn;
+import com.glvz.egais.integration.model.doc.inv.InvIn;
 import com.glvz.egais.integration.model.doc.move.MoveIn;
 import com.glvz.egais.integration.sdcard.Integration;
 import com.glvz.egais.integration.sdcard.IntegrationSDCard;
@@ -40,6 +36,8 @@ import com.glvz.egais.model.checkmark.CheckMarkRecContentMark;
 import com.glvz.egais.model.findmark.FindMarkRec;
 import com.glvz.egais.model.findmark.FindMarkRecContent;
 import com.glvz.egais.model.income.*;
+import com.glvz.egais.model.inv.InvRec;
+import com.glvz.egais.model.inv.InvRecContent;
 import com.glvz.egais.model.move.MoveRec;
 import com.glvz.egais.model.move.MoveRecContent;
 import com.glvz.egais.model.writeoff.WriteoffRec;
@@ -57,6 +55,7 @@ public class DaoMem {
     public static final String KEY_WRITEOFF = "writeoff";
     private static final String KEY_CHECKMARK = "checkmark";
     private static final String KEY_FINDMARK = "findmark";
+    private static final String KEY_INV = "inv";
 
     private static DaoMem daoMem = null;
 
@@ -94,12 +93,14 @@ public class DaoMem {
     List<MoveIn> listMoveIn;
     List<CheckMarkIn> listCheckMarkIn;
     List<FindMarkIn> listFindMarkIn;
+    List<InvIn> listInvIn;
 
     Map<String, IncomeRec> mapIncomeRec;
     Map<String, MoveRec> mapMoveRec;
     Map<String, WriteoffRec> mapWriteoffRec;
     Map<String, CheckMarkRec> mapCheckMarkRec;
     Map<String, FindMarkRec> mapFindMarkRec;
+    Map<String, InvRec> mapInvRec;
 
     SharedPreferences sharedPreferences;
 
@@ -168,6 +169,7 @@ public class DaoMem {
         listMoveIn = integrationFile.loadMove(shopId);
         listCheckMarkIn = integrationFile.loadCheckMark(shopId);
         listFindMarkIn = integrationFile.loadFindMark(shopId);
+        listInvIn = integrationFile.loadInv(shopId);
 
         listM = integrationFile.loadMark(shopId);
         document = new DocumentMem(listIncomeIn);
@@ -179,6 +181,7 @@ public class DaoMem {
         mapCheckMarkRec = readCheckMarkRec();
         mapWriteoffRec = readWriteoffRec(shopId);
         mapFindMarkRec = readFindMarkRec(shopId);
+        mapInvRec = readInvRec();
         if (notify) {
             MessageUtils.showToastMessage("Данные загружены");
         }
@@ -256,6 +259,17 @@ public class DaoMem {
 
         return map;
     }
+    private Map<String,InvRec> readInvRec() {
+        Map<String, InvRec> map = new HashMap<>();
+
+        for (InvIn invIn : listInvIn) {
+            InvRec invRec = new InvRec(invIn.getDocId(), invIn);
+            readLocalDataInv(invRec);
+            map.put(invIn.getDocId(), invRec);
+        }
+
+        return map;
+    }
 
     private void readLocalData(BaseRec baseRec) {
         baseRec.setCntDone(sharedPreferences.getInt(BaseRec.KEY_CNTDONE + "_" + baseRec.getDocId() + "_", 0));
@@ -327,6 +341,65 @@ public class DaoMem {
             recContent.getBaseRecContentMarkList().add(baseRecContentMark);
         }
         return recContent;
+    }
+
+    private void readLocalDataInv(InvRec invRec) {
+        invRec.setStatus(BaseRecStatus.valueOf(sharedPreferences.getString(KEY_INV + "_" + BaseRec.KEY_STATUS + "_" + invRec.getDocId() + "_", BaseRecStatus.NEW.toString())));
+        invRec.setExported(sharedPreferences.getBoolean(KEY_INV + "_" + BaseRec.KEY_EXPORTED + "_" + invRec.getDocId() + "_", false));
+        // пройтись по строкам и прочитать доп.данные
+        invRec.getRecContentList().clear();
+        // Сначала читаем по всем входным строкам и создать по ним обертки
+        for (DocContentIn contentIn : invRec.getDocContentInList()) {
+            InvContentIn invContentIn = (InvContentIn)contentIn;
+            InvRecContent recContent = new InvRecContent(invContentIn.getPosition());
+            recContent.setContentIn(invContentIn);
+            recContent.setId1c(invContentIn.getNomenId());
+            recContent.setNomenIn(DaoMem.getDaoMem().findNomenInByNomenId(invContentIn.getNomenId()), null);
+            invRec.getRecContentList().add(recContent);
+        }
+
+        // Прочитать доп данные по входным строкам, плюс дополнительные данные по добаленным строкам
+        int contentSize = sharedPreferences.getInt(KEY_INV + "_" + InvRec.KEY_CONTENT_SIZE + "_" + invRec.getDocId() + "_", 0);
+        for (int i = 1; i <= contentSize; i++) {
+            readLocalDataInvContentAndMerge(invRec, i);
+        }
+
+    }
+
+    private void readLocalDataInvContentAndMerge(InvRec invRec, int position) {
+
+        String id1c = sharedPreferences.getString(KEY_INV + "_" + BaseRec.KEY_POS_ID1C+"_"+invRec.getDocId()+"_"+position, "");
+        String barcode = sharedPreferences.getString(KEY_INV + "_" + BaseRec.KEY_POS_BARCODE+"_"+invRec.getDocId()+"_"+position, "");
+        String posStatus = sharedPreferences.getString(KEY_INV + "_" + BaseRec.KEY_POS_STATUS+"_"+invRec.getDocId()+"_"+position, BaseRecContentStatus.IN_PROGRESS.toString());
+        float qtyAccepted = sharedPreferences.getFloat(KEY_INV + "_" + BaseRec.KEY_POS_QTYACCEPTED+"_"+invRec.getDocId()+"_"+position, 0);
+        int markScannedSize = sharedPreferences.getInt(KEY_INV + "_" + BaseRec.KEY_POS_MARKSCANNED_CNT + "_"+invRec.getDocId()+"_"+position, 0);
+        // Попробовать найти уже созданную строку
+        InvRecContent recContent = null;
+        int maxPos = 0;
+        for (BaseRecContent brc : invRec.getRecContentList()) {
+            if (brc.getId1c().equals(id1c)) {
+                recContent = (InvRecContent)brc;
+            }
+            maxPos = Math.max(maxPos, Integer.parseInt(brc.getPosition()));
+        }
+        // Если записи такой нет - то создать ее и добавить (вычислив новую позицию как максимум +1)
+        if (recContent == null) {
+            recContent = new InvRecContent(String.valueOf(maxPos + 1));
+            invRec.getRecContentList().add(recContent);
+        }
+        recContent.setId1c(id1c);
+        recContent.setNomenIn(findNomenInByNomenId(id1c), barcode);
+        recContent.setStatus(BaseRecContentStatus.valueOf(posStatus));
+        recContent.setQtyAccepted((double) qtyAccepted);
+
+        for (int idx = 1; idx <= markScannedSize; idx++) {
+            BaseRecContentMark baseRecContentMark = new BaseRecContentMark(
+                    sharedPreferences.getString(KEY_INV + "_" + BaseRec.KEY_POS_MARKSCANNED + "_"+invRec.getDocId()+"_"+position+"_"+idx, ""),
+                    sharedPreferences.getInt(KEY_INV + "_" + BaseRec.KEY_POS_MARKSCANNED_ASTYPE + "_"+invRec.getDocId()+"_"+position+"_"+idx, 0),
+                    sharedPreferences.getString(KEY_INV + "_" + BaseRec.KEY_POS_MARKSCANNEDREAL + "_"+invRec.getDocId()+"_"+position+"_"+idx, "")
+            );
+            recContent.getBaseRecContentMarkList().add(baseRecContentMark);
+        }
     }
 
     private void readLocalDataCheckMark(CheckMarkRec rec) {
@@ -517,6 +590,39 @@ public class DaoMem {
         ed.apply();
     }
 
+    public void writeLocalDataInvRec(InvRec invRec) {
+        SharedPreferences.Editor ed = sharedPreferences.edit();
+        ed.putBoolean(KEY_INV + "_" + BaseRec.KEY_EXPORTED+"_"+invRec.getDocId()+"_", invRec.isExported());
+        ed.putString(KEY_INV + "_" + BaseRec.KEY_STATUS+"_"+invRec.getDocId()+"_", invRec.getStatus().toString());
+        ed.putInt(KEY_INV + "_" + InvRec.KEY_CONTENT_SIZE +"_"+invRec.getDocId()+"_", invRec.getInvRecContentList().size());
+        ed.apply();
+        // записать данные по строкам
+        for (InvRecContent recContent : invRec.getInvRecContentList()) {
+            writeLocalDataInvRecContent(invRec.getDocId(), recContent);
+        }
+    }
+
+    private void writeLocalDataInvRecContent(String docId, InvRecContent recContent) {
+        SharedPreferences.Editor ed = sharedPreferences.edit();
+        ed.putString(KEY_INV + "_" + BaseRec.KEY_POS_ID1C+"_"+docId+"_"+recContent.getPosition(), recContent.getId1c());
+        ed.putString(KEY_INV + "_" + BaseRec.KEY_POS_BARCODE+"_"+docId+"_"+recContent.getPosition(), recContent.getBarcode());
+        ed.putString(KEY_INV + "_" + BaseRec.KEY_POS_STATUS+"_"+docId+"_"+recContent.getPosition(), recContent.getStatus().toString());
+        float qty = 0;
+        if (recContent.getQtyAccepted() != null) {
+            qty = recContent.getQtyAccepted().floatValue();
+        }
+        ed.putFloat(KEY_INV + "_" + BaseRec.KEY_POS_QTYACCEPTED+"_"+docId+"_"+recContent.getPosition(), qty);
+        ed.putInt(KEY_INV + "_" + BaseRec.KEY_POS_MARKSCANNED_CNT + "_"+docId+"_"+recContent.getPosition(), recContent.getBaseRecContentMarkList().size());
+        int idx = 1;
+        for (BaseRecContentMark baseRecContentMark : recContent.getBaseRecContentMarkList()) {
+            ed.putString(KEY_INV + "_" + BaseRec.KEY_POS_MARKSCANNED + "_"+docId+"_"+recContent.getPosition()+"_"+idx, baseRecContentMark.getMarkScanned());
+            ed.putInt(KEY_INV + "_" + BaseRec.KEY_POS_MARKSCANNED_ASTYPE + "_"+docId+"_"+recContent.getPosition()+"_"+idx, baseRecContentMark.getMarkScannedAsType());
+            ed.putString(KEY_INV + "_" + BaseRec.KEY_POS_MARKSCANNEDREAL + "_"+docId+"_"+recContent.getPosition()+"_"+idx, baseRecContentMark.getMarkScannedReal());
+            idx++;
+        }
+        ed.apply();
+    }
+
 
     Comparator docRecDateComparator = new Comparator<BaseRec>() {
         @Override
@@ -607,6 +713,10 @@ public class DaoMem {
         return mapFindMarkRec.get(docId).getFindMarkRecContentList();
     }
 
+    public Collection<InvRecContent> getInvRecContentList(String docId) {
+        return mapInvRec.get(docId).getInvRecContentList();
+    }
+
     public BaseRecContent getRecContentByPosition(BaseRec rec, String position) {
         for (BaseRecContent recContent : rec.getRecContentList()) {
             if (recContent.getPosition().equals(position)) {
@@ -656,6 +766,10 @@ public class DaoMem {
 
     public Map<String, FindMarkRec> getMapFindMarkRec() {
         return mapFindMarkRec;
+    }
+
+    public Map<String, InvRec> getMapInvRec() {
+        return mapInvRec;
     }
 
     public static class CheckMarkScannedResult {
@@ -856,6 +970,11 @@ public class DaoMem {
 
     public boolean exportData(MoveRec moveRec) {
         exportDataBaseRec(moveRec);
+        return true;
+    }
+
+    public boolean exportData(InvRec invRec) {
+        exportDataBaseRec(invRec);
         return true;
     }
 
@@ -1088,9 +1207,31 @@ public class DaoMem {
         return null;
     }
 
+    public NomenIn findNomenInByBarCode(String barCodeIn) {
+        for (NomenIn nomenIn: listN) {
+            if (nomenIn.getBarcode() != null) {
+                for (String barcode : nomenIn.getBarcode()) {
+                    if (barCodeIn.equals(barcode)) {
+                        return nomenIn;
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
     public NomenIn findNomenInAlcoByNomenId(String nomenId) {
         for (NomenIn nomenIn: listN) {
             if (nomenIn.getId().equals(nomenId) && nomenIn.getNomenType() == NomenIn.NOMENTYPE_ALCO_MARK) {
+                return nomenIn;
+            }
+        }
+        return null;
+    }
+
+    public NomenIn findNomenInByNomenId(String nomenId) {
+        for (NomenIn nomenIn: listN) {
+            if (nomenIn.getId().equals(nomenId)) {
                 return nomenIn;
             }
         }
@@ -1170,5 +1311,12 @@ public class DaoMem {
         return list;
     }
 
+    public Collection<InvRec> getInvRecListOrdered() {
+        List<InvRec> list = new ArrayList<>();
+        list.addAll(mapInvRec.values());
+
+        Collections.sort(list, docRecDateComparator);
+        return list;
+    }
 
 }
