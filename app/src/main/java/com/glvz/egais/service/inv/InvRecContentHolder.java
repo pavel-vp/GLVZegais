@@ -54,7 +54,12 @@ public class InvRecContentHolder extends DocRecContentHolder {
         } else {
             tvName.setText("");
         }
-        tvQty.setText(StringUtils.formatQty(invRecContent.getContentIn().getQty()));
+        if (invRecContent.getContentIn() != null) {
+            tvQty.setText(StringUtils.formatQty(invRecContent.getContentIn().getQty()));
+        } else {
+            tvQty.setText("");
+        }
+
         if (recContent.getQtyAccepted() != null) {
             tvQtyAccepted.setText(StringUtils.formatQty(invRecContent.getQtyAccepted() + addMark ));
         } else {
@@ -71,7 +76,7 @@ public class InvRecContentHolder extends DocRecContentHolder {
         } else {
             tvAlc.setText("");
         }
-        if (invRecContent.getContentIn().getMrc() != null) {
+        if (invRecContent.getContentIn() != null && invRecContent.getContentIn().getMrc() != null) {
             tvMrc.setText(StringUtils.formatQty(invRecContent.getContentIn().getMrc() ));
         } else {
             tvMrc.setText("");

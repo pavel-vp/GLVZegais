@@ -83,7 +83,7 @@ public class ActInvRecContent extends Activity implements BarcodeReader.BarcodeL
 
         if (irc == null) {
             // Создать новую запись
-            invRecContent = new InvRecContent(String.valueOf(maxPos));
+            invRecContent = new InvRecContent(String.valueOf(maxPos+1));
             invRecContent.setNomenIn(nomenIn, null);
             invRecContent.setId1c(nomenIn.getId());
             invRecContent.setStatus(BaseRecContentStatus.DONE);
@@ -307,6 +307,11 @@ public class ActInvRecContent extends Activity implements BarcodeReader.BarcodeL
                     return;
                 }
                 NomenIn nomenIn2 = DaoMem.getDaoMem().findNomenInAlcoByNomenId(markIn.getNomenId());
+                if (nomenIn2 == null) {
+                    MessageUtils.showModalMessage(this, "Внимание!", "Товар по марке " + barCode + ", не найден. Обратитесь к категорийному менеджеру");
+                    return;
+                }
+                fillActWithNomenIdPosition(nomenIn2);
                 proceedOneBottle(nomenIn2);
                 break;
             default:

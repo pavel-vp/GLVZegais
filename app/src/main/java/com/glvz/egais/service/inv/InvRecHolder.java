@@ -21,6 +21,8 @@ public class InvRecHolder extends DocRecHolder {
         super.setItem(rec);
         InvRec invRec = (InvRec)rec;
         this.tvComment.setText(((InvIn)(invRec.getDocIn())).getComment());
+        this.tvCntRows.setText("Строк: " + rec.getRecContentList().size());
+
     }
 }
 

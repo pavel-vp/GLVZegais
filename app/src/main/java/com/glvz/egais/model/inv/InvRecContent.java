@@ -22,7 +22,9 @@ public class InvRecContent extends BaseRecContent {
 
     @Override
     public String getId1c() {
-        return ((InvContentIn)contentIn).getNomenId();
+        if (contentIn != null)
+            return ((InvContentIn)contentIn).getNomenId();
+        return this.id1c;
     }
 
 }
