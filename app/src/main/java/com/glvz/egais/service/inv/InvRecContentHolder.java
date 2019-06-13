@@ -15,11 +15,10 @@ public class InvRecContentHolder extends DocRecContentHolder {
 
     LinearLayout llPosition;
     TextView tvPosition;
-    TextView tvStatus;
     TextView tvName;
     TextView tvQty;
     TextView tvQtyAccepted;
-    //TextView tvStatusRow;
+    TextView tvStatusRow;
     TextView tvNomenId;
     TextView tvVolume;
     TextView tvAlc;
@@ -29,11 +28,10 @@ public class InvRecContentHolder extends DocRecContentHolder {
         super(v);
         llPosition = (LinearLayout)v.findViewById(R.id.llPosition);
         tvPosition = (TextView)v.findViewById(R.id.tvPosition);
-        tvStatus = (TextView)v.findViewById(R.id.tvStatus);
         tvName = (TextView)v.findViewById(R.id.tvName);
         tvQty = (TextView)v.findViewById(R.id.tvQty);
         tvQtyAccepted = (TextView)v.findViewById(R.id.tvQtyAccepted);
-        //tvStatusRow = (TextView)v.findViewById(R.id.tvStatusRow);
+        tvStatusRow = (TextView)v.findViewById(R.id.tvStatusRow);
         tvNomenId = (TextView)v.findViewById(R.id.tvNomenId);
         tvVolume = (TextView)v.findViewById(R.id.tvVolume);
         tvAlc = (TextView)v.findViewById(R.id.tvAlc);
@@ -49,7 +47,7 @@ public class InvRecContentHolder extends DocRecContentHolder {
         } else {
             llPosition.setVisibility(View.VISIBLE);
             tvPosition.setText(recContent.getPosition().toString());
-            tvStatus.setText(recContent.getStatus().getMessage());
+            tvStatusRow.setText(recContent.getStatus().getMessage());
         }
         if (invRecContent.getNomenIn() != null) {
             tvName.setText(invRecContent.getNomenIn().getName());

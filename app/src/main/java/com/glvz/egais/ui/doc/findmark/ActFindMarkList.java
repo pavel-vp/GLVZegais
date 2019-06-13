@@ -21,7 +21,7 @@ public class ActFindMarkList extends ActBaseDocList {
     @Override
     protected void setResources() {
         setContentView(R.layout.activity_findmarklist);
-        adapter = new FindMarkArrayAdapter(this, R.layout.rec_doc, list);
+        adapter = new FindMarkArrayAdapter(this, R.layout.rec_findmark, list);
         super.setResources();
     }
 

@@ -49,18 +49,21 @@ public class CheckMarkRecContentHolder extends DocRecContentHolder {
         }
         if (checkMarkRecContent.getNomenIn() != null) {
             tvName.setText(checkMarkRecContent.getNomenIn().getName());
+            tvNomenId.setText(checkMarkRecContent.getNomenIn().getId());
+            if (checkMarkRecContent.getNomenIn().getCapacity() != null) {
+                tvVolume.setText(StringUtils.formatQty(checkMarkRecContent.getNomenIn().getCapacity() ));
+            } else {
+                tvVolume.setText("");
+            }
+            if (checkMarkRecContent.getNomenIn().getAlcVolume() != null) {
+                tvAlc.setText(StringUtils.formatQty(checkMarkRecContent.getNomenIn().getAlcVolume() ));
+            } else {
+                tvAlc.setText("");
+            }
+
         } else {
             tvName.setText("");
-        }
-        tvNomenId.setText(recContent.getNomenIn().getId());
-        if (checkMarkRecContent.getNomenIn().getCapacity() != null) {
-            tvVolume.setText(StringUtils.formatQty(checkMarkRecContent.getNomenIn().getCapacity() ));
-        } else {
             tvVolume.setText("");
-        }
-        if (checkMarkRecContent.getNomenIn().getAlcVolume() != null) {
-            tvAlc.setText(StringUtils.formatQty(checkMarkRecContent.getNomenIn().getAlcVolume() ));
-        } else {
             tvAlc.setText("");
         }
 

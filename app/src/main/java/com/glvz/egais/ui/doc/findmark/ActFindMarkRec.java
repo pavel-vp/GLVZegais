@@ -126,6 +126,7 @@ public class ActFindMarkRec extends ActBaseDocRec {
                 if (cntAll > cntScanned) {
                     MessageUtils.showModalMessage(this, "Внимание!", "Эту марку требовалось найти! Отложите бутылку отдельно и продолжайте поиск других марок");
                 }
+                DaoMem.getDaoMem().writeLocalDataFindMarkRec(findMarkRec);
                 break;
             default:
                 MessageUtils.showModalMessage(this, "Внимание!", "Неврный тип штрихкода. Сканируйте марку");

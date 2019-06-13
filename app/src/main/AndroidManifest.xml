@@ -58,11 +58,16 @@
         <activity android:name=".ui.doc.checkmark.ActCheckMarkList" android:screenOrientation="portrait"/>
         <activity android:name=".ui.doc.checkmark.ActCheckMarkRec" android:screenOrientation="portrait"/>
 
+        <activity android:name=".ui.doc.findmark.ActFindMarkList" android:screenOrientation="portrait"/>
+        <activity android:name=".ui.doc.findmark.ActFindMarkRec" android:screenOrientation="portrait"/>
+
+        <activity android:name=".ui.doc.inv.ActInvList" android:screenOrientation="portrait"/>
+        <activity android:name=".ui.doc.inv.ActInvRec" android:screenOrientation="portrait"/>
+        <activity android:name=".ui.doc.inv.ActInvRecContent" android:screenOrientation="portrait"/>
+
         <activity android:name=".ui.ActCommentEdit"
                   android:windowSoftInputMode="stateVisible|adjustResize"
                   android:screenOrientation="portrait"/>
-
-
 
     </application>
 

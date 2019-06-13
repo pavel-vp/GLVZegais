@@ -121,7 +121,6 @@ public class CheckMarkRec extends BaseRec {
     public void rejectData() {
         // Пройтись по всем строкам, очистить связки с товаром и проставить везде нули
         for (CheckMarkRecContent recContent : getCheckMarkRecContentList()) {
-            recContent.setNomenIn(null, null);
             recContent.setQtyAccepted(Double.valueOf(0));
             recContent.setQtyAcceptedNew(Double.valueOf(0));
 

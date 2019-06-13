@@ -12,14 +12,13 @@ public class FindMarkRecHolder  extends DocRecHolder {
 
     public FindMarkRecHolder(View v) {
         super(v);
-        TextView tvNameagent = (TextView)v.findViewById(R.id.tvNameagent);
-        tvNameagent.setVisibility(View.INVISIBLE);
         tvComment = (TextView)v.findViewById(R.id.tvComment);
     }
 
     @Override
     public void setItem(BaseRec rec) {
         super.setItem(rec);
+        tvStatus.setText("");
         FindMarkIn findMarkIn = (FindMarkIn)(rec.getDocIn());
         tvComment.setText(findMarkIn.getComment());
     }

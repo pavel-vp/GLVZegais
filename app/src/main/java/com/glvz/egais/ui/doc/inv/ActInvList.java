@@ -20,7 +20,7 @@ public class ActInvList extends ActBaseDocList {
     @Override
     protected void setResources() {
         setContentView(R.layout.activity_invlist);
-        adapter = new InvArrayAdapter(this, R.layout.rec_doc, list);
+        adapter = new InvArrayAdapter(this, R.layout.rec_inv, list);
         super.setResources();
     }
 

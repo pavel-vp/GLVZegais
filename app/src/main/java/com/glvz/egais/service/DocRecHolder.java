@@ -10,12 +10,12 @@ import com.glvz.egais.utils.StringUtils;
 import java.util.Date;
 
 public abstract class DocRecHolder {
-    TextView tvNumnakl;
-    TextView tvDatenakl;
-    TextView tvCntRows;
-    TextView tvStatus;
-    TextView tvExported;
-    BaseRec rec;
+    protected TextView tvNumnakl;
+    protected TextView tvDatenakl;
+    protected TextView tvCntRows;
+    protected TextView tvStatus;
+    protected TextView tvExported;
+    protected BaseRec rec;
 
     public DocRecHolder(View v) {
         super();

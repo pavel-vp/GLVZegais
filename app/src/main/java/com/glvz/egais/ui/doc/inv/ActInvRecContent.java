@@ -122,7 +122,7 @@ public class ActInvRecContent extends Activity implements BarcodeReader.BarcodeL
             public void onClick(View v) {
                 if (edQtyAdd.getText() != null) {
                     //1) сохраняет введенное пользователем количество: [Количество факт] = [Количество факт] + [Количество добавить]
-                    invRecContent.setQtyAccepted(invRecContent.getQtyAccepted() + Double.valueOf(edQtyAdd.getText().toString()));
+                    invRecContent.setQtyAccepted((invRecContent.getQtyAccepted() == null ? 0 : invRecContent.getQtyAccepted()) + Double.valueOf(edQtyAdd.getText().toString()));
                     //2) у позиции установить статус «Обработана»
                     invRecContent.setStatus(BaseRecContentStatus.DONE);
                     DaoMem.getDaoMem().writeLocalDataBaseRec(invRec);
