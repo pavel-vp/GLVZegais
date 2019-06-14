@@ -39,7 +39,7 @@ public class WriteoffRec extends BaseRec {
         this.typeDoc = typeDoc;
         this.date = StringUtils.formatDateDisplay(Calendar.getInstance().getTime());
         this.docNum = DaoMem.getDaoMem().getNewDocId();
-        this.docId = typeDoc+"-"+docNum;
+        this.docId = TYEDOC_WRIEOFF+"-"+docNum;
     }
 
     public WriteoffRec(String docId) {

@@ -180,7 +180,7 @@ public class DaoMem {
         mapMoveRec = readMoveRec();
         mapCheckMarkRec = readCheckMarkRec();
         mapWriteoffRec = readWriteoffRec(shopId);
-        mapFindMarkRec = readFindMarkRec(shopId);
+        mapFindMarkRec = readFindMarkRec();
         mapInvRec = readInvRec();
         if (notify) {
             MessageUtils.showToastMessage("Данные загружены");
@@ -226,7 +226,7 @@ public class DaoMem {
         return map;
     }
 
-    private Map<String,FindMarkRec> readFindMarkRec(String shopId) {
+    private Map<String,FindMarkRec> readFindMarkRec() {
         Map<String, FindMarkRec> map = new HashMap<>();
 
         for (FindMarkIn findMarkIn : listFindMarkIn) {
@@ -677,9 +677,10 @@ public class DaoMem {
 
             if (d1 == null || d2 == null || d1.before(d2)) return 1;
             if (d1.after(d2)) return -1;
-
-            int res = lhs.getAgentName().compareTo(rhs.getAgentName());
-            if (res != 0) return res;
+            if (lhs.getAgentName() != null && rhs.getAgentName() != null) {
+                int res = lhs.getAgentName().compareTo(rhs.getAgentName());
+                if (res != 0) return res;
+            }
 
             return lhs.getDocNum().compareTo(rhs.getDocNum());
         }
@@ -1016,8 +1017,10 @@ public class DaoMem {
         return true;
     }
 
-    public boolean exportData(CheckMarkRec moveRec) {
-        exportDataBaseRec(moveRec);
+    public boolean exportData(CheckMarkRec rec) {
+        rec.setExported(true);
+        writeLocalDataCheckMarkRec(rec);
+        integrationFile.writeBaseRec(shopId, rec);
         return true;
     }
 

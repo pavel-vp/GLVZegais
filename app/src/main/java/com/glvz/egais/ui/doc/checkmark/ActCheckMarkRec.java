@@ -87,6 +87,14 @@ public class ActCheckMarkRec extends ActBaseDocRec {
                 if (position != null) {
                     lvContent.smoothScrollToPosition(position);
                 }
+                switch (currentState) {
+                    case STATE_SCAN_MARK:
+                        tvCaption.setText("Сканируйте марку нового образца с товаров по заданию");
+                        break;
+                    case STATE_SCAN_EAN:
+                        tvCaption.setText("Сканируйте штрихкод");
+                        break;
+                }
             }
         });
     }
@@ -223,6 +231,7 @@ public class ActCheckMarkRec extends ActBaseDocRec {
                     // Подсказку изменить на «Сканируйте штихкод»
                     this.currentState = STATE_SCAN_EAN;
                     MessageUtils.showModalMessage(this, "Внимание!", "Марка отсутствует в задании. Для определения номенклатуры нажмите ОК и сканируйте штрихкод с этой же бутылки");
+                    updateData();
                     return;
                 }
                 break;
@@ -244,7 +253,7 @@ public class ActCheckMarkRec extends ActBaseDocRec {
         // установить статус документа «в работе»
         recContent.setStatus(BaseRecContentStatus.IN_PROGRESS);
         checkMarkRec.setStatus(BaseRecStatus.INPROGRESS);
-        DaoMem.getDaoMem().writeLocalDataBaseRec(checkMarkRec);
+        DaoMem.getDaoMem().writeLocalDataCheckMarkRec(checkMarkRec);
         updateData();
     }
 
@@ -260,7 +269,7 @@ public class ActCheckMarkRec extends ActBaseDocRec {
 
         recContent.setStatus(BaseRecContentStatus.IN_PROGRESS);
         checkMarkRec.setStatus(BaseRecStatus.INPROGRESS);
-        DaoMem.getDaoMem().writeLocalDataBaseRec(checkMarkRec);
+        DaoMem.getDaoMem().writeLocalDataCheckMarkRec(checkMarkRec);
         updateData();
 
         MessageUtils.showModalMessage(this, "Внимание!", "Выявлена неучтенная марка. Отложите бутылку, продавать на кассе ее нельзя до особого указания. Продолжайте сканированием следующей марки.");

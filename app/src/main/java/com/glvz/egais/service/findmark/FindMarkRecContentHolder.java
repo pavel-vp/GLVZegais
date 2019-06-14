@@ -64,10 +64,12 @@ public class FindMarkRecContentHolder extends DocRecContentHolder {
 
         tvQty.setText(StringUtils.formatQty(findMarkRecContent.getContentIn().getQty()));
 
-        if (findMarkRecContent.getQtyAccepted() != null) {
-            tvQtyFound.setText(StringUtils.formatQty(findMarkRecContent.getQtyAccepted() + addMark ));
+        int cntFound = findMarkRecContent.getBaseRecContentMarkList().size();
+
+        if (cntFound > 0) {
+            tvQtyFound.setText(StringUtils.formatQty((double) cntFound));
         } else {
-            tvQtyFound.setText(addMark ==0 ? "" : String.valueOf(addMark));
+            tvQtyFound.setText("");
         }
     }
 }
