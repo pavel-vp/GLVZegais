@@ -187,7 +187,7 @@ public class ActInvRec extends ActBaseDocRec implements PickMRCCallback{
         }
     }
 
-    private static void chooseMRC(final Context ctx, final NomenIn nomenIn, final String[] mrcArr, final PickMRCCallback cb) {
+    static void chooseMRC(final Context ctx, final NomenIn nomenIn, final String[] mrcArr, final PickMRCCallback cb) {
         handler.post(new Runnable() {
             @Override
             public void run() {

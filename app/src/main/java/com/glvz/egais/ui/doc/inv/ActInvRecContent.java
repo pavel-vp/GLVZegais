@@ -22,6 +22,7 @@ import com.glvz.egais.model.BaseRecStatus;
 import com.glvz.egais.model.inv.InvRec;
 import com.glvz.egais.model.inv.InvRecContent;
 import com.glvz.egais.service.DocContentArrayAdapter;
+import com.glvz.egais.service.PickMRCCallback;
 import com.glvz.egais.service.inv.InvRecContentHolder;
 import com.glvz.egais.ui.doc.ActBaseDocRec;
 import com.glvz.egais.utils.BarcodeObject;
@@ -34,7 +35,7 @@ import com.honeywell.aidc.BarcodeReader;
 import static com.glvz.egais.utils.BarcodeObject.BarCodeType.DATAMATRIX;
 import static com.glvz.egais.utils.BarcodeObject.BarCodeType.PDF417;
 
-public class ActInvRecContent extends Activity implements BarcodeReader.BarcodeListener {
+public class ActInvRecContent extends Activity implements BarcodeReader.BarcodeListener, PickMRCCallback {
 
     private final static int STATE_SCAN_ANY = 1;
     private final static int STATE_SCAN_EAN = 2;
@@ -69,30 +70,34 @@ public class ActInvRecContent extends Activity implements BarcodeReader.BarcodeL
         updateData();
     }
 
-    private void fillActWithNomenIdPosition(NomenIn nomenIn) {
-        // по NomenID искать товарную позицию документа и открыть ее карточку (если такой не было: добавить и открыть)
-        // Найти максимальный номер позиции
+    private void fillActWithNomenIdPosition(NomenIn nomenIn, Double mrc) {
+        // по комбинации NomenID и МРЦ: поиск в товарных позициях документа
         int maxPos = 0;
         InvRecContent irc = null;
         for (BaseRecContent brc : invRec.getRecContentList()) {
+            InvRecContent ircTemp = (InvRecContent)brc ;
             maxPos = Math.max(maxPos, Integer.parseInt(brc.getPosition()));
-            if (brc.getId1c().equals(nomenIn.getId())) {
+            if (brc.getId1c().equals(nomenIn.getId()) &&
+                    (nomenIn.getNomenType() != NomenIn.NOMENTYPE_ALCO_TOBACCO ||
+                            (ircTemp.getContentIn() != null && ircTemp.getContentIn().getMrc() != null && ircTemp.getContentIn().getMrc().equals(mrc)) ||
+                            (ircTemp.getManualMrc() != null && ircTemp.getManualMrc().equals(mrc))
+                    )
+                    ) {
                 irc = (InvRecContent) brc;
             }
         }
-
         if (irc == null) {
             // Создать новую запись
             invRecContent = new InvRecContent(String.valueOf(maxPos+1));
             invRecContent.setNomenIn(nomenIn, null);
             invRecContent.setId1c(nomenIn.getId());
             invRecContent.setStatus(BaseRecContentStatus.DONE);
+            invRecContent.setManualMrc(mrc);
             invRec.getRecContentList().add(invRecContent);
             DaoMem.getDaoMem().writeLocalDataInvRec(invRec);
         } else {
             invRecContent = irc;
         }
-
         updateData();
     }
 
@@ -226,7 +231,7 @@ public class ActInvRecContent extends Activity implements BarcodeReader.BarcodeL
                         return;
                     }
                     // если найден,
-                    fillActWithNomenIdPosition(nomenIn);
+                    fillActWithNomenIdPosition(nomenIn, null);
 
                     proceedOneBottle(nomenIn);
                     return;
@@ -246,11 +251,13 @@ public class ActInvRecContent extends Activity implements BarcodeReader.BarcodeL
                     case NomenIn.NOMENTYPE_ALCO_OTHER:
                     case NomenIn.NOMENTYPE_ALCO_NOMARK:
                         // по NomenID искать товарную позицию документа и открыть ее карточку (если такой не было: добавить и открыть)
+                        fillActWithNomenIdPosition(nomenIn, null);
                         break;
                     case NomenIn.NOMENTYPE_ALCO_TOBACCO:
                         // вывести список МРЦ (из записи nomen.json) для выбора пользователем
                         // после выбора пользователем МРЦ, по NomenID и МРЦ искать товарную позицию документа и открыть ее карточку (если такой не было: добавить и открыть)
-
+                        ActInvRec.chooseMRC(this, nomenIn, nomenIn.getMcArr(), this);
+                        break;
                 }
                 break;
             case PDF417:
@@ -272,7 +279,7 @@ public class ActInvRecContent extends Activity implements BarcodeReader.BarcodeL
                 DaoMem.CheckMarkScannedResult markScanned = DaoMem.getDaoMem().checkMarkScanned(invRec, barCode);
                 if (markScanned != null) {
                     // Если марка найдена — открыть товарную позицию
-                    fillActWithNomenIdPosition(markScanned.recContent.getNomenIn());
+                    fillActWithNomenIdPosition(markScanned.recContent.getNomenIn(), null);
                     MessageUtils.showModalMessage(this, "Внимание!", "Эта марка ранее уже была отсканирована в этом задании в позиции " + markScanned.recContent.getPosition() + " товара " + markScanned.recContent.getNomenIn().getName());
                     return;
                 }
@@ -327,7 +334,7 @@ public class ActInvRecContent extends Activity implements BarcodeReader.BarcodeL
                     MessageUtils.showModalMessage(this, "Внимание!", "Товар по марке " + barCode + ", не найден. Обратитесь к категорийному менеджеру");
                     return;
                 }
-                fillActWithNomenIdPosition(nomenIn2);
+                fillActWithNomenIdPosition(nomenIn2, null);
                 proceedOneBottle(nomenIn2);
                 break;
             default:
@@ -362,5 +369,11 @@ public class ActInvRecContent extends Activity implements BarcodeReader.BarcodeL
     @Override
     public void onFailureEvent(BarcodeFailureEvent barcodeFailureEvent) {
 
+    }
+
+    @Override
+    public void onSelectMRCCallback(NomenIn nomenIn, Double mrc) {
+        // переход к карточке этой строки
+        fillActWithNomenIdPosition(nomenIn, mrc);
     }
 }
