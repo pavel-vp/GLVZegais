@@ -64,6 +64,12 @@
         <activity android:name=".ui.doc.inv.ActInvList" android:screenOrientation="portrait"/>
         <activity android:name=".ui.doc.inv.ActInvRec" android:screenOrientation="portrait"/>
         <activity android:name=".ui.doc.inv.ActInvRecContent" android:screenOrientation="portrait"/>
+        <activity android:name=".ui.doc.inv.ActInvRecDiff" android:screenOrientation="portrait"/>
+
+
+        <activity android:name=".ui.ActEnterNomenId"
+                  android:windowSoftInputMode="stateVisible|adjustResize"
+                  android:screenOrientation="portrait"/>
 
         <activity android:name=".ui.ActCommentEdit"
                   android:windowSoftInputMode="stateVisible|adjustResize"

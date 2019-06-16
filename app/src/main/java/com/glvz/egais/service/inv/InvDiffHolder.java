@@ -1,6 +1,5 @@
 package com.glvz.egais.service.inv;
 
-import android.graphics.Color;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -11,7 +10,7 @@ import com.glvz.egais.service.DocContentArrayAdapter;
 import com.glvz.egais.service.DocRecContentHolder;
 import com.glvz.egais.utils.StringUtils;
 
-public class InvRecContentHolder extends DocRecContentHolder {
+public class InvDiffHolder extends DocRecContentHolder {
 
     LinearLayout llPosition;
     TextView tvPosition;
@@ -23,8 +22,10 @@ public class InvRecContentHolder extends DocRecContentHolder {
     TextView tvVolume;
     TextView tvAlc;
     TextView tvMrc;
+    TextView tvIzl;
+    TextView tvNed;
 
-    public InvRecContentHolder(View v) {
+    public InvDiffHolder(View v) {
         super(v);
         llPosition = (LinearLayout)v.findViewById(R.id.llPosition);
         tvPosition = (TextView)v.findViewById(R.id.tvPosition);
@@ -36,6 +37,8 @@ public class InvRecContentHolder extends DocRecContentHolder {
         tvVolume = (TextView)v.findViewById(R.id.tvVolume);
         tvAlc = (TextView)v.findViewById(R.id.tvAlc);
         tvMrc = (TextView)v.findViewById(R.id.tvMrc);
+        tvIzl = (TextView)v.findViewById(R.id.tvIzl);
+        tvNed = (TextView)v.findViewById(R.id.tvNed);
         v.setTag(this);
     }
 
@@ -47,14 +50,7 @@ public class InvRecContentHolder extends DocRecContentHolder {
         } else {
             llPosition.setVisibility(View.VISIBLE);
             tvPosition.setText(recContent.getPosition().toString());
-        }
-        switch (recContent.getStatus()) {
-            case NOT_ENTERED:
-                tvStatusRow.setText("Не обработана");
-            case DONE:
-                tvStatusRow.setText("Обработана");
-            default:
-                tvStatusRow.setText(recContent.getStatus().getMessage());
+            tvStatusRow.setText(recContent.getStatus().getMessage());
         }
         if (invRecContent.getNomenIn() != null) {
             tvName.setText(invRecContent.getNomenIn().getName());
@@ -92,5 +88,26 @@ public class InvRecContentHolder extends DocRecContentHolder {
                 tvMrc.setText("");
             }
         }
+        double izl = 0;
+        double ned = 0;
+        if (invRecContent.getContentIn() != null) {
+            ned = invRecContent.getContentIn().getQty().doubleValue();
+            if (invRecContent.getQtyAccepted() != null) {
+                ned = ned - invRecContent.getQtyAccepted().doubleValue();
+                izl = invRecContent.getQtyAccepted().doubleValue();
+            }
+            izl = izl - invRecContent.getContentIn().getQty().doubleValue();
+            if (izl < 0) {
+                izl = 0;
+            }
+        } else {
+            if (invRecContent.getQtyAccepted() != null) {
+                izl = invRecContent.getQtyAccepted().doubleValue();
+            }
+        }
+        tvIzl.setText(StringUtils.formatQty(izl));
+        tvNed.setText(StringUtils.formatQty(ned));
+
+
     }
 }

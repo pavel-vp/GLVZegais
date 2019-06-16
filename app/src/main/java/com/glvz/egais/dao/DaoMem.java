@@ -362,15 +362,24 @@ public class DaoMem {
         String barcode = sharedPreferences.getString(KEY_INV + "_" + BaseRec.KEY_POS_BARCODE+"_"+invRec.getDocId()+"_"+position, "");
         String posStatus = sharedPreferences.getString(KEY_INV + "_" + BaseRec.KEY_POS_STATUS+"_"+invRec.getDocId()+"_"+position, BaseRecContentStatus.IN_PROGRESS.toString());
         float qtyAccepted = sharedPreferences.getFloat(KEY_INV + "_" + BaseRec.KEY_POS_QTYACCEPTED+"_"+invRec.getDocId()+"_"+position, 0);
+        float manualMrcFload = sharedPreferences.getFloat(KEY_INV + "_" + BaseRec.KEY_POS_MANUAL_MRC+"_"+invRec.getDocId()+"_"+position, 0);
+        Double manualMrc = manualMrcFload == 0 ? null : (double) manualMrcFload;
+
         int markScannedSize = sharedPreferences.getInt(KEY_INV + "_" + BaseRec.KEY_POS_MARKSCANNED_CNT + "_"+invRec.getDocId()+"_"+position, 0);
         // Попробовать найти уже созданную строку
         InvRecContent recContent = null;
         int maxPos = 0;
         for (BaseRecContent brc : invRec.getRecContentList()) {
-            if (brc.getId1c().equals(id1c)) {
-                recContent = (InvRecContent)brc;
+
+            InvRecContent ircTemp = (InvRecContent)brc;
+            if (ircTemp.getId1c().equals(id1c) &&
+                    ( manualMrc == null ||  // не указана ручная введенная МРЦ
+                      ircTemp.getContentIn() != null && ircTemp.getContentIn().getMrc() != null && ircTemp.getContentIn().getMrc().equals(manualMrc)  // или она равна искомой
+                    )
+                 ) {
+                recContent = ircTemp;
             }
-            maxPos = Math.max(maxPos, Integer.parseInt(brc.getPosition()));
+            maxPos = Math.max(maxPos, Integer.parseInt(ircTemp.getPosition()));
         }
         // Если записи такой нет - то создать ее и добавить (вычислив новую позицию как максимум +1)
         if (recContent == null) {
@@ -381,6 +390,7 @@ public class DaoMem {
         recContent.setNomenIn(findNomenInByNomenId(id1c), barcode);
         recContent.setStatus(BaseRecContentStatus.valueOf(posStatus));
         recContent.setQtyAccepted((double) qtyAccepted);
+        recContent.setManualMrc(manualMrc);
 
         for (int idx = 1; idx <= markScannedSize; idx++) {
             BaseRecContentMark baseRecContentMark = new BaseRecContentMark(
@@ -637,7 +647,7 @@ public class DaoMem {
         SharedPreferences.Editor ed = sharedPreferences.edit();
         ed.putBoolean(KEY_INV + "_" + BaseRec.KEY_EXPORTED+"_"+invRec.getDocId()+"_", invRec.isExported());
         ed.putString(KEY_INV + "_" + BaseRec.KEY_STATUS+"_"+invRec.getDocId()+"_", invRec.getStatus().toString());
-        ed.putInt(KEY_INV + "_" + InvRec.KEY_CONTENT_SIZE +"_"+invRec.getDocId()+"_", invRec.getInvRecContentList().size());
+        ed.putInt(KEY_INV + "_" + InvRec.KEY_CONTENT_SIZE +"_"+invRec.getDocId()+"_", invRec.getRecContentList().size());
         ed.apply();
         // записать данные по строкам
         for (InvRecContent recContent : invRec.getInvRecContentList()) {
@@ -654,7 +664,16 @@ public class DaoMem {
         if (recContent.getQtyAccepted() != null) {
             qty = recContent.getQtyAccepted().floatValue();
         }
+        float manualMrc = 0;
+        if (recContent.getManualMrc() != null) {
+            manualMrc = recContent.getManualMrc().floatValue();
+        } else {
+            if (recContent.getContentIn() != null && recContent.getContentIn().getMrc() != null) {
+                manualMrc = recContent.getContentIn().getMrc().floatValue();
+            }
+        }
         ed.putFloat(KEY_INV + "_" + BaseRec.KEY_POS_QTYACCEPTED+"_"+docId+"_"+recContent.getPosition(), qty);
+        ed.putFloat(KEY_INV + "_" + BaseRec.KEY_POS_MANUAL_MRC+"_"+docId+"_"+recContent.getPosition(), manualMrc);
         ed.putInt(KEY_INV + "_" + BaseRec.KEY_POS_MARKSCANNED_CNT + "_"+docId+"_"+recContent.getPosition(), recContent.getBaseRecContentMarkList().size());
         int idx = 1;
         for (BaseRecContentMark baseRecContentMark : recContent.getBaseRecContentMarkList()) {
@@ -757,8 +776,59 @@ public class DaoMem {
         return mapFindMarkRec.get(docId).getFindMarkRecContentList();
     }
 
-    public Collection<InvRecContent> getInvRecContentList(String docId) {
-        return mapInvRec.get(docId).getInvRecContentList();
+    public Collection<InvRecContent> getInvRecContentList(String docId, final int filterType, final int sortType) {
+        List<InvRecContent> result = new ArrayList<InvRecContent>();
+
+        Comparator<InvRecContent> comparator = new Comparator<InvRecContent>() {
+            @Override
+            public int compare(InvRecContent o1, InvRecContent o2) {
+                switch (sortType) {
+                    case InvRecContent.INV_SORT_TYPE_POSITION:
+                        Integer p1 = new Integer(o1.getPosition());
+                        Integer p2 = new Integer(o2.getPosition());
+                        return p1.compareTo(p2);
+                    case InvRecContent.INV_SORT_TYPE_NAME:
+                        int n = o1.getNomenIn().getName().compareTo(o2.getNomenIn().getName());
+                        if (n == 0) {
+                            if (o1.getManualMrc() != null && o2.getManualMrc() != null) {
+                                return o1.getManualMrc().compareTo(o2.getManualMrc());
+                            }
+                        }
+                        return n;
+                    case InvRecContent.INV_SORT_TYPE_DIFF:
+                        Double d1 = new Double(o1.getDiff());
+                        Double d2 = new Double(o2.getDiff());
+                        return d1.compareTo(d2);
+                }
+                return 0;
+            }
+
+            @Override
+            public boolean equals(Object obj) {
+                if (obj == null) return false;
+                return super.equals(obj);
+            }
+        };
+
+        for (InvRecContent irc : mapInvRec.get(docId).getInvRecContentList()) {
+            switch (filterType) {
+                case InvRecContent.INV_FILTER_TYPE_STATUS:
+                    if (irc.getStatus() != BaseRecContentStatus.NOT_ENTERED) {
+                        continue;
+                    }
+                    break;
+                case InvRecContent.INV_FILTER_TYPE_DIFF:
+                    if (irc.getDiff() == 0) {
+                        continue;
+                    }
+                    break;
+            }
+            result.add(irc);
+        }
+
+        Collections.sort(result, comparator);
+
+        return result;
     }
 
     public BaseRecContent getRecContentByPosition(BaseRec rec, String position) {
@@ -1006,7 +1076,9 @@ public class DaoMem {
     }
 
     public boolean exportData(InvRec invRec) {
-        exportDataBaseRec(invRec);
+        invRec.setExported(true);
+        writeLocalDataInvRec(invRec);
+        integrationFile.writeBaseRec(shopId, invRec);
         return true;
     }
 
@@ -1071,6 +1143,11 @@ public class DaoMem {
     public void rejectData(CheckMarkRec rec) {
         rec.rejectData();
         writeLocalDataCheckMarkRec(rec);
+    }
+
+    public void rejectData(InvRec rec) {
+        rec.rejectData();
+        writeLocalDataInvRec(rec);
     }
 
     public int calculateQtyToAdd(IncomeRec incomeRec, IncomeRecContent incomeRecContent, String barcode) {

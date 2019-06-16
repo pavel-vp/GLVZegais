@@ -125,13 +125,14 @@ public class ActInvRecContent extends Activity implements BarcodeReader.BarcodeL
                     invRecContent.setQtyAccepted((invRecContent.getQtyAccepted() == null ? 0 : invRecContent.getQtyAccepted()) + Double.valueOf(edQtyAdd.getText().toString()));
                     //2) у позиции установить статус «Обработана»
                     invRecContent.setStatus(BaseRecContentStatus.DONE);
-                    DaoMem.getDaoMem().writeLocalDataBaseRec(invRec);
+                    DaoMem.getDaoMem().writeLocalDataInvRec(invRec);
                     scannedMarkIn = null;
                     currentState = STATE_SCAN_ANY;
                     updateData();
                 }
             }
         });
+
         btnNone = (Button) findViewById(R.id.btnNone);
         btnNone.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -141,12 +142,13 @@ public class ActInvRecContent extends Activity implements BarcodeReader.BarcodeL
                 //2) Установить статус позиции «Обработана»
                 invRecContent.setStatus(BaseRecContentStatus.DONE);
                 invRecContent.getBaseRecContentMarkList().clear();
-                DaoMem.getDaoMem().writeLocalDataBaseRec(invRec);
+                DaoMem.getDaoMem().writeLocalDataInvRec(invRec);
                 scannedMarkIn = null;
                 currentState = STATE_SCAN_ANY;
                 updateData();
             }
         });
+
         Button btnClear = (Button) findViewById(R.id.btnClear);
         btnClear.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -161,7 +163,7 @@ public class ActInvRecContent extends Activity implements BarcodeReader.BarcodeL
                                 invRecContent.setStatus(BaseRecContentStatus.NOT_ENTERED);
                                 //удалить все марки
                                 invRecContent.getBaseRecContentMarkList().clear();
-                                DaoMem.getDaoMem().writeLocalDataBaseRec(invRec);
+                                DaoMem.getDaoMem().writeLocalDataInvRec(invRec);
                                 scannedMarkIn = null;
                                 currentState = STATE_SCAN_ANY;
                                 updateData();
@@ -187,6 +189,20 @@ public class ActInvRecContent extends Activity implements BarcodeReader.BarcodeL
                         break;
                 }
                 invRecContentHolder.setItem(invRecContent, 0, DocContentArrayAdapter.RECCONTENT_MODE);
+                // Недоступна у товаров "NomenType": 1 (маркированный алкоголь)
+                if (invRecContent.getNomenIn().getNomenType() == NomenIn.NOMENTYPE_ALCO_MARK ) {
+                    btnAdd.setEnabled(false);
+                    edQtyAdd.setEnabled(false);
+                } else {
+                    btnAdd.setEnabled(true);
+                    edQtyAdd.setEnabled(true);
+                }
+                // Кнопка доступна только если у позиции статус «На обработана»
+                if (invRecContent.getStatus() == BaseRecContentStatus.NOT_ENTERED) {
+                    btnNone.setEnabled(true);
+                } else {
+                    btnNone.setEnabled(false);
+                }
 
             }
         });
