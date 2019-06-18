@@ -98,6 +98,10 @@ public class InvIn implements DocIn {
         return qtyDirectInput;
     }
 
+    public boolean ableDirectInput() {
+        return qtyDirectInput != null && qtyDirectInput != 0;
+    }
+
     public void setQtyDirectInput(Integer qtyDirectInput) {
         this.qtyDirectInput = qtyDirectInput;
     }

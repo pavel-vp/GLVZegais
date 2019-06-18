@@ -196,7 +196,7 @@ public class ActInvRecContent extends Activity implements BarcodeReader.BarcodeL
                 }
                 invRecContentHolder.setItem(invRecContent, 0, DocContentArrayAdapter.RECCONTENT_MODE);
                 // Недоступна у товаров "NomenType": 1 (маркированный алкоголь)
-                if (invRecContent.getNomenIn().getNomenType() == NomenIn.NOMENTYPE_ALCO_MARK && ((InvIn)invRec.getDocIn()).getQtyDirectInput() != 1 ) {
+                if (invRecContent.getNomenIn().getNomenType() == NomenIn.NOMENTYPE_ALCO_MARK && !((InvIn)invRec.getDocIn()).ableDirectInput() ) {
                     btnAdd.setEnabled(false);
                     edQtyAdd.setEnabled(false);
                 } else {
@@ -247,7 +247,7 @@ public class ActInvRecContent extends Activity implements BarcodeReader.BarcodeL
                 // если найден, то в соответствии с NomenType:
                 switch (nomenIn.getNomenType()) {
                     case NomenIn.NOMENTYPE_ALCO_MARK:
-                        if (((InvIn)invRec.getDocIn()).getQtyDirectInput() != 1) {
+                        if (!((InvIn)invRec.getDocIn()).ableDirectInput()) {
                             MessageUtils.showModalMessage(this, "Внимание!", "Маркированный алкоголь. Необходимо сканировать марку");
                         } else {
                             // по NomenID искать товарную позицию документа и открыть ее карточку (если такой не было: добавить и открыть)
