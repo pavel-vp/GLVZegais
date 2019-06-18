@@ -648,15 +648,14 @@ public class DaoMem {
         ed.putBoolean(KEY_INV + "_" + BaseRec.KEY_EXPORTED+"_"+invRec.getDocId()+"_", invRec.isExported());
         ed.putString(KEY_INV + "_" + BaseRec.KEY_STATUS+"_"+invRec.getDocId()+"_", invRec.getStatus().toString());
         ed.putInt(KEY_INV + "_" + InvRec.KEY_CONTENT_SIZE +"_"+invRec.getDocId()+"_", invRec.getRecContentList().size());
-        ed.apply();
         // записать данные по строкам
         for (InvRecContent recContent : invRec.getInvRecContentList()) {
-            writeLocalDataInvRecContent(invRec.getDocId(), recContent);
+            writeLocalDataInvRecContent(ed,invRec.getDocId(), recContent);
         }
+        ed.apply();
     }
 
-    private void writeLocalDataInvRecContent(String docId, InvRecContent recContent) {
-        SharedPreferences.Editor ed = sharedPreferences.edit();
+    private void writeLocalDataInvRecContent(SharedPreferences.Editor ed, String docId, InvRecContent recContent) {
         ed.putString(KEY_INV + "_" + BaseRec.KEY_POS_ID1C+"_"+docId+"_"+recContent.getPosition(), recContent.getId1c());
         ed.putString(KEY_INV + "_" + BaseRec.KEY_POS_BARCODE+"_"+docId+"_"+recContent.getPosition(), recContent.getBarcode());
         ed.putString(KEY_INV + "_" + BaseRec.KEY_POS_STATUS+"_"+docId+"_"+recContent.getPosition(), recContent.getStatus().toString());
@@ -682,7 +681,6 @@ public class DaoMem {
             ed.putString(KEY_INV + "_" + BaseRec.KEY_POS_MARKSCANNEDREAL + "_"+docId+"_"+recContent.getPosition()+"_"+idx, baseRecContentMark.getMarkScannedReal());
             idx++;
         }
-        ed.apply();
     }
 
 
