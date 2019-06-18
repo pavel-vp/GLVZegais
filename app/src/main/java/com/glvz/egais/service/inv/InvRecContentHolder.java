@@ -1,6 +1,7 @@
 package com.glvz.egais.service.inv;
 
 import android.graphics.Color;
+import android.util.Log;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -72,16 +73,23 @@ public class InvRecContentHolder extends DocRecContentHolder {
         } else {
             tvQtyAccepted.setText(addMark ==0 ? "" : String.valueOf(addMark));
         }
-        tvNomenId.setText(recContent.getNomenIn().getId());
-        if (recContent.getNomenIn().getCapacity() != null) {
-            tvVolume.setText(StringUtils.formatQty(recContent.getNomenIn().getCapacity() ));
+        if (recContent.getNomenIn() != null) {
+            tvNomenId.setText(recContent.getNomenIn().getId());
+            if (recContent.getNomenIn().getCapacity() != null) {
+                tvVolume.setText(StringUtils.formatQty(recContent.getNomenIn().getCapacity()));
+            } else {
+                tvVolume.setText("");
+            }
+            if (recContent.getNomenIn().getAlcVolume() != null) {
+                tvAlc.setText(StringUtils.formatQty(recContent.getNomenIn().getAlcVolume()));
+            } else {
+                tvAlc.setText("");
+            }
         } else {
+            tvNomenId.setText("");
             tvVolume.setText("");
-        }
-        if (recContent.getNomenIn().getAlcVolume() != null) {
-            tvAlc.setText(StringUtils.formatQty(recContent.getNomenIn().getAlcVolume() ));
-        } else {
             tvAlc.setText("");
+            Log.d("NOMENIN_NULL", recContent.getPosition());
         }
         if (invRecContent.getContentIn() != null && invRecContent.getContentIn().getMrc() != null) {
             tvMrc.setText(StringUtils.formatQty(invRecContent.getContentIn().getMrc() ));
