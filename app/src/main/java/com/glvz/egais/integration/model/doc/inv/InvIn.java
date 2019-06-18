@@ -1,10 +1,12 @@
 package com.glvz.egais.integration.model.doc.inv;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.glvz.egais.integration.model.doc.DocIn;
 
 import java.util.Arrays;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class InvIn implements DocIn {
     @JsonProperty(value="DOCId")
     private String docId;
@@ -20,6 +22,8 @@ public class InvIn implements DocIn {
     private String checkMark;
     @JsonProperty(value="Comment")
     private String comment;
+    @JsonProperty(value="QTYDirectInput")
+    private Integer qtyDirectInput;
 
     @JsonProperty(value="Content")
     private InvContentIn[] content;
@@ -89,6 +93,15 @@ public class InvIn implements DocIn {
         this.content = content;
     }
 
+
+    public Integer getQtyDirectInput() {
+        return qtyDirectInput;
+    }
+
+    public void setQtyDirectInput(Integer qtyDirectInput) {
+        this.qtyDirectInput = qtyDirectInput;
+    }
+
     @Override
     public String toString() {
         return "InvIn{" +
@@ -99,6 +112,7 @@ public class InvIn implements DocIn {
                 ", skladName='" + skladName + '\'' +
                 ", checkMark='" + checkMark + '\'' +
                 ", comment='" + comment + '\'' +
+                ", qtyDirectInput=" + qtyDirectInput +
                 ", content=" + Arrays.toString(content) +
                 '}';
     }

@@ -435,6 +435,9 @@ public class DaoMem {
     }
 
     private void readLocalDataFindMark(FindMarkRec rec) {
+        try {
+            rec.setCntDone(sharedPreferences.getInt(KEY_FINDMARK + "_" + BaseRec.KEY_CNTDONE + "_" + rec.getDocId() + "_", 0));
+        } catch (Exception e) {}
         rec.setStatus(BaseRecStatus.valueOf(sharedPreferences.getString(KEY_FINDMARK + "_" + BaseRec.KEY_STATUS + "_" + rec.getDocId() + "_", BaseRecStatus.NEW.toString())));
         // пройтись по строкам и прочитать доп.данные
         rec.getRecContentList().clear();
@@ -619,16 +622,23 @@ public class DaoMem {
 
     public void writeLocalDataFindMarkRec(FindMarkRec findMarkRec) {
         SharedPreferences.Editor ed = sharedPreferences.edit();
+        int cntDone = 0;
+        for (FindMarkRecContent recContent : findMarkRec.getFindMarkRecContentList()) {
+            if (recContent.getBaseRecContentMarkList().size() >= recContent.getContentIn().getQty()) {
+                cntDone++;
+            }
+        }
+        findMarkRec.setCntDone(cntDone);
+        ed.putInt(KEY_FINDMARK + "_" + BaseRec.KEY_CNTDONE+"_"+findMarkRec.getDocId()+"_", findMarkRec.getCntDone());
         ed.putString(KEY_FINDMARK + "_" + BaseRec.KEY_STATUS+"_"+findMarkRec.getDocId()+"_", findMarkRec.getStatus().toString());
-        ed.apply();
         // записать данные по строкам
         for (FindMarkRecContent recContent : findMarkRec.getFindMarkRecContentList()) {
-            writeLocalDataFindMarkRecContent(findMarkRec.getDocId(), recContent);
+            writeLocalDataFindMarkRecContent(ed, findMarkRec.getDocId(), recContent);
         }
+        ed.apply();
     }
 
-    private void writeLocalDataFindMarkRecContent(String docId, FindMarkRecContent recContent) {
-        SharedPreferences.Editor ed = sharedPreferences.edit();
+    private void writeLocalDataFindMarkRecContent(SharedPreferences.Editor ed, String docId, FindMarkRecContent recContent) {
         float qty = 0;
         if (recContent.getQtyAccepted() != null) {
             qty = recContent.getQtyAccepted().floatValue();
@@ -640,7 +650,6 @@ public class DaoMem {
             ed.putString(KEY_FINDMARK + "_" + BaseRec.KEY_POS_MARKSCANNED + "_"+docId+"_"+recContent.getPosition()+"_"+idx, contentMark.getMarkScanned());
             idx++;
         }
-        ed.apply();
     }
 
     public void writeLocalDataInvRec(InvRec invRec) {

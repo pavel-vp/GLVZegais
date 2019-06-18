@@ -224,7 +224,7 @@ public class ActCheckMarkRec extends ActBaseDocRec {
                 //  Если марка не найдена ни в одной позиции задания
                 if (markScanned == null) {
                     // Звуковое оповещение «Тревога»
-                    MessageUtils.playSound(R.raw.alarm);
+                    MessageUtils.playSound(R.raw.check_mark_new);
                     // запомнить марку
                     scannedMarkIn = new MarkIn();
                     scannedMarkIn.setMark(barCode);
@@ -264,8 +264,6 @@ public class ActCheckMarkRec extends ActBaseDocRec {
         recContent.setQtyAcceptedNew((recContent.getQtyAcceptedNew() == null ? 0 : recContent.getQtyAcceptedNew()) + 1);
         // подсказку заменить на «Сканируйте марку нового образца с товаров по заданию»
         currentState = STATE_SCAN_MARK;
-        // Звуковое оповещение «Тревога» (получается что это повторное оповещение тревогой)
-        MessageUtils.playSound(R.raw.alarm);
 
         recContent.setStatus(BaseRecContentStatus.IN_PROGRESS);
         checkMarkRec.setStatus(BaseRecStatus.INPROGRESS);

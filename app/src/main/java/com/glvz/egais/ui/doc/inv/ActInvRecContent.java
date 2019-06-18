@@ -15,6 +15,7 @@ import com.glvz.egais.integration.model.MarkIn;
 import com.glvz.egais.integration.model.NomenIn;
 import com.glvz.egais.integration.model.doc.DocContentIn;
 import com.glvz.egais.integration.model.doc.inv.InvContentIn;
+import com.glvz.egais.integration.model.doc.inv.InvIn;
 import com.glvz.egais.model.BaseRecContent;
 import com.glvz.egais.model.BaseRecContentMark;
 import com.glvz.egais.model.BaseRecContentStatus;
@@ -195,7 +196,7 @@ public class ActInvRecContent extends Activity implements BarcodeReader.BarcodeL
                 }
                 invRecContentHolder.setItem(invRecContent, 0, DocContentArrayAdapter.RECCONTENT_MODE);
                 // Недоступна у товаров "NomenType": 1 (маркированный алкоголь)
-                if (invRecContent.getNomenIn().getNomenType() == NomenIn.NOMENTYPE_ALCO_MARK ) {
+                if (invRecContent.getNomenIn().getNomenType() == NomenIn.NOMENTYPE_ALCO_MARK && ((InvIn)invRec.getDocIn()).getQtyDirectInput() != 1 ) {
                     btnAdd.setEnabled(false);
                     edQtyAdd.setEnabled(false);
                 } else {
@@ -246,7 +247,12 @@ public class ActInvRecContent extends Activity implements BarcodeReader.BarcodeL
                 // если найден, то в соответствии с NomenType:
                 switch (nomenIn.getNomenType()) {
                     case NomenIn.NOMENTYPE_ALCO_MARK:
-                        MessageUtils.showModalMessage(this, "Внимание!", "Маркированный алкоголь. Необходимо сканировать марку");
+                        if (((InvIn)invRec.getDocIn()).getQtyDirectInput() != 1) {
+                            MessageUtils.showModalMessage(this, "Внимание!", "Маркированный алкоголь. Необходимо сканировать марку");
+                        } else {
+                            // по NomenID искать товарную позицию документа и открыть ее карточку (если такой не было: добавить и открыть)
+                            fillActWithNomenIdPosition(nomenIn, null);
+                        }
                         break;
                     case NomenIn.NOMENTYPE_ALCO_OTHER:
                     case NomenIn.NOMENTYPE_ALCO_NOMARK:

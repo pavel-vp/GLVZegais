@@ -82,6 +82,7 @@ public class BarcodeObject implements BarcodeReader.BarcodeListener {
             properties.put(BarcodeReader.PROPERTY_CODE_39_ENABLED, true);
             properties.put(BarcodeReader.PROPERTY_DATAMATRIX_ENABLED, true);
             properties.put(BarcodeReader.PROPERTY_UPC_A_ENABLE, true);
+            properties.put(BarcodeReader.PROPERTY_EAN_8_ENABLED, true);
             properties.put(BarcodeReader.PROPERTY_EAN_13_ENABLED, true);
             properties.put(BarcodeReader.PROPERTY_EAN_13_CHECK_DIGIT_TRANSMIT_ENABLED, true);
             properties.put(BarcodeReader.PROPERTY_AZTEC_ENABLED, false);
@@ -147,6 +148,8 @@ public class BarcodeObject implements BarcodeReader.BarcodeListener {
 
     public static BarCodeType getBarCodeType(BarcodeReadEvent barcodeReadEvent) {
         // FIXME: пока непонятно как по-другому
+        if (barcodeReadEvent.getCodeId().equals("D"))
+            return BarCodeType.EAN8;
         if (barcodeReadEvent.getCodeId().equals("d"))
             return BarCodeType.EAN13;
         if (barcodeReadEvent.getCodeId().equals("r"))

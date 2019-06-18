@@ -1,7 +1,10 @@
 package com.glvz.egais.ui.doc.findmark;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -10,6 +13,7 @@ import com.glvz.egais.dao.DaoMem;
 import com.glvz.egais.integration.model.doc.findmark.FindMarkContentIn;
 import com.glvz.egais.model.BaseRecContent;
 import com.glvz.egais.model.BaseRecContentMark;
+import com.glvz.egais.model.BaseRecStatus;
 import com.glvz.egais.model.findmark.FindMarkRec;
 import com.glvz.egais.model.findmark.FindMarkRecContent;
 import com.glvz.egais.service.findmark.FindMarkContentArrayAdapter;
@@ -48,6 +52,40 @@ public class ActFindMarkRec extends ActBaseDocRec {
         lvContent.setAdapter(adapter);
 
     }
+
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_findmarkrec, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // получим идентификатор выбранного пункта меню
+        int id = item.getItemId();
+
+        // Операции для выбранного пункта меню
+        switch (id) {
+            case R.id.action_clear:
+                MessageUtils.ShowModalAndConfirm(this, "Внимание!", "Очистить все отсканированные марки?",
+                        new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                for (FindMarkRecContent rc : findMarkRec.getFindMarkRecContentList()) {
+                                    rc.getBaseRecContentMarkList().clear();
+                                }
+                                MessageUtils.showToastMessage("Марки очищены!");
+                                DaoMem.getDaoMem().writeLocalDataFindMarkRec(findMarkRec);
+                                updateData();
+                            }
+                        });
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
 
     @Override
     protected void updateData() {
@@ -101,7 +139,7 @@ public class ActFindMarkRec extends ActBaseDocRec {
                     return;
                 }
                 // Звуковое оповещение «Тревога»
-                MessageUtils.playSound(R.raw.alarm);
+                MessageUtils.playSound(R.raw.find_mark);
                 if (!markScanned.scanned) {
                     // у марки в документе установить признак «найдена»
                     markScanned.recContent.getBaseRecContentMarkList().add(new BaseRecContentMark(barCode,BaseRecContentMark.MARK_SCANNED_AS_MARK, barCode));
