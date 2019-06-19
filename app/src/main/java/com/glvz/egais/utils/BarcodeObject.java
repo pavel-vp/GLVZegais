@@ -83,6 +83,7 @@ public class BarcodeObject implements BarcodeReader.BarcodeListener {
             properties.put(BarcodeReader.PROPERTY_DATAMATRIX_ENABLED, true);
             properties.put(BarcodeReader.PROPERTY_UPC_A_ENABLE, true);
             properties.put(BarcodeReader.PROPERTY_EAN_8_ENABLED, true);
+            properties.put(BarcodeReader.PROPERTY_EAN_8_CHECK_DIGIT_TRANSMIT_ENABLED, true);
             properties.put(BarcodeReader.PROPERTY_EAN_13_ENABLED, true);
             properties.put(BarcodeReader.PROPERTY_EAN_13_CHECK_DIGIT_TRANSMIT_ENABLED, true);
             properties.put(BarcodeReader.PROPERTY_AZTEC_ENABLED, false);
