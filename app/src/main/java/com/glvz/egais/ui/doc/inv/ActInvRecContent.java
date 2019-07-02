@@ -134,6 +134,7 @@ public class ActInvRecContent extends Activity implements BarcodeReader.BarcodeL
                     DaoMem.getDaoMem().writeLocalDataInvRec(invRec);
                     scannedMarkIn = null;
                     currentState = STATE_SCAN_ANY;
+                    edQtyAdd.setText("");
                     updateData();
                 }
             }
