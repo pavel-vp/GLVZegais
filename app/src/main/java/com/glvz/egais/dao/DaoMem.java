@@ -372,7 +372,8 @@ public class DaoMem {
         for (BaseRecContent brc : invRec.getRecContentList()) {
 
             InvRecContent ircTemp = (InvRecContent)brc;
-            if (ircTemp.getId1c().equals(id1c) &&
+            if (ircTemp.getId1c() != null &&
+                    ircTemp.getId1c().equals(id1c) &&
                     ( manualMrc == null ||  // не указана ручная введенная МРЦ
                       ircTemp.getContentIn() != null && ircTemp.getContentIn().getMrc() != null && ircTemp.getContentIn().getMrc().equals(manualMrc)  // или она равна искомой
                     )
