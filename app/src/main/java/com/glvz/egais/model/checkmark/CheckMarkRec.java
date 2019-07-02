@@ -120,12 +120,12 @@ public class CheckMarkRec extends BaseRec {
     @Override
     public void rejectData() {
         // Пройтись по всем строкам, очистить связки с товаром и проставить везде нули
-        for (CheckMarkRecContent recContent : getCheckMarkRecContentList()) {
-            recContent.setQtyAccepted(Double.valueOf(0));
-            recContent.setQtyAcceptedNew(Double.valueOf(0));
+        for (BaseRecContent recContent : recContentList) {
+            ((CheckMarkRecContent)recContent).setQtyAccepted(Double.valueOf(0));
+            ((CheckMarkRecContent)recContent).setQtyAcceptedNew(Double.valueOf(0));
 
-            recContent.getCheckMarkRecContentMarkList().clear();
-            recContent.setStatus(BaseRecContentStatus.NOT_ENTERED);
+            ((CheckMarkRecContent)recContent).getCheckMarkRecContentMarkList().clear();
+            ((CheckMarkRecContent)recContent).setStatus(BaseRecContentStatus.NOT_ENTERED);
         }
         setStatus(BaseRecStatus.NEW);
     }
