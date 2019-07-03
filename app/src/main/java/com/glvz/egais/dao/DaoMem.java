@@ -363,6 +363,8 @@ public class DaoMem {
         String posStatus = sharedPreferences.getString(KEY_INV + "_" + BaseRec.KEY_POS_STATUS+"_"+invRec.getDocId()+"_"+position, BaseRecContentStatus.IN_PROGRESS.toString());
         float qtyAccepted = sharedPreferences.getFloat(KEY_INV + "_" + BaseRec.KEY_POS_QTYACCEPTED+"_"+invRec.getDocId()+"_"+position, 0);
         float manualMrcFload = sharedPreferences.getFloat(KEY_INV + "_" + BaseRec.KEY_POS_MANUAL_MRC+"_"+invRec.getDocId()+"_"+position, 0);
+        int realPosition = Integer.parseInt(sharedPreferences.getString(KEY_INV + "_" + BaseRec.KEY_POS_POSITION+"_"+invRec.getDocId()+"_"+position, "1"));
+
         Double manualMrc = manualMrcFload == 0 ? null : (double) manualMrcFload;
 
         int markScannedSize = sharedPreferences.getInt(KEY_INV + "_" + BaseRec.KEY_POS_MARKSCANNED_CNT + "_"+invRec.getDocId()+"_"+position, 0);
@@ -659,16 +661,19 @@ public class DaoMem {
         ed.putString(KEY_INV + "_" + BaseRec.KEY_STATUS+"_"+invRec.getDocId()+"_", invRec.getStatus().toString());
         ed.putInt(KEY_INV + "_" + InvRec.KEY_CONTENT_SIZE +"_"+invRec.getDocId()+"_", invRec.getRecContentList().size());
         // записать данные по строкам
+        int position = 1;
         for (InvRecContent recContent : invRec.getInvRecContentList()) {
-            writeLocalDataInvRecContent(ed,invRec.getDocId(), recContent);
+            writeLocalDataInvRecContent(ed,invRec.getDocId(), recContent, position);
+            position++;
         }
         ed.apply();
     }
 
-    private void writeLocalDataInvRecContent(SharedPreferences.Editor ed, String docId, InvRecContent recContent) {
-        ed.putString(KEY_INV + "_" + BaseRec.KEY_POS_ID1C+"_"+docId+"_"+recContent.getPosition(), recContent.getId1c());
-        ed.putString(KEY_INV + "_" + BaseRec.KEY_POS_BARCODE+"_"+docId+"_"+recContent.getPosition(), recContent.getBarcode());
-        ed.putString(KEY_INV + "_" + BaseRec.KEY_POS_STATUS+"_"+docId+"_"+recContent.getPosition(), recContent.getStatus().toString());
+    private void writeLocalDataInvRecContent(SharedPreferences.Editor ed, String docId, InvRecContent recContent, int position) {
+        ed.putString(KEY_INV + "_" + BaseRec.KEY_POS_ID1C+"_"+docId+"_"+position, recContent.getId1c());
+        ed.putString(KEY_INV + "_" + BaseRec.KEY_POS_BARCODE+"_"+docId+"_"+position, recContent.getBarcode());
+        ed.putString(KEY_INV + "_" + BaseRec.KEY_POS_STATUS+"_"+docId+"_"+position, recContent.getStatus().toString());
+        ed.putString(KEY_INV + "_" + BaseRec.KEY_POS_POSITION+"_"+docId+"_"+position, recContent.getPosition().toString());
         float qty = 0;
         if (recContent.getQtyAccepted() != null) {
             qty = recContent.getQtyAccepted().floatValue();
@@ -681,14 +686,14 @@ public class DaoMem {
                 manualMrc = recContent.getContentIn().getMrc().floatValue();
             }
         }
-        ed.putFloat(KEY_INV + "_" + BaseRec.KEY_POS_QTYACCEPTED+"_"+docId+"_"+recContent.getPosition(), qty);
-        ed.putFloat(KEY_INV + "_" + BaseRec.KEY_POS_MANUAL_MRC+"_"+docId+"_"+recContent.getPosition(), manualMrc);
-        ed.putInt(KEY_INV + "_" + BaseRec.KEY_POS_MARKSCANNED_CNT + "_"+docId+"_"+recContent.getPosition(), recContent.getBaseRecContentMarkList().size());
+        ed.putFloat(KEY_INV + "_" + BaseRec.KEY_POS_QTYACCEPTED+"_"+docId+"_"+position, qty);
+        ed.putFloat(KEY_INV + "_" + BaseRec.KEY_POS_MANUAL_MRC+"_"+docId+"_"+position, manualMrc);
+        ed.putInt(KEY_INV + "_" + BaseRec.KEY_POS_MARKSCANNED_CNT + "_"+docId+"_"+position, recContent.getBaseRecContentMarkList().size());
         int idx = 1;
         for (BaseRecContentMark baseRecContentMark : recContent.getBaseRecContentMarkList()) {
-            ed.putString(KEY_INV + "_" + BaseRec.KEY_POS_MARKSCANNED + "_"+docId+"_"+recContent.getPosition()+"_"+idx, baseRecContentMark.getMarkScanned());
-            ed.putInt(KEY_INV + "_" + BaseRec.KEY_POS_MARKSCANNED_ASTYPE + "_"+docId+"_"+recContent.getPosition()+"_"+idx, baseRecContentMark.getMarkScannedAsType());
-            ed.putString(KEY_INV + "_" + BaseRec.KEY_POS_MARKSCANNEDREAL + "_"+docId+"_"+recContent.getPosition()+"_"+idx, baseRecContentMark.getMarkScannedReal());
+            ed.putString(KEY_INV + "_" + BaseRec.KEY_POS_MARKSCANNED + "_"+docId+"_"+position+"_"+idx, baseRecContentMark.getMarkScanned());
+            ed.putInt(KEY_INV + "_" + BaseRec.KEY_POS_MARKSCANNED_ASTYPE + "_"+docId+"_"+position+"_"+idx, baseRecContentMark.getMarkScannedAsType());
+            ed.putString(KEY_INV + "_" + BaseRec.KEY_POS_MARKSCANNEDREAL + "_"+docId+"_"+position+"_"+idx, baseRecContentMark.getMarkScannedReal());
             idx++;
         }
     }
