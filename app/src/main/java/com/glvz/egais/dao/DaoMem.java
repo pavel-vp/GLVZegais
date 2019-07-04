@@ -9,6 +9,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
 import android.support.v4.content.FileProvider;
+import android.util.Log;
 import com.glvz.egais.BuildConfig;
 import com.glvz.egais.MainApp;
 import com.glvz.egais.R;
@@ -334,6 +335,7 @@ public class DaoMem {
     }
 
     private void readLocalDataInv(InvRec invRec) {
+        Log.v("DaoMem", "readLocalDataInv start");
         invRec.setStatus(BaseRecStatus.valueOf(sharedPreferences.getString(KEY_INV + "_" + BaseRec.KEY_STATUS + "_" + invRec.getDocId() + "_", BaseRecStatus.NEW.toString())));
         invRec.setExported(sharedPreferences.getBoolean(KEY_INV + "_" + BaseRec.KEY_EXPORTED + "_" + invRec.getDocId() + "_", false));
         // пройтись по строкам и прочитать доп.данные
@@ -353,7 +355,7 @@ public class DaoMem {
         for (int i = 1; i <= contentSize; i++) {
             readLocalDataInvContentAndMerge(invRec, i);
         }
-
+        Log.v("DaoMem", "readLocalDataInv end contentSize="+contentSize);
     }
 
     private void readLocalDataInvContentAndMerge(InvRec invRec, int position) {
@@ -656,6 +658,7 @@ public class DaoMem {
     }
 
     public void writeLocalDataInvRec(InvRec invRec) {
+        Log.v("DaoMem", "writeLocalDataInvRec start");
         SharedPreferences.Editor ed = sharedPreferences.edit();
         ed.putBoolean(KEY_INV + "_" + BaseRec.KEY_EXPORTED+"_"+invRec.getDocId()+"_", invRec.isExported());
         ed.putString(KEY_INV + "_" + BaseRec.KEY_STATUS+"_"+invRec.getDocId()+"_", invRec.getStatus().toString());
@@ -667,6 +670,7 @@ public class DaoMem {
             position++;
         }
         ed.apply();
+        Log.v("DaoMem", "writeLocalDataInvRec end");
     }
 
     private void writeLocalDataInvRecContent(SharedPreferences.Editor ed, String docId, InvRecContent recContent, int position) {

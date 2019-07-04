@@ -39,7 +39,7 @@ public class ActMainMenu extends Activity {
     @Override
     protected void onStart() {
         super.onStart();
-        DaoMem.getDaoMem().initDocuments(false);
+        //DaoMem.getDaoMem().initDocuments(false);
         DaoMem.getDaoMem().checkIsNeedToUpdate(this);
         DaoMem.getDaoMem().initDictionary();
 
