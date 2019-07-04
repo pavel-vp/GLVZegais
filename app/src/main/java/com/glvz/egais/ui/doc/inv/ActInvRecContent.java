@@ -273,10 +273,10 @@ public class ActInvRecContent extends Activity implements BarcodeReader.BarcodeL
                     MessageUtils.showModalMessage(this, "Внимание!", "Сканируйте штрихкод");
                     return;
                 }
-/*                if (((InvIn)invRec.getDocIn()).ableDirectInput()) {
+                if (((InvIn)invRec.getDocIn()).ableDirectInput()) {
                     MessageUtils.playSound(R.raw.scan_ean);
                     return;
-                }*/
+                }
 
                 // выполнить проверку корректности ШК по длине:  PDF-417 должна быть 68 символов,  DataMatrix – 150
                 if (barCodeType == PDF417 && barCode.length() != 68) {
