@@ -36,13 +36,13 @@ public class ActWriteoffList extends ActBaseDocList {
                 builder.setTitle("Подтвердите")
                         .setMessage("Выберите тип нового документа")
                         .setCancelable(true)
-                        .setPositiveButton("Списание (или перемещение)", new DialogInterface.OnClickListener() {
+                        .setNegativeButton("Списание (или перемещение)", new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
                                 createAndShowNewDoc(WriteoffRec.TYEDOC_WRIEOFF);
                             }
                         })
-                        .setNegativeButton("Возврат", new DialogInterface.OnClickListener() {
+                        .setPositiveButton("Возврат поставщику", new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
                                 createAndShowNewDoc(WriteoffRec.TYEDOC_RETURN);
