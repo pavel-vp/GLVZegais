@@ -143,7 +143,7 @@ public class ActInvRec extends ActBaseDocRec implements PickMRCCallback{
             //- собранные данные выгружаются в JSON-файл во внутреннюю память терминала в каталог «GLVZ\Shops\#ShopID#\Out»
             boolean success = DaoMem.getDaoMem().exportData(invRec);
             if (success) {
-                MessageUtils.showToastMessage("Накладная выгружена!");
+                MessageUtils.showToastMessage("Документ выгружен!");
                 updateData();
                 syncDoc();
             } else {
