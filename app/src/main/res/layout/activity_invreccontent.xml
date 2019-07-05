@@ -79,11 +79,31 @@
                         android:layout_weight="1"
                         android:id="@+id/btnClear"/>
                 <Button
+                        android:text=""
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:visibility="invisible"
+                        android:id="@+id/btn11"/>
+            </LinearLayout>
+            <LinearLayout
+                    android:orientation="horizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                <Button
                         android:text="Товар отсутствует"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
                         android:layout_weight="1"
                         android:id="@+id/btnNone"/>
+                <Button
+                        android:text=""
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:visibility="invisible"
+                        android:layout_weight="1"
+                        android:id="@+id/btn22"/>
             </LinearLayout>
 
 

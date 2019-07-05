@@ -128,7 +128,8 @@ public class ActInvRecContent extends Activity implements BarcodeReader.BarcodeL
             public void onClick(View v) {
                 if (edQtyAdd.getText() != null) {
                     //1) сохраняет введенное пользователем количество: [Количество факт] = [Количество факт] + [Количество добавить]
-                    invRecContent.setQtyAccepted((invRecContent.getQtyAccepted() == null ? 0 : invRecContent.getQtyAccepted()) + Double.valueOf(edQtyAdd.getText().toString()));
+                    double qty = Double.valueOf(edQtyAdd.getText().toString());
+                    invRecContent.setQtyAccepted((invRecContent.getQtyAccepted() == null ? 0 : invRecContent.getQtyAccepted()) + qty);
                     //2) у позиции установить статус «Обработана»
                     invRecContent.setStatus(BaseRecContentStatus.DONE);
                     invRec.setStatus(BaseRecStatus.INPROGRESS);
@@ -136,6 +137,11 @@ public class ActInvRecContent extends Activity implements BarcodeReader.BarcodeL
                     scannedMarkIn = null;
                     currentState = STATE_SCAN_ANY;
                     edQtyAdd.setText("");
+                    if (qty == 1) {
+                        MessageUtils.playSound(R.raw.bottle_one);
+                    } else {
+                        MessageUtils.playSound(R.raw.bottle_many);
+                    }
                     updateData();
                 }
             }

@@ -254,6 +254,7 @@ public class ActCheckMarkRec extends ActBaseDocRec {
         recContent.setStatus(BaseRecContentStatus.IN_PROGRESS);
         checkMarkRec.setStatus(BaseRecStatus.INPROGRESS);
         DaoMem.getDaoMem().writeLocalDataCheckMarkRec(checkMarkRec);
+        MessageUtils.playSound(R.raw.bottle_one);
         updateData();
     }
 
@@ -271,6 +272,7 @@ public class ActCheckMarkRec extends ActBaseDocRec {
         updateData();
 
         MessageUtils.showModalMessage(this, "Внимание!", "Выявлена неучтенная марка. Отложите бутылку, продавать на кассе ее нельзя до особого указания. Продолжайте сканированием следующей марки.");
+        MessageUtils.playSound(R.raw.bottle_one);
 
     }
 
