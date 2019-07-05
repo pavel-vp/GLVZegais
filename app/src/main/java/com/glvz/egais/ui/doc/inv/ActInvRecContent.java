@@ -131,6 +131,7 @@ public class ActInvRecContent extends Activity implements BarcodeReader.BarcodeL
                     invRecContent.setQtyAccepted((invRecContent.getQtyAccepted() == null ? 0 : invRecContent.getQtyAccepted()) + Double.valueOf(edQtyAdd.getText().toString()));
                     //2) у позиции установить статус «Обработана»
                     invRecContent.setStatus(BaseRecContentStatus.DONE);
+                    invRec.setStatus(BaseRecStatus.INPROGRESS);
                     DaoMem.getDaoMem().writeLocalDataInvRec(invRec);
                     scannedMarkIn = null;
                     currentState = STATE_SCAN_ANY;
