@@ -170,7 +170,7 @@ public class ActInvRec extends ActBaseDocRec implements PickMRCCallback{
     public void onActivityResult(int requestCode, int resultCode, Intent i){
         if(requestCode == ENTERNOMENID_RETCODE ){
             if(resultCode==RESULT_OK){
-                String nomenId = i.getData().toString();
+                String nomenId =  String.format("%011d", Integer.valueOf(String.valueOf(i.getData())));
                 // поиск товара в nomen.json, определение его NomenType
                 final NomenIn nomenIn = DaoMem.getDaoMem().findNomenInByNomenId(nomenId);
                 if (nomenIn == null) {
