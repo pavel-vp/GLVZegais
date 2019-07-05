@@ -274,7 +274,7 @@ public class ActInvRecContent extends Activity implements BarcodeReader.BarcodeL
                     return;
                 }
                 if (((InvIn)invRec.getDocIn()).ableDirectInput()) {
-                    MessageUtils.playSound(R.raw.scan_ean);
+                    MessageUtils.playSound(R.raw.scan_ean_inv);
                     return;
                 }
 
@@ -337,7 +337,7 @@ public class ActInvRecContent extends Activity implements BarcodeReader.BarcodeL
                     // 8.1) подсказку изменить на «Сканируйте штрихкод»
                     this.currentState = STATE_SCAN_EAN;
                     // 8.2) Звуковое сообщение «Сканируйте штрихкод»
-                    MessageUtils.playSound(R.raw.scan_ean);
+                    MessageUtils.playSound(R.raw.scan_ean_inv);
                     updateData();
                     return;
                 }
