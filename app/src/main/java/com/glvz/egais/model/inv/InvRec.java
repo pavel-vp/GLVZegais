@@ -67,19 +67,22 @@ public class InvRec extends BaseRec {
         rec.setSkladID(this.invIn.getSkladID());
         rec.setSkladName(this.invIn.getSkladName());
         rec.setComment(this.invIn.getComment());
-        rec.setContent(new InvRecContentOutput[this.invIn.getContent().length]);
+        rec.setContent(new InvRecContentOutput[this.getRecContentList().size()]);
         rec.setCheckMark(this.invIn.getCheckMark());
         int idx = 0;
-        for (InvContentIn contentIn : this.invIn.getContent()) {
+        for (BaseRecContent recContent : this.getRecContentList()) {
+            InvRecContent invRecContent = (InvRecContent)recContent;
+
             InvRecContentOutput contentOutput = new InvRecContentOutput();
-            contentOutput.setPosition(contentIn.getPosition());
-            contentOutput.setNomenId(contentIn.getNomenId());
-            contentOutput.setQty(contentIn.getQty());
+            contentOutput.setPosition(invRecContent.getPosition());
+            contentOutput.setNomenId(invRecContent.getId1c());
+            if (invRecContent.getContentIn() != null) {
+                contentOutput.setQty(invRecContent.getContentIn().getQty());
+            }
 
-            InvRecContent recContent = (InvRecContent) DaoMem.getDaoMem().getRecContentByPosition(this, contentIn.getPosition());
-            contentOutput.setQtyFact(recContent.getQtyAccepted());
+            contentOutput.setQtyFact(invRecContent.getQtyAccepted());
 
-            Set<BaseRecContentMark> scannedMarkSet = new HashSet<>(recContent.getBaseRecContentMarkList());
+            Set<BaseRecContentMark> scannedMarkSet = new HashSet<>(invRecContent.getBaseRecContentMarkList());
 
             contentOutput.setMarks(new String[scannedMarkSet.size()]);
             int idx2 = 0;
