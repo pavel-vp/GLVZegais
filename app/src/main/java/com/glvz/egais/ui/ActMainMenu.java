@@ -45,6 +45,12 @@ public class ActMainMenu extends Activity {
 
     }
 
+    private boolean checkIfLoaded() {
+        if (DaoMem.getDaoMem().getMapInvRec() != null) return true;
+        MessageUtils.showToastMessage("Необходимо загрузить документы !");
+        return false;
+    }
+
     private void setResources() {
 
         pg = new ProgressDialog(this);
@@ -53,27 +59,33 @@ public class ActMainMenu extends Activity {
         buttonIncome.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent();
-                intent.setClass(ActMainMenu.this, ActIncomeList.class);
-                startActivity(intent);
+                if (checkIfLoaded()) {
+                    Intent intent = new Intent();
+                    intent.setClass(ActMainMenu.this, ActIncomeList.class);
+                    startActivity(intent);
+                }
             }
         });
         Button buttonMove = (Button) findViewById(R.id.buttonMove);
         buttonMove.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent();
-                intent.setClass(ActMainMenu.this, ActMoveList.class);
-                startActivity(intent);
+                if (checkIfLoaded()) {
+                    Intent intent = new Intent();
+                    intent.setClass(ActMainMenu.this, ActMoveList.class);
+                    startActivity(intent);
+                }
             }
         });
         Button buttonWriteoff = (Button) findViewById(R.id.buttonWriteoff);
         buttonWriteoff.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent();
-                intent.setClass(ActMainMenu.this, ActWriteoffList.class);
-                startActivity(intent);
+                if (checkIfLoaded()) {
+                    Intent intent = new Intent();
+                    intent.setClass(ActMainMenu.this, ActWriteoffList.class);
+                    startActivity(intent);
+                }
             }
         });
 
@@ -81,27 +93,33 @@ public class ActMainMenu extends Activity {
         buttonCheckMark.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent();
-                intent.setClass(ActMainMenu.this, ActCheckMarkList.class);
-                startActivity(intent);
+                if (checkIfLoaded()) {
+                    Intent intent = new Intent();
+                    intent.setClass(ActMainMenu.this, ActCheckMarkList.class);
+                    startActivity(intent);
+                }
             }
         });
         Button buttonFindMark = (Button) findViewById(R.id.buttonFindMark);
         buttonFindMark.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent();
-                intent.setClass(ActMainMenu.this, ActFindMarkList.class);
-                startActivity(intent);
+                if (checkIfLoaded()) {
+                    Intent intent = new Intent();
+                    intent.setClass(ActMainMenu.this, ActFindMarkList.class);
+                    startActivity(intent);
+                }
             }
         });
         Button buttonInv = (Button) findViewById(R.id.buttonInv);
         buttonInv.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent();
-                intent.setClass(ActMainMenu.this, ActInvList.class);
-                startActivity(intent);
+                if (checkIfLoaded()) {
+                    Intent intent = new Intent();
+                    intent.setClass(ActMainMenu.this, ActInvList.class);
+                    startActivity(intent);
+                }
             }
         });
 
