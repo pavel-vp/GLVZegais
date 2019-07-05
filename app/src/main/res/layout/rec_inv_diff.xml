@@ -223,7 +223,8 @@
                     <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:textAppearance="?android:attr/textAppearanceMedium"
+                            android:textAppearance="?android:attr/textAppearanceLarge"
+                            android:textColor="@color/colorPrimary"
                             android:text="40"
                             android:textStyle="bold"
                             android:id="@+id/tvIzl"
@@ -238,7 +239,8 @@
                     <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:textAppearance="?android:attr/textAppearanceMedium"
+                            android:textAppearance="?android:attr/textAppearanceLarge"
+                            android:textColor="@color/colorAccent"
                             android:text="22"
                             android:id="@+id/tvNed"
                             android:textStyle="bold"

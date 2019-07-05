@@ -68,13 +68,13 @@ public class InvDiffHolder extends DocRecContentHolder {
         } else {
             tvQtyAccepted.setText(addMark ==0 ? "" : String.valueOf(addMark));
         }
-        tvNomenId.setText(recContent.getNomenIn().getId());
-        if (recContent.getNomenIn().getCapacity() != null) {
+        tvNomenId.setText(recContent.getId1c());
+        if (recContent.getNomenIn() != null && recContent.getNomenIn().getCapacity() != null) {
             tvVolume.setText(StringUtils.formatQty(recContent.getNomenIn().getCapacity() ));
         } else {
             tvVolume.setText("");
         }
-        if (recContent.getNomenIn().getAlcVolume() != null) {
+        if (recContent.getNomenIn() != null && recContent.getNomenIn().getAlcVolume() != null) {
             tvAlc.setText(StringUtils.formatQty(recContent.getNomenIn().getAlcVolume() ));
         } else {
             tvAlc.setText("");
@@ -105,8 +105,8 @@ public class InvDiffHolder extends DocRecContentHolder {
                 izl = invRecContent.getQtyAccepted().doubleValue();
             }
         }
-        tvIzl.setText(StringUtils.formatQty(izl));
-        tvNed.setText(StringUtils.formatQty(ned));
+        tvIzl.setText(StringUtils.formatQtyNull(izl));
+        tvNed.setText(StringUtils.formatQtyNull(ned));
 
 
     }

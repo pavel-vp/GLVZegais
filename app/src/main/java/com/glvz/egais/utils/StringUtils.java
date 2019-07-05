@@ -72,4 +72,8 @@ public class StringUtils {
         String s = dateBottlingFormatterJson.format(date);
         return s;
     }
+
+    public static String formatQtyNull(double qty) {
+        return qty == 0 ? formatQty(null) : formatQty(qty);
+    }
 }

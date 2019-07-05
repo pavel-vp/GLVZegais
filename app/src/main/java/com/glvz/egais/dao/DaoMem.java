@@ -805,7 +805,14 @@ public class DaoMem {
                         Integer p2 = new Integer(o2.getPosition());
                         return p1.compareTo(p2);
                     case InvRecContent.INV_SORT_TYPE_NAME:
-                        int n = o1.getNomenIn().getName().compareTo(o2.getNomenIn().getName());
+                        int n = 0;
+                        if (o1.getNomenIn() != null && o1.getNomenIn().getName() != null &&
+                                o2.getNomenIn() != null && o2.getNomenIn().getName() != null) {
+                            n = o1.getNomenIn().getName().compareTo(o2.getNomenIn().getName());
+                        } else {
+                            if (o1.getNomenIn() != null && o1.getNomenIn().getName() != null) return 1;
+                            if (o2.getNomenIn() != null && o2.getNomenIn().getName() != null) return -1;
+                        }
                         if (n == 0) {
                             if (o1.getManualMrc() != null && o2.getManualMrc() != null) {
                                 return o1.getManualMrc().compareTo(o2.getManualMrc());
