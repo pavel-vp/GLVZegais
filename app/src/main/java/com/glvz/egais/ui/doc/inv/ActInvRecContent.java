@@ -38,8 +38,8 @@ import static com.glvz.egais.utils.BarcodeObject.BarCodeType.PDF417;
 
 public class ActInvRecContent extends Activity implements BarcodeReader.BarcodeListener, PickMRCCallback {
 
-    private final static int STATE_SCAN_ANY = 1;
-    private final static int STATE_SCAN_EAN = 2;
+    public final static int STATE_SCAN_ANY = 1;
+    public final static int STATE_SCAN_EAN = 2;
 
     private InvRecContentHolder invRecContentHolder;
     private TextView tvAction;
@@ -53,7 +53,6 @@ public class ActInvRecContent extends Activity implements BarcodeReader.BarcodeL
     private InvRecContent invRecContent;
     private int currentState = STATE_SCAN_ANY;
     private MarkIn scannedMarkIn = null;
-    private String lastMark = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,9 +68,14 @@ public class ActInvRecContent extends Activity implements BarcodeReader.BarcodeL
         invRecContent = (InvRecContent) DaoMem.getDaoMem().getRecContentByPosition(invRec, position);
 
         updateData();
+        String msg = extras.getString(ActBaseDocRec.RECCONTENT_MESSAGE);
+        if (msg != null) {
+            MessageUtils.showModalMessage(this, "Внимание!", msg);
+        }
     }
 
-    private void fillActWithNomenIdPosition(NomenIn nomenIn, Double mrc) {
+    public static InvRecContent fillInvRecContent(InvRec invRec, NomenIn nomenIn, Double mrc) {
+        InvRecContent invRecContent = null;
         // по комбинации NomenID и МРЦ: поиск в товарных позициях документа
         int maxPos = 0;
         InvRecContent irc = null;
@@ -83,7 +87,7 @@ public class ActInvRecContent extends Activity implements BarcodeReader.BarcodeL
                             (ircTemp.getContentIn() != null && ircTemp.getContentIn().getMrc() != null && ircTemp.getContentIn().getMrc().equals(mrc)) ||
                             (ircTemp.getManualMrc() != null && ircTemp.getManualMrc().equals(mrc))
                     )
-                    ) {
+            ) {
                 irc = (InvRecContent) brc;
             }
         }
@@ -99,6 +103,12 @@ public class ActInvRecContent extends Activity implements BarcodeReader.BarcodeL
         } else {
             invRecContent = irc;
         }
+
+        return invRecContent;
+    }
+
+    private void fillActWithNomenIdPosition(NomenIn nomenIn, Double mrc) {
+        invRecContent = fillInvRecContent(invRec, nomenIn, mrc);
         updateData();
     }
 
@@ -366,7 +376,7 @@ public class ActInvRecContent extends Activity implements BarcodeReader.BarcodeL
 
     }
 
-    private void proceedOneBottle(NomenIn nomenIn) {
+    public static void proceedOneBottle(InvRec invRec, InvRecContent invRecContent, NomenIn nomenIn, MarkIn scannedMarkIn) {
         invRecContent.setNomenIn(nomenIn, null);
         //10) поле «Количество факт» добавить addQty шт к предыдущему значению
         invRecContent.setQtyAccepted((invRecContent.getQtyAccepted() == null ? 0 : invRecContent.getQtyAccepted()) + 1);
@@ -380,6 +390,11 @@ public class ActInvRecContent extends Activity implements BarcodeReader.BarcodeL
         invRecContent.setStatus(BaseRecContentStatus.DONE);
         invRec.setStatus(BaseRecStatus.INPROGRESS);
         DaoMem.getDaoMem().writeLocalDataInvRec(invRec);
+
+    }
+
+    private void proceedOneBottle(NomenIn nomenIn) {
+        proceedOneBottle(invRec, invRecContent, nomenIn, scannedMarkIn);
         this.currentState = STATE_SCAN_ANY;
         this.scannedMarkIn = null;
         updateData();

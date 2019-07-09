@@ -14,7 +14,10 @@ import android.widget.ListView;
 import android.widget.TextView;
 import com.glvz.egais.R;
 import com.glvz.egais.dao.DaoMem;
+import com.glvz.egais.integration.model.AlcCodeIn;
+import com.glvz.egais.integration.model.MarkIn;
 import com.glvz.egais.integration.model.NomenIn;
+import com.glvz.egais.integration.model.doc.inv.InvIn;
 import com.glvz.egais.model.BaseRecContent;
 import com.glvz.egais.model.BaseRecContentStatus;
 import com.glvz.egais.model.BaseRecStatus;
@@ -25,17 +28,24 @@ import com.glvz.egais.service.inv.InvContentArrayAdapter;
 import com.glvz.egais.service.inv.InvRecHolder;
 import com.glvz.egais.ui.ActEnterNomenId;
 import com.glvz.egais.ui.doc.ActBaseDocRec;
+import com.glvz.egais.utils.BarcodeObject;
 import com.glvz.egais.utils.MessageUtils;
 import com.glvz.egais.utils.StringUtils;
 import com.honeywell.aidc.BarcodeReadEvent;
 
 import java.util.*;
 
+import static com.glvz.egais.utils.BarcodeObject.BarCodeType.DATAMATRIX;
+import static com.glvz.egais.utils.BarcodeObject.BarCodeType.PDF417;
+
 public class ActInvRec extends ActBaseDocRec implements PickMRCCallback{
 
     private static final int ENTERNOMENID_RETCODE = 1;
     private InvRec invRec;
     private TextView tvCaption;
+    private int currentState = ActInvRecContent.STATE_SCAN_ANY;
+    private MarkIn scannedMarkIn = null;
+    private String message = null;
 
     @Override
     protected void initRec() {
@@ -159,12 +169,154 @@ public class ActInvRec extends ActBaseDocRec implements PickMRCCallback{
         in.setClass(ctx, ActInvRecContent.class);
         in.putExtra(ActInvRec.REC_DOCID, docId);
         in.putExtra(ActInvRec.RECCONTENT_POSITION, req.getPosition().toString());
+        in.putExtra(ActInvRec.RECCONTENT_MESSAGE, message);
         ctx.startActivity(in);
     }
 
     @Override
     public void onBarcodeEvent(BarcodeReadEvent barcodeReadEvent) {
-        MessageUtils.playSound(R.raw.docmove_tap_position);
+        message = null;
+        // Определить тип ШК
+        final BarcodeObject.BarCodeType barCodeType = BarcodeObject.getBarCodeType(barcodeReadEvent);
+        final String barCode = barcodeReadEvent.getBarcodeData();
+        switch (barCodeType) {
+            case EAN8:
+            case EAN13:
+                NomenIn nomenIn = null;
+                if (currentState == ActInvRecContent.STATE_SCAN_EAN) {
+                    // ожидание сканирование EAN и определение по нему номенклатуры из «nomen.json» (только среди позиций номенклатуры с "NomenType": 1)
+                    nomenIn = DaoMem.getDaoMem().findNomenInAlcoByBarCode(barCode);
+                    if (nomenIn == null) {
+                        MessageUtils.playSound(R.raw.alarm);
+                        MessageUtils.showModalMessage(this, "Внимание!", "Товар по штрихкоду " + barCode + ", не найден. Обратитесь к категорийному менеджеру. Бутылка не будет учтена в фактическом количестве");
+                        return;
+                    }
+                    // если найден,
+                    InvRecContent irc = ActInvRecContent.fillInvRecContent(invRec, nomenIn, null);
+                    proceedOneBottle(irc, nomenIn);
+                    return;
+                }
+                // искать товар в nomen.json
+                nomenIn = DaoMem.getDaoMem().findNomenInByBarCode(barCode);
+                //  Если номенклатура по ШК не найдена — модальное сообщение «», прерывание обработки события
+                if (nomenIn == null) {
+                    MessageUtils.showModalMessage(this, "Внимание!", "Товар по штрихкоду " + barCode + ", не найден. Обратитесь к категорийному менеджеру");
+                    return;
+                }
+                // если найден, то в соответствии с NomenType:
+                switch (nomenIn.getNomenType()) {
+                    case NomenIn.NOMENTYPE_ALCO_MARK:
+                        if (!((InvIn)invRec.getDocIn()).ableDirectInput()) {
+                            MessageUtils.showModalMessage(this, "Внимание!", "Маркированный алкоголь. Необходимо сканировать марку");
+                        } else {
+                            // по NomenID искать товарную позицию документа и открыть ее карточку (если такой не было: добавить и открыть)
+                            InvRecContent irc = ActInvRecContent.fillInvRecContent(invRec, nomenIn, null);
+                            pickRec(this, invRec.getDocId(), irc, 0, null, false, false);
+                        }
+                        break;
+                    case NomenIn.NOMENTYPE_ALCO_OTHER:
+                    case NomenIn.NOMENTYPE_ALCO_NOMARK:
+                        // по NomenID искать товарную позицию документа и открыть ее карточку (если такой не было: добавить и открыть)
+                        InvRecContent irc = ActInvRecContent.fillInvRecContent(invRec, nomenIn, null);
+                        pickRec(this, invRec.getDocId(), irc, 0, null, false, false);
+                        break;
+                    case NomenIn.NOMENTYPE_ALCO_TOBACCO:
+                        // вывести список МРЦ (из записи nomen.json) для выбора пользователем
+                        // после выбора пользователем МРЦ, по NomenID и МРЦ искать товарную позицию документа и открыть ее карточку (если такой не было: добавить и открыть)
+                        ActInvRec.chooseMRC(this, nomenIn, nomenIn.getMcArr(), this);
+                        break;
+                }
+                break;
+            case PDF417:
+            case DATAMATRIX:
+                if (currentState == ActInvRecContent.STATE_SCAN_EAN) {
+                    MessageUtils.showModalMessage(this, "Внимание!", "Сканируйте штрихкод");
+                    return;
+                }
+                if (((InvIn)invRec.getDocIn()).ableDirectInput()) {
+                    MessageUtils.playSound(R.raw.scan_ean_inv);
+                    return;
+                }
+
+                // выполнить проверку корректности ШК по длине:  PDF-417 должна быть 68 символов,  DataMatrix – 150
+                if (barCodeType == PDF417 && barCode.length() != 68) {
+                    MessageUtils.showModalMessage(this, "Внимание!", "Неверная длина сканированного ШК, повторите сканирование марки (должна быть 68, фактически " + barCode.length());
+                    return;
+                }
+                if (barCodeType == DATAMATRIX && barCode.length() != 150) {
+                    MessageUtils.showModalMessage(this, "Внимание!", "Неверная длина сканированного ШК, повторите сканирование марки (должна быть 150, фактически " + barCode.length());
+                    return;
+                }
+                // искать марку среди ранее сканированных во всех позициях документа
+                DaoMem.CheckMarkScannedResult markScanned = DaoMem.getDaoMem().checkMarkScanned(invRec, barCode);
+                if (markScanned != null) {
+                    // Если марка найдена — открыть товарную позицию
+                    InvRecContent irc = ActInvRecContent.fillInvRecContent(invRec, markScanned.recContent.getNomenIn(), null);
+                    message = "Эта марка ранее уже была отсканирована в этом задании в позиции " + markScanned.recContent.getPosition() + " товара " + markScanned.recContent.getNomenIn().getName();
+                    pickRec(this, invRec.getDocId(), irc, 0, null, false, false);
+                    return;
+                }
+                // выполнить проверку допустимости добавления этой марки, типы проверяемых марок зависят от состояния CheckMark в справочнике магазинов shops.json:
+                //- «DataMatrix» - проверяются только марки DataMatrix (проверка PDF417 - пропускается)
+                //- «DataMatrixPDF417» - проверяются марки DataMatrix и PDF417
+                MarkIn markIn = null;
+                if (DaoMem.getDaoMem().isNeedToCheckMark(invRec.getInvIn().getCheckMark(), barCodeType)) {
+                    //
+                    // алгоритм допустимости добавления марки
+                    //
+                    // искать марку в справочнике «marks.json»
+                    markIn = DaoMem.getDaoMem().findMarkByBarcode(barCode);
+                    if (markIn == null) {
+                        // если не найдена: модальное сообщение
+                        message = "Марка не состоит на учете в магазине. Отложите эту бутылку для постановки на баланс. Бутылка будет учтена в фактическом наличии, но выставлять ее на продажу нельзя.";
+                        // создаем фейковую марку
+                        markIn = new MarkIn();
+                        markIn.setMark(barCode);
+                    }
+                } else {
+                    // создаем фейковую марку
+                    markIn = new MarkIn();
+                    markIn.setMark(barCode);
+                }
+                this.scannedMarkIn = markIn;
+                // если NomenID не определен (может быть определен на предыдущих шагах) — попытка определения по справочнику «alccodes.json»
+                if (StringUtils.isEmptyOrNull(markIn.getNomenId())) {
+                    // Если AlcCode не определен, то:
+                    //- для марок DataMatrix: пропустить этап определения по справочнику «alccodes.json»
+                    //- для марок PDF417: декодировать текст марки в алкокод
+                    if (barCodeType == PDF417 && StringUtils.isEmptyOrNull(markIn.getAlcCode())) {
+                        markIn.setAlcCode(BarcodeObject.extractAlcode(barCode));
+                    }
+                    // искать алкокод в справочнике «alccodes.json». Если найден -  сохранить значение NomenID из записи с алкокодом
+                    AlcCodeIn alcCodeIn = DaoMem.getDaoMem().findAlcCode(markIn.getAlcCode());
+                    if (alcCodeIn != null) {
+                        markIn.setNomenId(alcCodeIn.getNomenId());
+                    }
+                }
+                // если NomenID не определен
+                if (StringUtils.isEmptyOrNull(markIn.getNomenId())) {
+                    // 8.1) подсказку изменить на «Сканируйте штрихкод»
+                    this.currentState = ActInvRecContent.STATE_SCAN_EAN;
+                    // 8.2) Звуковое сообщение «Сканируйте штрихкод»
+                    MessageUtils.playSound(R.raw.scan_ean_inv);
+                    //updateData();
+                    return;
+                }
+                NomenIn nomenIn2 = DaoMem.getDaoMem().findNomenInAlcoByNomenId(markIn.getNomenId());
+                if (nomenIn2 == null) {
+                    MessageUtils.showModalMessage(this, "Внимание!", "Товар по марке " + barCode + ", не найден. Обратитесь к категорийному менеджеру");
+                    return;
+                }
+                InvRecContent irc = ActInvRecContent.fillInvRecContent(invRec, nomenIn2, null);
+                proceedOneBottle(irc, nomenIn2);
+                break;
+            default:
+                if (currentState == ActInvRecContent.STATE_SCAN_EAN) {
+                    MessageUtils.showModalMessage(this, "Внимание!", "Неврный тип штрихкода. Сканируйте штрихкод");
+                } else {
+                    MessageUtils.showModalMessage(this, "Внимание!", "Неврный тип штрихкода. Сканируйте марку");
+                }
+        }
     }
 
     public void onActivityResult(int requestCode, int resultCode, Intent i){
@@ -243,5 +395,13 @@ public class ActInvRec extends ActBaseDocRec implements PickMRCCallback{
         // переход к карточке этой строки
         pickRec(this, invRec.getDocId(), irc, 0, null, false, false);
     }
+
+    private void proceedOneBottle(InvRecContent invRecContent, NomenIn nomenIn) {
+        ActInvRecContent.proceedOneBottle(invRec, invRecContent, nomenIn, scannedMarkIn);
+        this.currentState = ActInvRecContent.STATE_SCAN_ANY;
+        this.scannedMarkIn = null;
+        pickRec(this, invRec.getDocId(), invRecContent, 0, null, false, false);
+    }
+
 }
 

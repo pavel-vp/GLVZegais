@@ -29,6 +29,7 @@ public abstract class ActBaseDocRec extends Activity implements BarcodeReader.Ba
     public static final String RECCONTENT_LASTMARK = "LASTMARK";
     public static final String RECCONTENT_ISBOXSCANNED = "ISBOXSCANNED";
     public static final String RECCONTENT_ISOPENBYSCAN = "ISOPENBYSCAN";
+    public static final String RECCONTENT_MESSAGE = "MESSAGE";
 
     protected DocRecHolder docRecHolder;
     protected CheckBox cbFilter;
