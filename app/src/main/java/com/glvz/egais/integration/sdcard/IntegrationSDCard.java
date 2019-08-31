@@ -13,12 +13,15 @@ import com.glvz.egais.integration.model.*;
 import com.glvz.egais.integration.model.doc.BaseRecOutput;
 import com.glvz.egais.integration.model.doc.DocIn;
 import com.glvz.egais.integration.model.doc.checkmark.CheckMarkIn;
+import com.glvz.egais.integration.model.doc.checkmark.CheckMarkRecOutput;
 import com.glvz.egais.integration.model.doc.findmark.FindMarkIn;
 import com.glvz.egais.integration.model.doc.income.IncomeIn;
 import com.glvz.egais.integration.model.doc.income.IncomeRecOutput;
 import com.glvz.egais.integration.model.doc.inv.InvIn;
+import com.glvz.egais.integration.model.doc.inv.InvRecOutput;
 import com.glvz.egais.integration.model.doc.move.MoveIn;
 import com.glvz.egais.integration.model.doc.move.MoveRecOutput;
+import com.glvz.egais.integration.model.doc.writeoff.WriteoffRecOutput;
 import com.glvz.egais.model.BaseRec;
 import com.glvz.egais.model.income.IncomeRec;
 import com.glvz.egais.model.writeoff.WriteoffRec;
@@ -55,7 +58,6 @@ public class IntegrationSDCard implements Integration {
     private static final String DOC_PREFIX_INCOME = "TTN";
     private static final String DOC_PREFIX_MOVE = "DOCMOVE";
     private static final String DOC_PREFIX_CHECKMARK = "CHECK";
-    private static final String DOC_PREFIX_WRITEOFF = "WRITEOFF";
     private static final String DOC_PREFIX_FINDMARK = "FINDMARK";
     private static final String DOC_PREFIX_INV = "INV";
 
@@ -374,6 +376,102 @@ public class IntegrationSDCard implements Integration {
                             toDelete = true;
                         }
                     } catch (IOException e) {
+                        e.printStackTrace();
+                        toDelete = true;
+                    }
+                }
+            }
+            // Списание
+            if (file.getName().toUpperCase().startsWith(WriteoffRec.TYEDOC_WRITEOFF)) {
+                // Если это экспорт
+                if (file.getAbsolutePath().contains("/" + OUT_DIR + "/")) {
+                    try {
+                        WriteoffRecOutput writeoffRecOutput = objectMapper.readValue(file, WriteoffRecOutput.class);
+                        Date d = StringUtils.jsonBottlingStringToDate(writeoffRecOutput.getDate());
+                        if (d != null && d.before(calendar.getTime())) {
+                            toDelete = true;
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        toDelete = true;
+                    }
+                }
+            }
+            // Проверка марок
+            if (file.getName().toUpperCase().startsWith(DOC_PREFIX_CHECKMARK)) {
+                // Если это импорт
+                if (file.getAbsolutePath().contains("/" + IN_DIR + "/")) {
+                    try {
+                        CheckMarkIn checkMarkIn = objectMapper.readValue(file, CheckMarkIn.class);
+                        Date d = StringUtils.jsonStringToDate(checkMarkIn.getDate());
+                        if (d.before(calendar.getTime())) {
+                            toDelete = true;
+                        } else {
+                            res.add(checkMarkIn.getDocId());
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        toDelete = true;
+                    }
+                }
+                // Если это экспорт
+                if (file.getAbsolutePath().contains("/" + OUT_DIR + "/")) {
+                    try {
+                        CheckMarkRecOutput checkMarkRecOutput = objectMapper.readValue(file, CheckMarkRecOutput.class);
+                        Date d = StringUtils.jsonStringToDate(checkMarkRecOutput.getDate());
+                        if (d.before(calendar.getTime())) {
+                            toDelete = true;
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        toDelete = true;
+                    }
+                }
+            }
+            // Поиск марок
+            if (file.getName().toUpperCase().startsWith(DOC_PREFIX_FINDMARK)) {
+                // Если это импорт
+                if (file.getAbsolutePath().contains("/" + IN_DIR + "/")) {
+                    try {
+                        FindMarkIn findMarkIn = objectMapper.readValue(file, FindMarkIn.class);
+                        Date d = StringUtils.jsonStringToDate(findMarkIn.getDate());
+                        if (d.before(calendar.getTime())) {
+                            toDelete = true;
+                        } else {
+                            res.add(findMarkIn.getDocId());
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        toDelete = true;
+                    }
+                }
+            }
+            // Инвентаризация
+            if (file.getName().toUpperCase().startsWith(DOC_PREFIX_INV)) {
+                // Если это импорт
+                if (file.getAbsolutePath().contains("/" + IN_DIR + "/")) {
+                    try {
+                        InvIn invIn = objectMapper.readValue(file, InvIn.class);
+                        Date d = StringUtils.jsonStringToDate(invIn.getDate());
+                        if (d.before(calendar.getTime())) {
+                            toDelete = true;
+                        } else {
+                            res.add(invIn.getDocId());
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        toDelete = true;
+                    }
+                }
+                // Если это экспорт
+                if (file.getAbsolutePath().contains("/" + OUT_DIR + "/")) {
+                    try {
+                        InvRecOutput invRecOutput = objectMapper.readValue(file, InvRecOutput.class);
+                        Date d = StringUtils.jsonStringToDate(invRecOutput.getDate());
+                        if (d.before(calendar.getTime())) {
+                            toDelete = true;
+                        }
+                    } catch (Exception e) {
                         e.printStackTrace();
                         toDelete = true;
                     }

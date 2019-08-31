@@ -359,7 +359,15 @@ public class ActInvRec extends ActBaseDocRec implements PickMRCCallback{
                                 String mrc = mrcArr[choice[0]];
                                 cb.onSelectMRCCallback(nomenIn, Double.valueOf(mrc));
                             }
-                        }).show();
+                        })
+                        .setNegativeButton("Отмена" , new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                // По нажатию - ввод количества прекратить, вернуться в форму документа для ожидания сканирования нового товара
+                                cb.onCancelMRCCallback();
+                            }
+                        })
+                        .show();
             }
         });
     }
@@ -394,6 +402,12 @@ public class ActInvRec extends ActBaseDocRec implements PickMRCCallback{
         }
         // переход к карточке этой строки
         pickRec(this, invRec.getDocId(), irc, 0, null, false, false);
+    }
+
+    @Override
+    public void onCancelMRCCallback() {
+        this.currentState = ActInvRecContent.STATE_SCAN_ANY;
+        this.scannedMarkIn = null;
     }
 
     private void proceedOneBottle(InvRecContent invRecContent, NomenIn nomenIn) {

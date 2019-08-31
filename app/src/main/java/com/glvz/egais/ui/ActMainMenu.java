@@ -47,7 +47,7 @@ public class ActMainMenu extends Activity {
 
     private boolean checkIfLoaded() {
         if (DaoMem.getDaoMem().getMapInvRec() != null) return true;
-        MessageUtils.showToastMessage("Необходимо загрузить документы !");
+        MessageUtils.showToastMessage("Необходимо загрузить данные !");
         return false;
     }
 

@@ -1299,7 +1299,7 @@ public class DaoMem {
     }
 
     public boolean isNeedToCheckMarkForWriteoff(String typeDoc, BarcodeObject.BarCodeType barCodeType) {
-        if (WriteoffRec.TYEDOC_WRIEOFF.equals(typeDoc) ) {
+        if (WriteoffRec.TYEDOC_WRITEOFF.equals(typeDoc) ) {
             return barCodeType == BarcodeObject.BarCodeType.DATAMATRIX;
         }
         // return

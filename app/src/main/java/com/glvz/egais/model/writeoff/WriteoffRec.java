@@ -1,6 +1,5 @@
 package com.glvz.egais.model.writeoff;
 
-import android.net.wifi.WifiInfo;
 import com.glvz.egais.dao.DaoMem;
 import com.glvz.egais.integration.model.doc.BaseRecOutput;
 import com.glvz.egais.integration.model.doc.DocContentIn;
@@ -14,7 +13,7 @@ import java.util.*;
 
 public class WriteoffRec extends BaseRec {
 
-    public static final String TYEDOC_WRIEOFF = "WRITEOFF";
+    public static final String TYEDOC_WRITEOFF = "WRITEOFF";
     public static final String TYEDOC_RETURN = "RETURN";
     public static final String KEY_DOCNUM = "key_docnum";
     public static final String KEY_DATE = "key_date";
@@ -39,7 +38,7 @@ public class WriteoffRec extends BaseRec {
         this.typeDoc = typeDoc;
         this.date = StringUtils.formatDateDisplay(Calendar.getInstance().getTime());
         this.docNum = DaoMem.getDaoMem().getNewDocId();
-        this.docId = TYEDOC_WRIEOFF+"-"+docNum;
+        this.docId = TYEDOC_WRITEOFF +"-"+docNum;
     }
 
     public WriteoffRec(String docId) {

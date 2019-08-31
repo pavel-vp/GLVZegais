@@ -123,13 +123,13 @@ public class ActFindMarkRec extends ActBaseDocRec {
         switch (barCodeType) {
             case EAN8:
             case EAN13:
-                MessageUtils.showModalMessage(this, "Внимание!", "Сканируйте марку нового образца");
+                MessageUtils.showModalMessage(this, "Внимание!", "Сканируйте марки с алкогольной продукции");
                 break;
             case PDF417:
             case DATAMATRIX:
                 // выполнить проверку корректности ШК по длине:  PDF-417 должна быть 68 символов,  DataMatrix – 150
                 if (barCodeType == DATAMATRIX && barCode.length() != 150) {
-                    MessageUtils.showModalMessage(this, "Внимание!", "Неверная длина считанного штрихкода ("+ barCode.length()+"). Сканируйте марку нового образца");
+                    MessageUtils.showModalMessage(this, "Внимание!", "Неверная длина считанного штрихкода ("+ barCode.length()+"). Сканируйте марки с алкогольной продукции");
                     return;
                 }
                 // проверить марку на соответствие маркам в задании
@@ -168,7 +168,7 @@ public class ActFindMarkRec extends ActBaseDocRec {
                 updateData();
                 break;
             default:
-                MessageUtils.showModalMessage(this, "Внимание!", "Неврный тип штрихкода. Сканируйте марку");
+                MessageUtils.showModalMessage(this, "Внимание!", "Неврный тип штрихкода. Сканируйте марки с алкогольной продукции");
         }
 
     }

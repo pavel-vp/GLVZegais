@@ -13,7 +13,6 @@ import com.glvz.egais.model.writeoff.WriteoffRec;
 import com.glvz.egais.service.writeoff.WriteoffArrayAdapter;
 import com.glvz.egais.ui.doc.ActBaseDocList;
 import com.glvz.egais.ui.doc.ActBaseDocRec;
-import com.glvz.egais.utils.MessageUtils;
 
 public class ActWriteoffList extends ActBaseDocList {
 
@@ -39,7 +38,7 @@ public class ActWriteoffList extends ActBaseDocList {
                         .setNegativeButton("Списание (или перемещение)", new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
-                                createAndShowNewDoc(WriteoffRec.TYEDOC_WRIEOFF);
+                                createAndShowNewDoc(WriteoffRec.TYEDOC_WRITEOFF);
                             }
                         })
                         .setPositiveButton("Возврат поставщику", new DialogInterface.OnClickListener() {

@@ -27,7 +27,7 @@
         android:layout_height="wrap_content"
         android:text="Версия: 0.0.1"
         android:textAlignment="center"
-        android:textSize="18sp" />
+        android:textSize="36sp" />
 
 
     <TextView

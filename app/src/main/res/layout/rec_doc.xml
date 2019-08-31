@@ -41,7 +41,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:textAppearance="?android:attr/textAppearanceMedium"
-                    android:text="ООО Родник"
+                    android:text=""
                     android:textStyle="bold"
                     android:maxLines="3"
                     android:id="@+id/tvNameagent" />

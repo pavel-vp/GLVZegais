@@ -410,4 +410,12 @@ public class ActInvRecContent extends Activity implements BarcodeReader.BarcodeL
         // переход к карточке этой строки
         fillActWithNomenIdPosition(nomenIn, mrc);
     }
+
+    @Override
+    public void onCancelMRCCallback() {
+        this.currentState = STATE_SCAN_ANY;
+        this.scannedMarkIn = null;
+        updateData();
+        finish();
+    }
 }
