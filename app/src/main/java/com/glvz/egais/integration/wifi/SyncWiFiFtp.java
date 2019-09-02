@@ -187,19 +187,23 @@ public class SyncWiFiFtp {
 
             for (LocalFileRec localFileRec : localFileList) {
                 if (localFileRec.isProcessed() || !localFileRec.isUploaded()) {
-                    Log.v("DaoMem", "Local file->: " + localFileRec);
+                    try {
+                        Log.v("DaoMem", "Local file->: " + localFileRec);
 
-                    boolean isDeleted = ftpClient.deleteFile("/" + rec.getRemoteDir() + "/" + localFileRec.getFileName());
-                    int replyCode = ftpClient.getReplyCode();
-                    String replyString = ftpClient.getReplyString();
-                    Log.v("DaoMem", "isDeleted: " + isDeleted + ",replyCode:" + replyCode + ",replyString:" + replyString);
-                    InputStream inputStream = new FileInputStream(new File(localFileRec.getPath() + "/" + localFileRec.getFileName()));
-                    boolean isWritten = ftpClient.storeFile("/" + rec.getRemoteDir() + "/" + localFileRec.getFileName(), inputStream);
-                    replyCode = ftpClient.getReplyCode();
-                    replyString = ftpClient.getReplyString();
-                    Log.v("DaoMem", "isWritten: " + isWritten + ",replyCode:" + replyCode + ",replyString:" + replyString);
-                    inputStream.close();
-                    localFileRec.setUploaded(isWritten);
+                        boolean isDeleted = ftpClient.deleteFile("/" + rec.getRemoteDir() + "/" + localFileRec.getFileName());
+                        int replyCode = ftpClient.getReplyCode();
+                        String replyString = ftpClient.getReplyString();
+                        Log.v("DaoMem", "isDeleted: " + isDeleted + ",replyCode:" + replyCode + ",replyString:" + replyString);
+                        InputStream inputStream = new FileInputStream(new File(localFileRec.getPath() + "/" + localFileRec.getFileName()));
+                        boolean isWritten = ftpClient.storeFile("/" + rec.getRemoteDir() + "/" + localFileRec.getFileName(), inputStream);
+                        replyCode = ftpClient.getReplyCode();
+                        replyString = ftpClient.getReplyString();
+                        Log.v("DaoMem", "isWritten: " + isWritten + ",replyCode:" + replyCode + ",replyString:" + replyString);
+                        inputStream.close();
+                        localFileRec.setUploaded(isWritten);
+                    } catch (Exception e) {
+                        Log.e("DaoMem", e.getMessage());
+                    }
                 }
             }
             syncro.writeLocalChangedFiles(rec.getLocalDir(), localFileList);

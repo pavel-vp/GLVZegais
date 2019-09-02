@@ -35,6 +35,8 @@ import com.honeywell.aidc.BarcodeReadEvent;
 
 import java.util.*;
 
+import static com.glvz.egais.ui.doc.inv.ActInvRecContent.STATE_SCAN_ANY;
+import static com.glvz.egais.ui.doc.inv.ActInvRecContent.STATE_SCAN_EAN;
 import static com.glvz.egais.utils.BarcodeObject.BarCodeType.DATAMATRIX;
 import static com.glvz.egais.utils.BarcodeObject.BarCodeType.PDF417;
 
@@ -43,7 +45,7 @@ public class ActInvRec extends ActBaseDocRec implements PickMRCCallback{
     private static final int ENTERNOMENID_RETCODE = 1;
     private InvRec invRec;
     private TextView tvCaption;
-    private int currentState = ActInvRecContent.STATE_SCAN_ANY;
+    private int currentState = STATE_SCAN_ANY;
     private MarkIn scannedMarkIn = null;
     private String message = null;
 
@@ -85,7 +87,24 @@ public class ActInvRec extends ActBaseDocRec implements PickMRCCallback{
         list.addAll(newList);
         adapter.notifyDataSetChanged();
         // В зависимости от состояния - вывести текст на кнопке
-        tvCaption.setText("Сканируйте марку или штрихкод");
+        updateCaption();
+    }
+
+    private void updateCaption() {
+        this.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                // Текст надписи зависит от текущего статуса
+                switch (currentState) {
+                    case STATE_SCAN_ANY:
+                        tvCaption.setText("Сканируйте марку или ШК");
+                        break;
+                    case STATE_SCAN_EAN:
+                        tvCaption.setText("Сканируйте ШК товара");
+                        break;
+                }
+            }
+        });
     }
 
     @Override
@@ -162,6 +181,12 @@ public class ActInvRec extends ActBaseDocRec implements PickMRCCallback{
     }
 
     @Override
+    public void onResume() {
+        super.onResume();
+        updateCaption();
+    }
+
+    @Override
     protected void pickRec(Context ctx, String docId, BaseRecContent req, int addQty, String barcode, boolean isBoxScanned, boolean isOpenByScan) {
         // Открыть форму строки
         // Перейти в форму одной строки позиции
@@ -183,12 +208,15 @@ public class ActInvRec extends ActBaseDocRec implements PickMRCCallback{
             case EAN8:
             case EAN13:
                 NomenIn nomenIn = null;
-                if (currentState == ActInvRecContent.STATE_SCAN_EAN) {
+                if (currentState == STATE_SCAN_EAN) {
                     // ожидание сканирование EAN и определение по нему номенклатуры из «nomen.json» (только среди позиций номенклатуры с "NomenType": 1)
                     nomenIn = DaoMem.getDaoMem().findNomenInAlcoByBarCode(barCode);
                     if (nomenIn == null) {
                         MessageUtils.playSound(R.raw.alarm);
                         MessageUtils.showModalMessage(this, "Внимание!", "Товар по штрихкоду " + barCode + ", не найден. Обратитесь к категорийному менеджеру. Бутылка не будет учтена в фактическом количестве");
+                        this.currentState = STATE_SCAN_ANY;
+                        this.scannedMarkIn = null;
+                        updateCaption();
                         return;
                     }
                     // если найден,
@@ -229,7 +257,7 @@ public class ActInvRec extends ActBaseDocRec implements PickMRCCallback{
                 break;
             case PDF417:
             case DATAMATRIX:
-                if (currentState == ActInvRecContent.STATE_SCAN_EAN) {
+                if (currentState == STATE_SCAN_EAN) {
                     MessageUtils.showModalMessage(this, "Внимание!", "Сканируйте штрихкод");
                     return;
                 }
@@ -268,7 +296,7 @@ public class ActInvRec extends ActBaseDocRec implements PickMRCCallback{
                     markIn = DaoMem.getDaoMem().findMarkByBarcode(barCode);
                     if (markIn == null) {
                         // если не найдена: модальное сообщение
-                        message = "Марка не состоит на учете в магазине. Отложите эту бутылку для постановки на баланс. Бутылка будет учтена в фактическом наличии, но выставлять ее на продажу нельзя.";
+                        MessageUtils.showModalMessage(this, "Внимание!", "Марка не состоит на учете в магазине. Отложите эту бутылку для постановки на баланс. Бутылка будет учтена в фактическом наличии, но выставлять ее на продажу нельзя.");
                         // создаем фейковую марку
                         markIn = new MarkIn();
                         markIn.setMark(barCode);
@@ -296,10 +324,10 @@ public class ActInvRec extends ActBaseDocRec implements PickMRCCallback{
                 // если NomenID не определен
                 if (StringUtils.isEmptyOrNull(markIn.getNomenId())) {
                     // 8.1) подсказку изменить на «Сканируйте штрихкод»
-                    this.currentState = ActInvRecContent.STATE_SCAN_EAN;
+                    this.currentState = STATE_SCAN_EAN;
                     // 8.2) Звуковое сообщение «Сканируйте штрихкод»
-                    MessageUtils.playSound(R.raw.scan_ean_inv);
-                    //updateData();
+                    MessageUtils.playSound(R.raw.scan_ean);
+                    updateCaption();
                     return;
                 }
                 NomenIn nomenIn2 = DaoMem.getDaoMem().findNomenInAlcoByNomenId(markIn.getNomenId());
@@ -311,7 +339,7 @@ public class ActInvRec extends ActBaseDocRec implements PickMRCCallback{
                 proceedOneBottle(irc, nomenIn2);
                 break;
             default:
-                if (currentState == ActInvRecContent.STATE_SCAN_EAN) {
+                if (currentState == STATE_SCAN_EAN) {
                     MessageUtils.showModalMessage(this, "Внимание!", "Неврный тип штрихкода. Сканируйте штрихкод");
                 } else {
                     MessageUtils.showModalMessage(this, "Внимание!", "Неврный тип штрихкода. Сканируйте марку");
@@ -406,13 +434,14 @@ public class ActInvRec extends ActBaseDocRec implements PickMRCCallback{
 
     @Override
     public void onCancelMRCCallback() {
-        this.currentState = ActInvRecContent.STATE_SCAN_ANY;
+        this.currentState = STATE_SCAN_ANY;
         this.scannedMarkIn = null;
+        updateCaption();
     }
 
     private void proceedOneBottle(InvRecContent invRecContent, NomenIn nomenIn) {
         ActInvRecContent.proceedOneBottle(invRec, invRecContent, nomenIn, scannedMarkIn);
-        this.currentState = ActInvRecContent.STATE_SCAN_ANY;
+        this.currentState = STATE_SCAN_ANY;
         this.scannedMarkIn = null;
         pickRec(this, invRec.getDocId(), invRecContent, 0, null, false, false);
     }
