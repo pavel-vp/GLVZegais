@@ -214,7 +214,8 @@ public class ActInvRecContent extends Activity implements BarcodeReader.BarcodeL
                 }
                 invRecContentHolder.setItem(invRecContent, 0, DocContentArrayAdapter.RECCONTENT_MODE);
                 // Недоступна у товаров "NomenType": 1 (маркированный алкоголь)
-                if (invRecContent.getNomenIn().getNomenType() == NomenIn.NOMENTYPE_ALCO_MARK && !((InvIn)invRec.getDocIn()).ableDirectInput() ) {
+                if (invRecContent.getNomenIn() == null ||
+                        (invRecContent.getNomenIn().getNomenType() == NomenIn.NOMENTYPE_ALCO_MARK && !((InvIn)invRec.getDocIn()).ableDirectInput() )) {
                     btnAdd.setEnabled(false);
                     edQtyAdd.setEnabled(false);
                 } else {
@@ -326,7 +327,7 @@ public class ActInvRecContent extends Activity implements BarcodeReader.BarcodeL
                     markIn = DaoMem.getDaoMem().findMarkByBarcode(barCode);
                     if (markIn == null) {
                         // если не найдена: модальное сообщение
-                        MessageUtils.showModalMessage(this, "Внимание!", "Марка не состоит на учете в магазине. Отложите эту бутылку для постановки на баланс. Бутылка будет учтена в фактическом наличии, но выставлять ее на продажу нельзя.\\n\\nТеперь сканируйте штрихкод с этой же бутылки для сопоставления с номенклатурой.");
+                        MessageUtils.showModalMessage(this, "Внимание!", "Марка не состоит на учете в магазине. Отложите эту бутылку для постановки на баланс. Бутылка будет учтена в фактическом наличии, но выставлять ее на продажу нельзя.\n\nТеперь сканируйте штрихкод с этой же бутылки для сопоставления с номенклатурой.");
                         // создаем фейковую марку
                         markIn = new MarkIn();
                         markIn.setMark(barCode);
