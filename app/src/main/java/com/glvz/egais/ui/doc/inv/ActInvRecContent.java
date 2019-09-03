@@ -247,11 +247,13 @@ public class ActInvRecContent extends Activity implements BarcodeReader.BarcodeL
                     if (nomenIn == null) {
                         MessageUtils.playSound(R.raw.alarm);
                         MessageUtils.showModalMessage(this, "Внимание!", "Товар по штрихкоду " + barCode + ", не найден. Обратитесь к категорийному менеджеру. Бутылка не будет учтена в фактическом количестве");
+                        this.currentState = STATE_SCAN_ANY;
+                        this.scannedMarkIn = null;
+                        updateData();
                         return;
                     }
                     // если найден,
                     fillActWithNomenIdPosition(nomenIn, null);
-
                     proceedOneBottle(nomenIn);
                     return;
                 }
@@ -354,7 +356,7 @@ public class ActInvRecContent extends Activity implements BarcodeReader.BarcodeL
                     // 8.1) подсказку изменить на «Сканируйте штрихкод»
                     this.currentState = STATE_SCAN_EAN;
                     // 8.2) Звуковое сообщение «Сканируйте штрихкод»
-                    MessageUtils.playSound(R.raw.scan_ean_inv);
+                    MessageUtils.playSound(R.raw.scan_ean);
                     updateData();
                     return;
                 }
