@@ -81,6 +81,14 @@ public class InvRec extends BaseRec {
             }
 
             contentOutput.setQtyFact(invRecContent.getQtyAccepted());
+            if (invRecContent.getManualMrc() != null) {
+                contentOutput.setMrc(invRecContent.getManualMrc());
+            } else {
+                if (invRecContent.getContentIn() != null) {
+                    contentOutput.setMrc(invRecContent.getContentIn().getMrc());
+                }
+
+            }
 
             Set<BaseRecContentMark> scannedMarkSet = new HashSet<>(invRecContent.getBaseRecContentMarkList());
 

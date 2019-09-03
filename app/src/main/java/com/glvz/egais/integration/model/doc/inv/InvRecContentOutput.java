@@ -16,6 +16,8 @@ public class InvRecContentOutput extends BaseRecContentOutput {
     private Double qtyFact;
     @JsonProperty(value="Marks")
     private String[] marks;
+    @JsonProperty(value="MRC")
+    private Double mrc;
 
     public String getPosition() {
         return position;
@@ -57,6 +59,15 @@ public class InvRecContentOutput extends BaseRecContentOutput {
         this.marks = marks;
     }
 
+    public Double getMrc() {
+        return mrc;
+    }
+
+    public void setMrc(Double mrc) {
+        this.mrc = mrc;
+    }
+
+
     @Override
     public String toString() {
         return "InvRecContentOutput{" +
@@ -64,6 +75,7 @@ public class InvRecContentOutput extends BaseRecContentOutput {
                 ", nomenId='" + nomenId + '\'' +
                 ", qty=" + qty +
                 ", qtyFact=" + qtyFact +
+                ", mrc=" + mrc +
                 ", marks=" + Arrays.toString(marks) +
                 '}';
     }
