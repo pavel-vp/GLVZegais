@@ -326,7 +326,7 @@ public class ActInvRecContent extends Activity implements BarcodeReader.BarcodeL
                     markIn = DaoMem.getDaoMem().findMarkByBarcode(barCode);
                     if (markIn == null) {
                         // если не найдена: модальное сообщение
-                        MessageUtils.showModalMessage(this, "Внимание!", "Марка не состоит на учете в магазине. Отложите эту бутылку для постановки на баланс. Бутылка будет учтена в фактическом наличии, но выставлять ее на продажу нельзя.");
+                        MessageUtils.showModalMessage(this, "Внимание!", "Марка не состоит на учете в магазине. Отложите эту бутылку для постановки на баланс. Бутылка будет учтена в фактическом наличии, но выставлять ее на продажу нельзя.\\n\\nТеперь сканируйте штрихкод с этой же бутылки для сопоставления с номенклатурой.");
                         // создаем фейковую марку
                         markIn = new MarkIn();
                         markIn.setMark(barCode);
