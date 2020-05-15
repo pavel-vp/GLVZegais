@@ -1,7 +1,8 @@
+<!-- LAG 2020-05-15 -->
 <resources>
     <string name="app_name">GLVZegais</string>
     <string name="path_exchange">GLVZ</string>
-    <string name="num_days_old">60</string>
+    <string name="num_days_old">14</string>
 
     <!-- CALCULATOR RES -->
     <string name="error">Error</string>
