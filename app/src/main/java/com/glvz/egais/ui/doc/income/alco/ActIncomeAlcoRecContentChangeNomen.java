@@ -1,4 +1,4 @@
-package com.glvz.egais.ui.doc.income;
+package com.glvz.egais.ui.doc.income.alco;
 
 import android.app.Activity;
 import android.content.DialogInterface;
@@ -22,7 +22,7 @@ import com.honeywell.aidc.BarcodeReader;
 
 import static com.glvz.egais.utils.BarcodeObject.BarCodeType.EAN13;
 
-public class ActIncomeRecContentChangeNomen extends Activity implements BarcodeReader.BarcodeListener {
+public class ActIncomeAlcoRecContentChangeNomen extends Activity implements BarcodeReader.BarcodeListener {
 
     TextView tvNameEgais;
     TextView tvCapacityEgais;
@@ -52,9 +52,9 @@ public class ActIncomeRecContentChangeNomen extends Activity implements BarcodeR
         setResources();
 
         Bundle extras = getIntent().getExtras();
-        String wbRegId = extras.getString(ActIncomeRec.REC_DOCID);
+        String wbRegId = extras.getString(ActIncomeAlcoRec.REC_DOCID);
         incomeRec = DaoMem.getDaoMem().getMapIncomeRec().get(wbRegId);
-        String position = extras.getString(ActIncomeRec.RECCONTENT_POSITION);
+        String position = extras.getString(ActIncomeAlcoRec.RECCONTENT_POSITION);
         incomeRecContent = (IncomeRecContent) DaoMem.getDaoMem().getRecContentByPosition(incomeRec, position);
 
     }
@@ -76,7 +76,7 @@ public class ActIncomeRecContentChangeNomen extends Activity implements BarcodeR
         btnCancel.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                ActIncomeRecContentChangeNomen.this.finish();
+                ActIncomeAlcoRecContentChangeNomen.this.finish();
             }
         });
 
@@ -85,7 +85,7 @@ public class ActIncomeRecContentChangeNomen extends Activity implements BarcodeR
             @Override
             public void onClick(View v) {
 
-                MessageUtils.ShowModalAndConfirm(ActIncomeRecContentChangeNomen.this, "ВНИМАНИЕ!", "Сопоставить с товаром?\n " +
+                MessageUtils.ShowModalAndConfirm(ActIncomeAlcoRecContentChangeNomen.this, "ВНИМАНИЕ!", "Сопоставить с товаром?\n " +
                                 "ЕГАИС:\n" +
                                 "Наименование: %s\n" +
                                 "Емкость: %s\n" +
@@ -99,9 +99,9 @@ public class ActIncomeRecContentChangeNomen extends Activity implements BarcodeR
                             public void onClick(DialogInterface dialog, int which) {
                                 incomeRecContent.setNomenIn(newNomenIn, newBarcode);
                                 Intent intent = new Intent();
-                                intent.putExtra(ActIncomeRecContent.NEWBARCODE, newBarcode);
+                                intent.putExtra(ActIncomeAlcoRecContent.NEWBARCODE, newBarcode);
                                 setResult(RESULT_OK, intent);
-                                ActIncomeRecContentChangeNomen.this.finish();
+                                ActIncomeAlcoRecContentChangeNomen.this.finish();
                             }
                         },
                         incomeRecContent.getContentIn().getName(),

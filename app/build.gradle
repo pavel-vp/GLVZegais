@@ -3,14 +3,14 @@ apply plugin: 'idea'
 
 android {
     compileSdkVersion 28
-    buildToolsVersion "25.0.0"
+    buildToolsVersion "29.0.2"
 
     defaultConfig {
         applicationId "com.glvz.egais"
-        minSdkVersion 19
-        targetSdkVersion 25
-        versionCode 15
-        versionName "15.0"
+        minSdkVersion 25
+        targetSdkVersion 28
+        versionCode 16
+        versionName "16.0"
     }
     buildTypes {
         release {
@@ -34,11 +34,11 @@ android {
 
 
 dependencies {
-    compile fileTree(include: ['*.jar'], dir: 'libs')
-    testCompile 'junit:junit:4.12'
-    compile 'com.android.support:appcompat-v7:25.3.1'
-    compile 'com.fasterxml.jackson.core:jackson-core:2.4.1'
-    compile 'com.fasterxml.jackson.core:jackson-annotations:2.4.1'
-    compile 'com.fasterxml.jackson.core:jackson-databind:2.4.1'
-    compile 'commons-net:commons-net:3.6'
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
+    testImplementation 'junit:junit:4.12'
+    implementation 'com.android.support:appcompat-v7:28.+'
+    implementation 'com.fasterxml.jackson.core:jackson-core:2.4.1'
+    implementation 'com.fasterxml.jackson.core:jackson-annotations:2.4.1'
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.4.1'
+    implementation 'commons-net:commons-net:3.6'
 }

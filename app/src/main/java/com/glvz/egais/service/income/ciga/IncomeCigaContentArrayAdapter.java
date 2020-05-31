@@ -1,4 +1,4 @@
-package com.glvz.egais.service.income;
+package com.glvz.egais.service.income.ciga;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
@@ -9,18 +9,19 @@ import com.glvz.egais.service.DocRecContentHolder;
 
 import java.util.List;
 
-public class IncomeContentArrayAdapter extends DocContentArrayAdapter {
+public class IncomeCigaContentArrayAdapter extends DocContentArrayAdapter {
 
-    public IncomeContentArrayAdapter(@NonNull Context context, int resource, @NonNull List<BaseRecContent> recContents) {
+    public IncomeCigaContentArrayAdapter(@NonNull Context context, int resource, @NonNull List<BaseRecContent> recContents) {
         super(context, resource, recContents);
     }
 
     @Override
     protected DocRecContentHolder getHolderOfRow(View row, boolean needCreate) {
         if (needCreate) {
-            return new IncomeRecContentHolder(row);
+            return new IncomeCigaRecContentHolder(row);
         } else {
-            return (IncomeRecContentHolder)row.getTag();
+            return (IncomeCigaRecContentHolder)row.getTag();
         }
     }
 }
+

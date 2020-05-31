@@ -1,4 +1,4 @@
-package com.glvz.egais.ui.doc.income;
+package com.glvz.egais.ui.doc.income.alco;
 
 import android.app.Activity;
 import android.content.Context;
@@ -22,7 +22,7 @@ import com.glvz.egais.model.income.*;
 import com.glvz.egais.service.DocContentArrayAdapter;
 import com.glvz.egais.service.PickBottliingDateCallback;
 import com.glvz.egais.service.TransferCallback;
-import com.glvz.egais.service.income.IncomeRecContentHolder;
+import com.glvz.egais.service.income.alco.IncomeAlcoRecContentHolder;
 import com.glvz.egais.utils.BarcodeObject;
 import com.glvz.egais.utils.MessageUtils;
 import com.glvz.egais.utils.StringUtils;
@@ -33,7 +33,7 @@ import com.honeywell.aidc.BarcodeReader;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ActIncomeRecContent extends Activity implements BarcodeReader.BarcodeListener, PickBottliingDateCallback, TransferCallback {
+public class ActIncomeAlcoRecContent extends Activity implements BarcodeReader.BarcodeListener, PickBottliingDateCallback, TransferCallback {
 
     private static final int CHANGENOMEN_REQUESTCODE = 1;
     public static final String NEWBARCODE = "barcode";
@@ -41,7 +41,7 @@ public class ActIncomeRecContent extends Activity implements BarcodeReader.Barco
     private String lastMark;
     private IncomeRec incomeRec;
     private IncomeRecContent incomeRecContent;
-    private IncomeRecContentHolder incomeRecContentHolder;
+    private IncomeAlcoRecContentHolder incomeRecContentHolder;
 
     TextView tvAction;
     EditText etQtyAccepted;
@@ -54,19 +54,19 @@ public class ActIncomeRecContent extends Activity implements BarcodeReader.Barco
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_incomereccontent);
+        setContentView(R.layout.activity_incomealcoreccontent);
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
         setResources();
 
         Bundle extras = getIntent().getExtras();
-        String wbRegId = extras.getString(ActIncomeRec.REC_DOCID);
+        String wbRegId = extras.getString(ActIncomeAlcoRec.REC_DOCID);
         IncomeRec ir = DaoMem.getDaoMem().getMapIncomeRec().get(wbRegId);
-        String position = extras.getString(ActIncomeRec.RECCONTENT_POSITION);
+        String position = extras.getString(ActIncomeAlcoRec.RECCONTENT_POSITION);
         IncomeRecContent irc = (IncomeRecContent) DaoMem.getDaoMem().getRecContentByPosition(ir, position);
-        String barcode = extras.getString(ActIncomeRec.RECCONTENT_LASTMARK);
-        int addQty = extras.getInt(ActIncomeRec.RECCONTENT_ADDQTY);
-        this.isBoxScanned = extras.getBoolean(ActIncomeRec.RECCONTENT_ISBOXSCANNED);
-        this.isOpenByScan = extras.getBoolean(ActIncomeRec.RECCONTENT_ISOPENBYSCAN);
+        String barcode = extras.getString(ActIncomeAlcoRec.RECCONTENT_LASTMARK);
+        int addQty = extras.getInt(ActIncomeAlcoRec.RECCONTENT_ADDQTY);
+        this.isBoxScanned = extras.getBoolean(ActIncomeAlcoRec.RECCONTENT_ISBOXSCANNED);
+        this.isOpenByScan = extras.getBoolean(ActIncomeAlcoRec.RECCONTENT_ISOPENBYSCAN);
 
         prepareActWithData(wbRegId, irc, addQty, barcode);
 
@@ -186,8 +186,8 @@ public class ActIncomeRecContent extends Activity implements BarcodeReader.Barco
     }
 
     private void setResources() {
-        View container = findViewById(R.id.inclRecPrihContent);
-        incomeRecContentHolder = new IncomeRecContentHolder(container);
+        View container = findViewById(R.id.inclRecIncomeAlcoContent);
+        incomeRecContentHolder = new IncomeAlcoRecContentHolder(container);
 
 
         tvAction = (TextView) findViewById(R.id.tvAction);
@@ -206,7 +206,7 @@ public class ActIncomeRecContent extends Activity implements BarcodeReader.Barco
                     } else {
                         proceedAddQtyInternal(addQty);
                         // После успешного вычисления - возврат в форму “Приход ЕГАИС”
-                        ActIncomeRecContent.this.finish();
+                        ActIncomeAlcoRecContent.this.finish();
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -219,7 +219,7 @@ public class ActIncomeRecContent extends Activity implements BarcodeReader.Barco
         btnClear.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                MessageUtils.ShowModalAndConfirm(ActIncomeRecContent.this, "Внимание!", "Очистить данные по позиции?",
+                MessageUtils.ShowModalAndConfirm(ActIncomeAlcoRecContent.this, "Внимание!", "Очистить данные по позиции?",
                         new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
@@ -241,10 +241,10 @@ public class ActIncomeRecContent extends Activity implements BarcodeReader.Barco
             @Override
             public void onClick(View v) {
                 Intent in = new Intent();
-                in.setClass(ActIncomeRecContent.this, ActIncomeRecContentChangeNomen.class);
-                in.putExtra(ActIncomeRec.REC_DOCID, incomeRec.getDocId());
-                in.putExtra(ActIncomeRec.RECCONTENT_POSITION, incomeRecContent.getPosition());
-                ActIncomeRecContent.this.startActivityForResult(in, CHANGENOMEN_REQUESTCODE);
+                in.setClass(ActIncomeAlcoRecContent.this, ActIncomeAlcoRecContentChangeNomen.class);
+                in.putExtra(ActIncomeAlcoRec.REC_DOCID, incomeRec.getDocId());
+                in.putExtra(ActIncomeAlcoRec.RECCONTENT_POSITION, incomeRecContent.getPosition());
+                ActIncomeAlcoRecContent.this.startActivityForResult(in, CHANGENOMEN_REQUESTCODE);
             }
         });
 
@@ -294,9 +294,9 @@ public class ActIncomeRecContent extends Activity implements BarcodeReader.Barco
                         }
                 }
                 int countToAddInFuture = 0;
-                if (ActIncomeRecContent.this.lastMark != null) {
+                if (ActIncomeAlcoRecContent.this.lastMark != null) {
                     // Посчитать количество добавляемое, в случае успеха сканирования ШК ЕАН (предварительное добавленное колво)
-                    countToAddInFuture = DaoMem.getDaoMem().calculateQtyToAdd(ActIncomeRecContent.this.incomeRec, ActIncomeRecContent.this.incomeRecContent, ActIncomeRecContent.this.lastMark);
+                    countToAddInFuture = DaoMem.getDaoMem().calculateQtyToAdd(ActIncomeAlcoRecContent.this.incomeRec, ActIncomeAlcoRecContent.this.incomeRecContent, ActIncomeAlcoRecContent.this.lastMark);
                 }
                 incomeRecContentHolder.setItem(incomeRecContent, countToAddInFuture, DocContentArrayAdapter.RECCONTENT_MODE);
                 if (incomeRecContent.getNomenIn() == null) {
@@ -404,14 +404,14 @@ public class ActIncomeRecContent extends Activity implements BarcodeReader.Barco
                 }
                 this.isBoxScanned = false;
                 // без сохранения предыдущего состояния - та же обработка что и в картчоке накладной
-                ActIncomeRec.ActionOnScanPDF417Wrapper actionOnScanPDF417Wrapper = ActIncomeRec.proceedPdf417(this, incomeRec, barcodeReadEvent.getBarcodeData(), this);
+                ActIncomeAlcoRec.ActionOnScanPDF417Wrapper actionOnScanPDF417Wrapper = ActIncomeAlcoRec.proceedPdf417(this, incomeRec, barcodeReadEvent.getBarcodeData(), this);
                 if (actionOnScanPDF417Wrapper != null) {
 
                     if (actionOnScanPDF417Wrapper.ircList.size() == 1) {
                         proceedWithPdf417AndBarcode(actionOnScanPDF417Wrapper.ircList.get(0), actionOnScanPDF417Wrapper.addQty, actionOnScanPDF417Wrapper.addQty == 0 ? null : barcodeReadEvent.getBarcodeData());
                     } else {
                         // тоже выбор дат....
-                        ActIncomeRec.pickBottlingDate(this, incomeRec.getDocId(), actionOnScanPDF417Wrapper.ircList, barcodeReadEvent.getBarcodeData(), this);
+                        ActIncomeAlcoRec.pickBottlingDate(this, incomeRec.getDocId(), actionOnScanPDF417Wrapper.ircList, barcodeReadEvent.getBarcodeData(), this);
                     }
                 }
                 break;
@@ -423,7 +423,7 @@ public class ActIncomeRecContent extends Activity implements BarcodeReader.Barco
                 }
                 this.isBoxScanned = false;
                 // без сохранения предыдущего состояния - та же обработка что и в картчоке накладной
-                ActIncomeRec.ActionOnScanDataMatrixWrapper actionOnScanDataMatrixWrapper = ActIncomeRec.proceedDataMatrix(this, incomeRec, barcodeReadEvent.getBarcodeData());
+                ActIncomeAlcoRec.ActionOnScanDataMatrixWrapper actionOnScanDataMatrixWrapper = ActIncomeAlcoRec.proceedDataMatrix(this, incomeRec, barcodeReadEvent.getBarcodeData());
                 if (actionOnScanDataMatrixWrapper != null) {
                     this.incomeRecContent = actionOnScanDataMatrixWrapper.irc;
                     if (actionOnScanDataMatrixWrapper.addQty > 0) {
@@ -455,7 +455,7 @@ public class ActIncomeRecContent extends Activity implements BarcodeReader.Barco
                 }
 
                 // без сохранения предыдущего состояния - та же обработка что и в картчоке накладной
-                incomeRecContentLocal = ActIncomeRec.proceedCode128(this, incomeRec, barcodeReadEvent.getBarcodeData());
+                incomeRecContentLocal = ActIncomeAlcoRec.proceedCode128(this, incomeRec, barcodeReadEvent.getBarcodeData());
                 if (incomeRecContentLocal != null) {
                     addQty = DaoMem.getDaoMem().calculateQtyToAdd(incomeRec, incomeRecContentLocal, barcodeReadEvent.getBarcodeData());
 

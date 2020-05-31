@@ -32,8 +32,8 @@
 
                 <include android:layout_width="match_parent"
                          android:layout_height="wrap_content"
-                         layout="@layout/rec_prih_position"
-                         android:id="@+id/inclRecPrihContent"
+                         layout="@layout/rec_incomeciga_position"
+                         android:id="@+id/inclRecIncomeCigaContent"
                 />
             </LinearLayout>
 

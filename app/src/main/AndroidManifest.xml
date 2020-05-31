@@ -43,10 +43,12 @@
         <activity android:name=".ui.ActChooseShop" android:screenOrientation="portrait"/>
         <activity android:name=".ui.ActMainMenu" android:screenOrientation="portrait"/>
         <activity android:name=".ui.doc.income.ActIncomeList" android:screenOrientation="portrait"/>
-        <activity android:name=".ui.doc.income.ActIncomeRec" android:screenOrientation="portrait"/>
-        <activity android:name=".ui.doc.income.ActIncomeRecContent" android:screenOrientation="portrait"/>
+        <activity android:name=".ui.doc.income.alco.ActIncomeAlcoRec" android:screenOrientation="portrait"/>
+        <activity android:name=".ui.doc.income.alco.ActIncomeAlcoRecContent" android:screenOrientation="portrait"/>
+        <activity android:name=".ui.doc.income.ciga.ActIncomeCigaRec" android:screenOrientation="portrait"/>
+        <activity android:name=".ui.doc.income.ciga.ActIncomeCigaRecContent" android:screenOrientation="portrait"/>
         <activity android:name=".ui.ActDummy" android:screenOrientation="portrait"/>
-        <activity android:name=".ui.doc.income.ActIncomeRecContentChangeNomen" android:screenOrientation="portrait"/>
+        <activity android:name=".ui.doc.income.alco.ActIncomeAlcoRecContentChangeNomen" android:screenOrientation="portrait"/>
 
         <activity android:name=".ui.doc.move.ActMoveList" android:screenOrientation="portrait"/>
         <activity android:name=".ui.doc.move.ActMoveRec" android:screenOrientation="portrait"/>

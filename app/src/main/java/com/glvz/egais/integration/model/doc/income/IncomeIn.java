@@ -1,5 +1,6 @@
 package com.glvz.egais.integration.model.doc.income;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.glvz.egais.integration.model.doc.DocContentIn;
 import com.glvz.egais.integration.model.doc.DocIn;
@@ -7,6 +8,7 @@ import com.glvz.egais.integration.model.doc.DocIn;
 import java.util.Arrays;
 import java.util.List;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class IncomeIn implements DocIn {
     @JsonProperty(value="WBRegId")
     private String wbRegId;
@@ -22,6 +24,8 @@ public class IncomeIn implements DocIn {
     private String postID;
     @JsonProperty(value="PostName")
     private String postName;
+    @JsonProperty(value="MarkType")
+    private String markType;
 
     @JsonProperty(value="Content")
     private IncomeContentIn[] content;
@@ -90,6 +94,14 @@ public class IncomeIn implements DocIn {
         this.content = content;
     }
 
+    public String getMarkType() {
+        return markType;
+    }
+
+    public void setMarkType(String markType) {
+        this.markType = markType;
+    }
+
     @Override
     public String toString() {
         return "IncomeIn{" +
@@ -100,6 +112,7 @@ public class IncomeIn implements DocIn {
                 ", skladName='" + skladName + '\'' +
                 ", postID='" + postID + '\'' +
                 ", postName='" + postName + '\'' +
+                ", markType='" + markType + '\'' +
                 ", content=" + Arrays.toString(content) +
                 '}';
     }

@@ -1,4 +1,4 @@
-package com.glvz.egais.service.income;
+package com.glvz.egais.service.income.alco;
 
 import android.graphics.Color;
 import android.view.View;
@@ -13,7 +13,7 @@ import com.glvz.egais.utils.StringUtils;
 
 import java.util.Date;
 
-public class IncomeRecContentHolder extends DocRecContentHolder {
+public class IncomeAlcoRecContentHolder extends DocRecContentHolder {
     LinearLayout llPosition;
     LinearLayout llEgaisPart;
     TextView tvPosition;
@@ -27,7 +27,7 @@ public class IncomeRecContentHolder extends DocRecContentHolder {
     TextView tvQty;
     TextView tvQtyAccepted;
 
-    public IncomeRecContentHolder(View v) {
+    public IncomeAlcoRecContentHolder(View v) {
         super(v);
         llPosition = (LinearLayout)v.findViewById(R.id.llPosition);
         llEgaisPart = (LinearLayout)v.findViewById(R.id.llEgaisPart);

@@ -1,4 +1,4 @@
-package com.glvz.egais.ui.doc.income;
+package com.glvz.egais.ui.doc.income.alco;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -21,11 +21,9 @@ import com.glvz.egais.model.BaseRecContentMark;
 import com.glvz.egais.model.BaseRecContentStatus;
 import com.glvz.egais.model.BaseRecStatus;
 import com.glvz.egais.model.income.*;
-import com.glvz.egais.service.DocArrayAdapter;
-import com.glvz.egais.service.DocContentArrayAdapter;
 import com.glvz.egais.service.PickBottliingDateCallback;
 import com.glvz.egais.service.TransferCallback;
-import com.glvz.egais.service.income.IncomeContentArrayAdapter;
+import com.glvz.egais.service.income.alco.IncomeAlcoContentArrayAdapter;
 import com.glvz.egais.service.income.IncomeRecHolder;
 import com.glvz.egais.ui.doc.ActBaseDocRec;
 import com.glvz.egais.utils.BarcodeObject;
@@ -36,7 +34,7 @@ import com.honeywell.aidc.BarcodeReadEvent;
 
 import java.util.*;
 
-public class ActIncomeRec extends ActBaseDocRec implements PickBottliingDateCallback, TransferCallback {
+public class ActIncomeAlcoRec extends ActBaseDocRec implements PickBottliingDateCallback, TransferCallback {
 
     private IncomeRec incomeRec;
 
@@ -49,7 +47,7 @@ public class ActIncomeRec extends ActBaseDocRec implements PickBottliingDateCall
 
     @Override
     protected void setResources() {
-        setContentView(R.layout.activity_incomerec);
+        setContentView(R.layout.activity_incomealcorec);
 
         View container = findViewById(R.id.inclRecPrih);
         docRecHolder = new IncomeRecHolder(container);
@@ -59,7 +57,7 @@ public class ActIncomeRec extends ActBaseDocRec implements PickBottliingDateCall
             @Override
             public void onClick(View v) {
                 DaoMem.getDaoMem().writeFilterOnIncomeRec((IncomeRec) incomeRec, cbFilter.isChecked());
-                ActIncomeRec.this.updateData();
+                ActIncomeAlcoRec.this.updateData();
             }
         });
         cbFilter.setChecked(DaoMem.getDaoMem().readFilterOnIncomeRec((IncomeRec) incomeRec));
@@ -69,10 +67,10 @@ public class ActIncomeRec extends ActBaseDocRec implements PickBottliingDateCall
         lvContent.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                pickRec(ActIncomeRec.this, incomeRec.getDocId(), list.get(position), 0, null, false, false);
+                pickRec(ActIncomeAlcoRec.this, incomeRec.getDocId(), list.get(position), 0, null, false, false);
             }
         });
-        adapter = new IncomeContentArrayAdapter(this, R.layout.rec_prih_position, list);
+        adapter = new IncomeAlcoContentArrayAdapter(this, R.layout.rec_incomealco_position, list);
         lvContent.setAdapter(adapter);
     }
 
@@ -144,13 +142,13 @@ public class ActIncomeRec extends ActBaseDocRec implements PickBottliingDateCall
     protected void pickRec(Context ctx, String docId, BaseRecContent req, int addQty, String barcode, boolean isBoxScanned, boolean isOpenByScan) {
         // Перейти в форму одной строки позиции
         Intent in = new Intent();
-        in.setClass(ctx, ActIncomeRecContent.class);
-        in.putExtra(ActIncomeRec.REC_DOCID, docId);
-        in.putExtra(ActIncomeRec.RECCONTENT_POSITION, req.getPosition().toString());
-        in.putExtra(ActIncomeRec.RECCONTENT_ADDQTY, addQty);
-        in.putExtra(ActIncomeRec.RECCONTENT_LASTMARK, barcode);
-        in.putExtra(ActIncomeRec.RECCONTENT_ISBOXSCANNED, isBoxScanned);
-        in.putExtra(ActIncomeRec.RECCONTENT_ISOPENBYSCAN, isOpenByScan);
+        in.setClass(ctx, ActIncomeAlcoRecContent.class);
+        in.putExtra(ActIncomeAlcoRec.REC_DOCID, docId);
+        in.putExtra(ActIncomeAlcoRec.RECCONTENT_POSITION, req.getPosition().toString());
+        in.putExtra(ActIncomeAlcoRec.RECCONTENT_ADDQTY, addQty);
+        in.putExtra(ActIncomeAlcoRec.RECCONTENT_LASTMARK, barcode);
+        in.putExtra(ActIncomeAlcoRec.RECCONTENT_ISBOXSCANNED, isBoxScanned);
+        in.putExtra(ActIncomeAlcoRec.RECCONTENT_ISOPENBYSCAN, isOpenByScan);
         ctx.startActivity(in);
     }
 
@@ -350,7 +348,7 @@ public class ActIncomeRec extends ActBaseDocRec implements PickBottliingDateCall
                 //  Если полностью принято
                 // проверить можно ли одну из марок, ранее принятых по этой позиции перенести на другую позицию этой ТТН с таким же алкокодом
                 // (новая позиция должна быть еще принята не полностью, с приоритетом по совпадению даты розлива, а переносимая марка - не указана в текущей приходной ТТН ЕГАИС).
-                DataToTransfer dataToTransfer = ActIncomeRec.findIncomeRecContentToTransfer(incomeRec, barcode, incomeRecContent);
+                DataToTransfer dataToTransfer = ActIncomeAlcoRec.findIncomeRecContentToTransfer(incomeRec, barcode, incomeRecContent);
                 if (dataToTransfer != null) {
                     // Перенести подобранную марку в новую позицию и у этой новой позиции Принятое количество увеличить на 1 шт.
                     String markToTransfer = dataToTransfer.baseRecContentMark.getMarkScanned();

@@ -37,7 +37,7 @@ public class BarcodeObject implements BarcodeReader.BarcodeListener {
     }
 
     public enum BarCodeType {
-        EAN8, EAN13, PDF417, DATAMATRIX, CODE128, UNSUPPORTED
+        EAN8, EAN13, PDF417, DATAMATRIX, CODE128, GS1_DATAMATRIX_CIGA, UNSUPPORTED
     }
 
 
@@ -155,8 +155,12 @@ public class BarcodeObject implements BarcodeReader.BarcodeListener {
             return BarCodeType.EAN13;
         if (barcodeReadEvent.getCodeId().equals("r"))
             return BarCodeType.PDF417;
-        if (barcodeReadEvent.getCodeId().equals("w"))
+        if (barcodeReadEvent.getCodeId().equals("w")) {
+            if (barcodeReadEvent.getAimId().equals("]d2")) {
+                return BarCodeType.GS1_DATAMATRIX_CIGA;
+            }
             return BarCodeType.DATAMATRIX;
+        }
         if (barcodeReadEvent.getCodeId().equals("I") || barcodeReadEvent.getCodeId().equals("j") )
             return BarCodeType.CODE128;
         return BarCodeType.UNSUPPORTED;
@@ -179,6 +183,17 @@ public class BarcodeObject implements BarcodeReader.BarcodeListener {
             pos++;
         }
         return String.format("%019d", result);
+    }
+
+    public static String extractEanFromGS1DM(String input) {
+        // EAN содержится в первом поле, дина фиксированная 14 символов с забивкой лидирующими нулями. Для блока это будет  EAN 13, для пачек  EAN 8
+        String code = input.substring(3, 16);
+        if (code.substring(0,5).equals("00000")) {
+            code = code.substring(5);
+        }
+
+        return code;
+
     }
 
     public static void setCurrentListener(BarcodeReader.BarcodeListener listener) {

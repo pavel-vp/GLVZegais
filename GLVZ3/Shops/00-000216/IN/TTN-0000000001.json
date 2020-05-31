@@ -1,0 +1,28 @@
+{
+ "WBRegId": "0000000001",
+ "NUMBER": "00000001889",
+ "Date": "2020-05-30T00:00:00",
+ "SkladID": "00-000216",
+ "SkladName": "Магазин №01 ",
+ "PostID": "000000000000",
+ "PostName": "Тестовый поставщик",
+ "MarkType": 2,
+ "Content": [
+  {
+   "position": "1",
+   "alccode": "0000000000000000000",
+   "name": "Тестовое наименование сигарет от поставщика",
+   "Capacity": 0.0,
+   "AlcVolume": 0,
+   "QTY": 20,
+   "Price": 130,
+   "BottlingDate": "2019-10-25",
+   "Marked": 1,
+   "QTYDirectInput": 0,
+   "MarkInfo": [
+    {"Box": "", "Mark": "01046002660121422147KcgJ%\u001d93DQsL2g==\u001d24010063554", "Multiplier": 10},
+	{"Box": "", "Mark": "01046002660121422147KcgJ%\u001d93DQsL2g==\u001d24010063555", "Multiplier": 10}
+   ]
+  }
+ ]
+}
