@@ -319,6 +319,7 @@ public class ActIncomeAlcoRecContent extends Activity implements BarcodeReader.B
         final BarcodeObject.BarCodeType barCodeType = BarcodeObject.getBarCodeType(barcodeReadEvent);
         IncomeRecContent incomeRecContentLocal;
         switch (barCodeType) {
+            case EAN8:
             case EAN13:
                 if (!this.isOpenByScan && incomeRecContent.getPositionType() == BaseRecContentPositionType.MARKED) {
                     MessageUtils.showModalMessage(this,"ВНИМАНИЕ!","Устанавливать связь со ШК можно только после сканирования марки");
