@@ -61,7 +61,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:textAppearance="?android:attr/textAppearanceMedium"
-                    android:text="ЕГАИС"
+                    android:text="ЭДО"
                     android:textStyle="bold"
                     android:gravity="center"/>
             <LinearLayout
@@ -92,7 +92,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:textAppearance="?android:attr/textAppearanceSmall"
-                        android:text="Емк"
+                        android:text="Упак"
                         android:paddingRight="10dp"/>
                 <TextView
                         android:layout_width="wrap_content"
@@ -108,7 +108,8 @@
                         android:layout_height="wrap_content"
                         android:textAppearance="?android:attr/textAppearanceSmall"
                         android:text="Спирт"
-                        android:paddingRight="10dp"/>
+                        android:paddingRight="10dp"
+                        android:visibility="gone"/>
                 <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -116,13 +117,15 @@
                         android:text="40"
                         android:textStyle="bold"
                         android:id="@+id/tvAlcVolumeEgais"
-                        android:paddingRight="10dp"/>
+                        android:paddingRight="10dp"
+                        android:visibility="gone"/>
                 <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:textAppearance="?android:attr/textAppearanceSmall"
                         android:text="Дт.рзл"
-                        android:paddingRight="10dp"/>
+                        android:paddingRight="10dp"
+                        android:visibility="gone"/>
                 <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -130,7 +133,8 @@
                         android:text="01.01.2000"
                         android:textStyle="bold"
                         android:id="@+id/tvBottlingDateEgais"
-                        android:paddingRight="10dp"/>
+                        android:paddingRight="10dp"
+                        android:visibility="gone"/>
 
             </LinearLayout>
         </LinearLayout>
@@ -178,7 +182,8 @@
                         android:layout_height="wrap_content"
                         android:textAppearance="?android:attr/textAppearanceSmall"
                         android:text="Емк"
-                        android:paddingRight="10dp"/>
+                        android:paddingRight="10dp"
+                        android:visibility="invisible"/>
                 <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -186,7 +191,8 @@
                         android:text="0.5"
                         android:textStyle="bold"
                         android:id="@+id/tvCapacity1c"
-                        android:paddingRight="10dp"/>
+                        android:paddingRight="10dp"
+                        android:visibility="invisible"/>
 
                 <LinearLayout
                         android:orientation="vertical"

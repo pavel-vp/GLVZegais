@@ -5,6 +5,7 @@ import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import com.glvz.egais.R;
+import com.glvz.egais.integration.model.doc.income.IncomeContentMarkIn;
 import com.glvz.egais.model.BaseRecContent;
 import com.glvz.egais.model.income.IncomeRecContent;
 import com.glvz.egais.service.DocContentArrayAdapter;
@@ -55,7 +56,19 @@ public class IncomeCigaRecContentHolder extends DocRecContentHolder {
             tvStatus.setText(recContent.getStatus().getMessage());
         }
         tvNameEgais.setText(incomeRecContent.getContentIn().getName());
-        tvCapacityEgais.setText(StringUtils.formatQty(incomeRecContent.getContentIn().getCapacity()));
+        IncomeContentMarkIn[] marks = incomeRecContent.getContentIn().getMarkInfo();
+        if (marks != null) {
+            StringBuilder multiplier = new StringBuilder();
+            for (IncomeContentMarkIn mark : marks) {
+                if (!multiplier.toString().isEmpty()) {
+                    multiplier.append(",");
+                }
+                multiplier.append(mark.getMultiplier());
+            }
+            tvCapacityEgais.setText(multiplier.toString());
+        } else {
+            tvCapacityEgais.setText(StringUtils.formatQty(incomeRecContent.getContentIn().getCapacity()));
+        }
         tvAlcVolumeEgais.setText(StringUtils.formatQty(incomeRecContent.getContentIn().getAlcVolume()));
         Date d = StringUtils.jsonBottlingStringToDate(incomeRecContent.getContentIn().getBottlingDate());
         tvBottlingDateEgais.setText(StringUtils.formatDateDisplay(d));

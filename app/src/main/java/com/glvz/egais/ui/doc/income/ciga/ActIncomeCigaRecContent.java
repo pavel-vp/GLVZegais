@@ -196,7 +196,7 @@ public class ActIncomeCigaRecContent extends Activity implements BarcodeReader.B
     public void onBarcodeEvent(final BarcodeReadEvent barcodeReadEvent) {
         // Определить тип ШК
         final BarcodeObject.BarCodeType barCodeType = BarcodeObject.getBarCodeType(barcodeReadEvent);
-        final String barcode = barcodeReadEvent.getBarcodeData();
+        final String barcode = barcodeReadEvent.getBarcodeData().replace("\u001D", "");
         Integer markScanned;
         IncomeRecContent incomeRecContent;
         // TODO: implement logic

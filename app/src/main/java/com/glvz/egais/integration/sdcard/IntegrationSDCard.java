@@ -1,17 +1,12 @@
 package com.glvz.egais.integration.sdcard;
 
 import android.media.MediaScannerConnection;
-import com.fasterxml.jackson.core.JsonFactory;
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.io.IOContext;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.glvz.egais.MainApp;
 import com.glvz.egais.integration.model.*;
 import com.glvz.egais.integration.model.doc.BaseRecOutput;
-import com.glvz.egais.integration.model.doc.DocIn;
 import com.glvz.egais.integration.model.doc.checkmark.CheckMarkIn;
 import com.glvz.egais.integration.model.doc.checkmark.CheckMarkRecOutput;
 import com.glvz.egais.integration.model.doc.findmark.FindMarkIn;
@@ -23,7 +18,6 @@ import com.glvz.egais.integration.model.doc.move.MoveIn;
 import com.glvz.egais.integration.model.doc.move.MoveRecOutput;
 import com.glvz.egais.integration.model.doc.writeoff.WriteoffRecOutput;
 import com.glvz.egais.model.BaseRec;
-import com.glvz.egais.model.income.IncomeRec;
 import com.glvz.egais.model.writeoff.WriteoffRec;
 import com.glvz.egais.utils.StringUtils;
 
@@ -55,7 +49,8 @@ public class IntegrationSDCard implements Integration {
     private static final String SETUP_FTP_FILE = "setupftp.json";
 
 
-    private static final String DOC_PREFIX_INCOME = "TTN";
+    private static final String DOC_PREFIX_INCOME_ALCO = "TTN";
+    private static final String DOC_PREFIX_INCOME_CIGA = "ED";
     private static final String DOC_PREFIX_MOVE = "DOCMOVE";
     private static final String DOC_PREFIX_CHECKMARK = "CHECK";
     private static final String DOC_PREFIX_FINDMARK = "FINDMARK";
@@ -167,7 +162,8 @@ public class IntegrationSDCard implements Integration {
         File path = new File(basePath + "/" + SHOPS_DIR + "/" + shopId + "/" + IN_DIR);
         if (path.listFiles() != null) {
             for (File file : path.listFiles()) {
-                if (file.getName().toUpperCase().startsWith(DOC_PREFIX_INCOME)) {
+                if (file.getName().toUpperCase().startsWith(DOC_PREFIX_INCOME_ALCO) ||
+                    file.getName().toUpperCase().startsWith(DOC_PREFIX_INCOME_CIGA)) {
                     try {
                         IncomeIn incomeIn = objectMapper.readValue(file, IncomeIn.class);
                         listIncomeIn.add(incomeIn);
@@ -320,7 +316,8 @@ public class IntegrationSDCard implements Integration {
         for (File file : files) {
             boolean toDelete = false;
             // Приход
-            if (file.getName().toUpperCase().startsWith(DOC_PREFIX_INCOME)) {
+            if (file.getName().toUpperCase().startsWith(DOC_PREFIX_INCOME_ALCO) ||
+                file.getName().toUpperCase().startsWith(DOC_PREFIX_INCOME_CIGA)) {
                 // Если это импорт
                 if (file.getAbsolutePath().contains("/" + IN_DIR + "/")) {
                     try {
