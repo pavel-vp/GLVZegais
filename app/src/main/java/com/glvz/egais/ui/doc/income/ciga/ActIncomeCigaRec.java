@@ -150,7 +150,6 @@ public class ActIncomeCigaRec extends ActBaseDocRec {
 
     @Override
     public void onBarcodeEvent(final BarcodeReadEvent barcodeReadEvent) {
-
         // Определить тип ШК
         final BarcodeObject.BarCodeType barCodeType = BarcodeObject.getBarCodeType(barcodeReadEvent);
         String mark = BarcodeObject.extractSigaMark(barcodeReadEvent.getBarcodeData());
@@ -160,6 +159,7 @@ public class ActIncomeCigaRec extends ActBaseDocRec {
         // TODO: implement logic
         switch (barCodeType) {
             case GS1_DATAMATRIX_CIGA:
+            case DATAMATRIX:
             {
                 DaoMem.CheckMarkScannedResult markScannedResult = DaoMem.getDaoMem().checkMarkScanned(incomeRec, barcode);
                 if (markScannedResult == null) {
@@ -184,8 +184,8 @@ public class ActIncomeCigaRec extends ActBaseDocRec {
                 break;
             case PDF417:
                 break;
-            case DATAMATRIX:
-                break;
+            //case DATAMATRIX:
+            //    break;
             case CODE128:
                 break;
         }

@@ -9,8 +9,8 @@ android {
         applicationId "com.glvz.egais"
         minSdkVersion 25
         targetSdkVersion 28
-        versionCode 16
-        versionName "16.0"
+        versionCode 20
+        versionName "20.0"
     }
     buildTypes {
         release {

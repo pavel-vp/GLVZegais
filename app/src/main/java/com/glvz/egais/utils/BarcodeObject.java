@@ -29,11 +29,12 @@ public class BarcodeObject implements BarcodeReader.BarcodeListener {
     public static String extractSigaMark(String m) {
         if ("00".equals(m.substring(0,2))) {
             // штучная марка
-            int pos = m.indexOf('\u001D');
-            if (pos >= 0) {
-                return m.substring(0, pos);
-            }
-            return m;
+            //int pos = m.indexOf('\u001D');
+            //if (pos >= 0) {
+            //    return m.substring(0, 21);
+            //}
+            //return m;
+            return m.substring(0, 25);
         }
         if ("01".equals(m.substring(0,2)) || "02".equals(m.substring(0,2))) {
             // групповая марка
@@ -216,14 +217,25 @@ public class BarcodeObject implements BarcodeReader.BarcodeListener {
     }
 
     public static String extractEanFromGS1DM(String input) {
-        // EAN содержится в первом поле, дина фиксированная 14 символов с забивкой лидирующими нулями. Для блока это будет  EAN 13, для пачек  EAN 8
-        String code = input.substring(3, 16);
-        if (code.substring(0,5).equals("00000")) {
-            code = code.substring(5);
+        String code = "";
+
+        // определим подтип маркировки
+        if ("01".equals(input.substring(0, 2))) {
+            // "01" стартовый тег групповой маркировки, содержит еан13 после тега и одного лидирующего нуля
+            code = input.substring(3, 16);
+        }
+        else {
+            // если стартового тега не было значит штучная маркировка еан8
+            code = input.substring(6, 14);
         }
 
-        return code;
+        // EAN содержится в первом поле, дина фиксированная 14 символов с забивкой лидирующими нулями. Для блока это будет  EAN 13, для пачек  EAN 8
+        //String code = input.substring(3, 16);
+        //if (code.substring(0,5).equals("00000")) {
+        //    code = code.substring(5);
+        //}
 
+        return code;
     }
 
     public static void setCurrentListener(BarcodeReader.BarcodeListener listener) {
