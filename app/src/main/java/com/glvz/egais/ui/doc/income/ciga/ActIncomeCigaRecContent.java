@@ -199,15 +199,16 @@ public class ActIncomeCigaRecContent extends Activity implements BarcodeReader.B
         String mark = BarcodeObject.extractSigaMark(barcodeReadEvent.getBarcodeData());
         final String barcode = mark.replace("\u001D", "");
         Integer markScanned;
-        IncomeRecContent incomeRecContent;
         // TODO: implement logic
         switch (barCodeType) {
             case GS1_DATAMATRIX_CIGA:
+            case DATAMATRIX:
             {
+                IncomeRecContent irc;
                 DaoMem.CheckMarkScannedResult markScannedResult = DaoMem.getDaoMem().checkMarkScanned(incomeRec, barcode);
                 if (markScannedResult == null) {
-                    incomeRecContent = DaoMem.getDaoMem().findIncomeRecContentByMark(incomeRec, barcode);
-                    if (incomeRecContent == null) {
+                    irc = DaoMem.getDaoMem().findIncomeRecContentByMark(incomeRec, barcode);
+                    if (irc == null) {
                         MessageUtils.showModalMessage(this, "Внимание!", "Прием запрещен: марка отсутствует в ТТН от поставщика. Верните поставщику, принимать нельзя!");
                         break;
                     }
@@ -215,7 +216,7 @@ public class ActIncomeCigaRecContent extends Activity implements BarcodeReader.B
                     // Статус данной ТТН перевести в состояние “Идет приемка”
                     incomeRec.setStatus(BaseRecStatus.INPROGRESS);
                     DaoMem.getDaoMem().writeLocalDataBaseRec(incomeRec);
-                    pickRec(this, incomeRec.getDocId(), incomeRecContent, 1, barcode, false, true);
+                    pickRec(this, incomeRec.getDocId(), irc, 1, barcode, false, true);
 
                 } else {
                     MessageUtils.showModalMessage(this, "Внимание!", "Марка уже сканирована!");
@@ -223,11 +224,16 @@ public class ActIncomeCigaRecContent extends Activity implements BarcodeReader.B
                 }
                 break;
             }
-            case EAN13:
+            case EAN13: {
+                // Marked = 0 & QTYDirectInput = 1 разрешаем считывание кода ЕАН и ввод количества руками
+                if (incomeRecContent.getContentIn().getMarked() == 0 && incomeRecContent.getContentIn().getQtyDirectInput() == 1) {
+
+                } else {
+                    MessageUtils.showModalMessage(this, "Внимание!", "По данной позиции не разрешен прием вручную!");
+                }
                 break;
+            }
             case PDF417:
-                break;
-            case DATAMATRIX:
                 break;
             case CODE128:
                 break;
