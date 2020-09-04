@@ -185,7 +185,7 @@ public class BarcodeObject implements BarcodeReader.BarcodeListener {
     }
 
     public static BarCodeType getBarCodeType(BarcodeReadEvent barcodeReadEvent) {
-        // FIXME: пока непонятно как по-другому
+        // FIXME: пока непонятно как по-другому LAG
         if (barcodeReadEvent.getCodeId().equals("D") || barcodeReadEvent.getCodeId().equals("E") )
             return BarCodeType.EAN8;
         if (barcodeReadEvent.getCodeId().equals("d") || barcodeReadEvent.getCodeId().equals("c") )
