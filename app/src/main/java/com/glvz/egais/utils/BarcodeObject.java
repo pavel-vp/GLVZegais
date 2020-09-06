@@ -27,32 +27,36 @@ public class BarcodeObject implements BarcodeReader.BarcodeListener {
     // Разбор сигаретного сканированного ШК с марки
     // В итоге вернется вырезанная часть, по правилам
     public static String extractSigaMark(String m) {
-        if ("00".equals(m.substring(0,2))) {
-            // штучная марка
-            //int pos = m.indexOf('\u001D');
-            //if (pos >= 0) {
-            //    return m.substring(0, 21);
-            //}
-            //return m;
-            return m.substring(0, 25);
-        }
-        if ("01".equals(m.substring(0,2)) || "02".equals(m.substring(0,2))) {
-            // групповая марка
-            // индекс первого спецсимвола
-            int pos = m.indexOf('\u001D', 24);
-            // если после первого спецсимвола еще что-то есть
-            if (pos < m.length()) {
-                String tPrice = m.substring(pos+1, pos+1 + 4);
-                // Если после первого спецсивола - тэг 8005 и цена - вырежем ровно 10 символов (тег и цена)
-                if ("8005".equals(tPrice)) {
-                    return m.substring(0, pos + 11);
-                }
-                // иначе - вырежем все до этого спецсимвола
-                return m.substring(0, pos);
+        try {
+            if ("00".equals(m.substring(0, 2))) {
+                // штучная марка
+                //int pos = m.indexOf('\u001D');
+                //if (pos >= 0) {
+                //    return m.substring(0, 21);
+                //}
+                //return m;
+                return m.substring(0, 25);
             }
-            return m;
+            if ("01".equals(m.substring(0, 2)) || "02".equals(m.substring(0, 2))) {
+                // групповая марка
+                // индекс первого спецсимвола
+                int pos = m.indexOf('\u001D', 24);
+                // если после первого спецсимвола еще что-то есть
+                if (pos < m.length()) {
+                    String tPrice = m.substring(pos + 1, pos + 1 + 4);
+                    // Если после первого спецсивола - тэг 8005 и цена - вырежем ровно 10 символов (тег и цена)
+                    if ("8005".equals(tPrice)) {
+                        return m.substring(0, pos + 11);
+                    }
+                    // иначе - вырежем все до этого спецсимвола
+                    return m.substring(0, pos);
+                }
+                return m;
+            }
+        } catch (Exception e) {
+            Log.e("BarCodeObject","Неверная марка!", e);
         }
-        throw new IllegalArgumentException("Неверная марка!");
+        return null;
     }
 
     @Override

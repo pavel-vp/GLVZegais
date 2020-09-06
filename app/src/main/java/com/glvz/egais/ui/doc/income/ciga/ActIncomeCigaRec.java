@@ -153,8 +153,12 @@ public class ActIncomeCigaRec extends ActBaseDocRec {
         // Определить тип ШК
         final BarcodeObject.BarCodeType barCodeType = BarcodeObject.getBarCodeType(barcodeReadEvent);
         String mark = BarcodeObject.extractSigaMark(barcodeReadEvent.getBarcodeData());
-        final String barcode = mark.replace("\u001D", "");
-        Integer markScanned;
+        final String barcode;
+        if (mark != null) {
+            barcode = mark.replace("\u001D", "");
+        } else {
+            barcode = barcodeReadEvent.getBarcodeData();
+        }
         IncomeRecContent incomeRecContent;
         // TODO: implement logic
         switch (barCodeType) {
