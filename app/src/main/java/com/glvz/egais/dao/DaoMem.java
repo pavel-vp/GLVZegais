@@ -1200,33 +1200,37 @@ public class DaoMem {
     }
 
     public void checkIsNeedToUpdate(Activity activity) {
-        // Проверить есть ли файл
-        File fileToUpdate = integrationFile.loadNewApk();
-        if (fileToUpdate.exists()) {
-            final PackageManager pm = MainApp.getContext().getPackageManager();
-            PackageInfo newInfo = pm.getPackageArchiveInfo(fileToUpdate.getAbsolutePath(), PackageManager.GET_META_DATA);
-            if (newInfo.versionCode > BuildConfig.VERSION_CODE) {
-                // запрос обновления
+        try {
+            // Проверить есть ли файл
+            File fileToUpdate = integrationFile.loadNewApk();
+            if (fileToUpdate.exists()) {
+                final PackageManager pm = MainApp.getContext().getPackageManager();
+                PackageInfo newInfo = pm.getPackageArchiveInfo(fileToUpdate.getAbsolutePath(), PackageManager.GET_META_DATA);
+                if (newInfo.versionCode > BuildConfig.VERSION_CODE) {
+                    // запрос обновления
 
 
-                File file = fileToUpdate;
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                    String fp = BuildConfig.APPLICATION_ID + ".provider";
-                    Uri apkUri = FileProvider.getUriForFile(activity, fp, file);
-                    Intent intent = new Intent(Intent.ACTION_INSTALL_PACKAGE);
-                    intent.setData(apkUri);
-                    intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                    activity.startActivity(intent);
-                } else {
-                    Intent intent = new Intent(Intent.ACTION_VIEW);
+                    File file = fileToUpdate;
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                        String fp = BuildConfig.APPLICATION_ID + ".provider";
+                        Uri apkUri = FileProvider.getUriForFile(activity, fp, file);
+                        Intent intent = new Intent(Intent.ACTION_INSTALL_PACKAGE);
+                        intent.setData(apkUri);
+                        intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                        activity.startActivity(intent);
+                    } else {
+                        Intent intent = new Intent(Intent.ACTION_VIEW);
 
-                    intent.setDataAndType(Uri.fromFile(file),"application/vnd.android.package-archive");
-                            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    MainApp.getContext().startActivity(intent);
+                        intent.setDataAndType(Uri.fromFile(file), "application/vnd.android.package-archive");
+                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        MainApp.getContext().startActivity(intent);
+                    }
+
+
                 }
-
-
             }
+        } catch (Exception e) {
+            Log.e("DaoMem", "checkIsNeedToUpdate", e);
         }
     }
 

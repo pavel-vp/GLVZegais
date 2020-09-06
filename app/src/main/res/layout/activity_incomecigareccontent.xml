@@ -61,7 +61,7 @@
             <LinearLayout
                     android:orientation="horizontal"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content">
+                    android:layout_height="wrap_content" android:visibility="invisible">
 
                 <Button
                         android:text="Очистить"
@@ -81,7 +81,7 @@
                     android:orientation="horizontal"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:id="@+id/llManualChange1c">
+                    android:id="@+id/llManualChange1c" android:visibility="invisible">
 
                 <Button
                         android:text="Изменить привязку"

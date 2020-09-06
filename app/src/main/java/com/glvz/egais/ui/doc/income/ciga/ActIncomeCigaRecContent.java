@@ -133,6 +133,41 @@ public class ActIncomeCigaRecContent extends Activity implements BarcodeReader.B
         this.lastMark = null;
     }
 
+    // обработчик добавления количества при сканировании баркода (без марки)
+    private void proceedAddQtyByEANInternal(double addQty, String ean) {
+        NomenIn nomenIn = DaoMem.getDaoMem().findNomenInByBarCode(ean);
+        if (nomenIn == null) {
+            MessageUtils.showModalMessage(this, "Внимание!", "Прием запрещен: в справочнике товаров отсутствует этот ШК = " + ean);
+            return;
+        }
+        incomeRecContent.setNomenIn(nomenIn, ean);
+
+        if (addQty != 0) {
+            incomeRecContent.setQtyAccepted(incomeRecContent.getQtyAccepted() == null ? addQty : incomeRecContent.getQtyAccepted() + addQty);
+        }
+        if (incomeRecContent.getQtyAccepted() == null) {
+            incomeRecContent.setStatus(BaseRecContentStatus.NOT_ENTERED);
+        } else {
+            if (incomeRecContent.getQtyAccepted().equals(Double.valueOf(0))) {
+                incomeRecContent.setStatus(BaseRecContentStatus.REJECTED);
+            } else {
+                if (incomeRecContent.getQtyAccepted().compareTo(incomeRecContent.getContentIn().getQty()) == 0 && incomeRecContent.getNomenIn() != null) {
+                    incomeRecContent.setStatus(BaseRecContentStatus.DONE);
+                } else {
+                    incomeRecContent.setStatus(BaseRecContentStatus.IN_PROGRESS);
+                }
+            }
+        }
+        DaoMem.getDaoMem().writeLocalDataBaseRec(incomeRec);
+        if (addQty == 1) {
+            MessageUtils.playSound(R.raw.bottle_one);
+        }
+        if (addQty > 1) {
+            MessageUtils.playSound(R.raw.bottle_many);
+        }
+        updateDisplayData();
+    }
+
     @Override
     public void onResume() {
         super.onResume();
@@ -227,7 +262,7 @@ public class ActIncomeCigaRecContent extends Activity implements BarcodeReader.B
             case EAN13: {
                 // Marked = 0 & QTYDirectInput = 1 разрешаем считывание кода ЕАН и ввод количества руками
                 if (incomeRecContent.getContentIn().getMarked() == 0 && incomeRecContent.getContentIn().getQtyDirectInput() == 1) {
-
+                    proceedAddQtyByEANInternal(1, barcode);
                 } else {
                     MessageUtils.showModalMessage(this, "Внимание!", "По данной позиции не разрешен прием вручную!");
                 }
