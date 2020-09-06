@@ -162,6 +162,7 @@ public class ActIncomeAlcoRec extends ActBaseDocRec implements PickBottliingDate
         Integer markScanned;
         IncomeRecContent incomeRecContent;
         switch (barCodeType) {
+            case EAN8:
             case EAN13:
                 //Сканирование ШК номенклатуры (EAN): тут запрещено
                 MessageUtils.showToastMessage("Внимание! Сканируйте марку или упаковку или выберите позицию с пивом вручную");
