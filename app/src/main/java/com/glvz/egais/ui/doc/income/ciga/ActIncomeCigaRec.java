@@ -185,6 +185,8 @@ public class ActIncomeCigaRec extends ActBaseDocRec {
                 break;
             }
             case EAN13:
+            case EAN8:
+            case UPCA:
                 MessageUtils.showModalMessage(this, "Внимание!", "Ручной ввод делается из позиции. Выберите наименование!");
                 break;
             case PDF417:

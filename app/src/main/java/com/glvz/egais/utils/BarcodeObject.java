@@ -72,7 +72,7 @@ public class BarcodeObject implements BarcodeReader.BarcodeListener {
     }
 
     public enum BarCodeType {
-        EAN8, EAN13, PDF417, DATAMATRIX, CODE128, GS1_DATAMATRIX_CIGA, UNSUPPORTED
+        EAN8, EAN13, PDF417, DATAMATRIX, CODE128, GS1_DATAMATRIX_CIGA, UPCA, UNSUPPORTED
     }
 
 

@@ -23,6 +23,7 @@ import com.glvz.egais.model.income.IncomeRec;
 import com.glvz.egais.model.income.IncomeRecContent;
 import com.glvz.egais.service.DocContentArrayAdapter;
 import com.glvz.egais.service.income.ciga.IncomeCigaRecContentHolder;
+import com.glvz.egais.ui.doc.income.alco.ActIncomeAlcoRecContent;
 import com.glvz.egais.utils.BarcodeObject;
 import com.glvz.egais.utils.MessageUtils;
 import com.glvz.egais.utils.StringUtils;
@@ -106,30 +107,7 @@ public class ActIncomeCigaRecContent extends Activity implements BarcodeReader.B
             incomeRecContent.setNomenIn(null, null);
         }
         addQty= addQty * multiplier;
-
-        if (addQty != 0) {
-            incomeRecContent.setQtyAccepted(incomeRecContent.getQtyAccepted() == null ? addQty : incomeRecContent.getQtyAccepted() + addQty);
-        }
-        if (incomeRecContent.getQtyAccepted() == null) {
-            incomeRecContent.setStatus(BaseRecContentStatus.NOT_ENTERED);
-        } else {
-            if (incomeRecContent.getQtyAccepted().equals(Double.valueOf(0))) {
-                incomeRecContent.setStatus(BaseRecContentStatus.REJECTED);
-            } else {
-                if (incomeRecContent.getQtyAccepted().compareTo(incomeRecContent.getContentIn().getQty()) == 0 && incomeRecContent.getNomenIn() != null) {
-                    incomeRecContent.setStatus(BaseRecContentStatus.DONE);
-                } else {
-                    incomeRecContent.setStatus(BaseRecContentStatus.IN_PROGRESS);
-                }
-            }
-        }
-        DaoMem.getDaoMem().writeLocalDataBaseRec(incomeRec);
-        if (addQty == 1) {
-            MessageUtils.playSound(R.raw.bottle_one);
-        }
-        if (addQty > 1) {
-            MessageUtils.playSound(R.raw.bottle_many);
-        }
+        proceedAddQtyOnly(addQty);
         this.lastMark = null;
     }
 
@@ -141,7 +119,10 @@ public class ActIncomeCigaRecContent extends Activity implements BarcodeReader.B
             return;
         }
         incomeRecContent.setNomenIn(nomenIn, ean);
+        proceedAddQtyOnly(addQty);
+    }
 
+    private void proceedAddQtyOnly(double addQty) {
         if (addQty != 0) {
             incomeRecContent.setQtyAccepted(incomeRecContent.getQtyAccepted() == null ? addQty : incomeRecContent.getQtyAccepted() + addQty);
         }
@@ -207,14 +188,44 @@ public class ActIncomeCigaRecContent extends Activity implements BarcodeReader.B
         etQtyAccepted = (EditText) findViewById(R.id.etQtyAccepted);
         llAccepted = (LinearLayout) findViewById(R.id.llAccepted);
 
+        btnAdd = (Button) findViewById(R.id.btnAdd);
+        btnAdd.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Вычисление: [Количество принятое (надпись)] = [Количество принятое (надпись)] + [Принимаемое количество].
+                // Перед вычислением производится проверка: Количество принятое - не может быть больше количества по ТТН.
+                // Если превышает - сообщение “Принятое количество не может быть больше количества по ТТН”, вычисление не выполняется.
+                try {
+                    double currQty = incomeRecContent.getQtyAccepted() == null ? 0 : incomeRecContent.getQtyAccepted();
+                    double addQty = Double.valueOf(etQtyAccepted.getText().toString());
+                    if ((currQty + addQty) > incomeRecContent.getContentIn().getQty()) {
+                        MessageUtils.showToastMessage("Принятое количество не может быть больше количества по ТТН");
+                    } else {
+                        proceedAddQtyOnly(addQty);
+                        // После успешного вычисления - возврат в форму “Приход ЕГАИС”
+                        ActIncomeCigaRecContent.this.finish();
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    etQtyAccepted.setText("");
+                    MessageUtils.showToastMessage("Неверное количество!");
+                }
+            }
+        });
+
     }
 
     private void updateDisplayData() {
         this.runOnUiThread(new Runnable() {
             @Override
             public void run() {
+                if (incomeRecContent.getContentIn().getMarked() == 0 && incomeRecContent.getContentIn().getQtyDirectInput() == 1) {
+                    etQtyAccepted.setEnabled(true);
+                    llAccepted.setVisibility(View.VISIBLE);
+                } else {
                     etQtyAccepted.setEnabled(false);
                     llAccepted.setVisibility(View.GONE);
+                }
                 tvAction.setText("Сканируйте марки этой позиции");
                 int countToAddInFuture = 0;
                 if (ActIncomeCigaRecContent.this.lastMark != null) {
@@ -263,7 +274,10 @@ public class ActIncomeCigaRecContent extends Activity implements BarcodeReader.B
                 }
                 break;
             }
-            case EAN13: {
+            case EAN13:
+            case EAN8:
+            case UPCA:
+            {
                 // Marked = 0 & QTYDirectInput = 1 разрешаем считывание кода ЕАН и ввод количества руками
                 if (incomeRecContent.getContentIn().getMarked() == 0 && incomeRecContent.getContentIn().getQtyDirectInput() == 1) {
                     proceedAddQtyByEANInternal(1, barcode);
