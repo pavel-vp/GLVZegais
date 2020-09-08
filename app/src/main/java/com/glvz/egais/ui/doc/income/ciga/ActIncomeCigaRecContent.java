@@ -197,7 +197,7 @@ public class ActIncomeCigaRecContent extends Activity implements BarcodeReader.B
                 // Если превышает - сообщение “Принятое количество не может быть больше количества по ТТН”, вычисление не выполняется.
                 try {
                     double currQty = incomeRecContent.getQtyAccepted() == null ? 0 : incomeRecContent.getQtyAccepted();
-                    double addQty = Double.valueOf(etQtyAccepted.getText().toString());
+                    double addQty = Double.parseDouble(etQtyAccepted.getText().toString());
                     if ((currQty + addQty) > incomeRecContent.getContentIn().getQty()) {
                         MessageUtils.showToastMessage("Принятое количество не может быть больше количества по ТТН");
                     } else {
@@ -219,7 +219,9 @@ public class ActIncomeCigaRecContent extends Activity implements BarcodeReader.B
         this.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                if (incomeRecContent.getContentIn().getMarked() == 0 && incomeRecContent.getContentIn().getQtyDirectInput() == 1) {
+                if (incomeRecContent.getContentIn().getMarked() == 0
+                        && incomeRecContent.getContentIn().getQtyDirectInput() == 1
+                        && incomeRecContent.getId1c() != null) {
                     etQtyAccepted.setEnabled(true);
                     llAccepted.setVisibility(View.VISIBLE);
                 } else {
@@ -280,7 +282,12 @@ public class ActIncomeCigaRecContent extends Activity implements BarcodeReader.B
             {
                 // Marked = 0 & QTYDirectInput = 1 разрешаем считывание кода ЕАН и ввод количества руками
                 if (incomeRecContent.getContentIn().getMarked() == 0 && incomeRecContent.getContentIn().getQtyDirectInput() == 1) {
-                    proceedAddQtyByEANInternal(1, barcode);
+                    if (incomeRecContent.getId1c() != null &&
+                            (incomeRecContent.getQtyAccepted() == null || incomeRecContent.getQtyAccepted() < incomeRecContent.getContentIn().getQty())) {
+                        proceedAddQtyByEANInternal(1, barcode);
+                    } else {
+                        proceedAddQtyByEANInternal(0, barcode);
+                    }
                 } else {
                     MessageUtils.showModalMessage(this, "Внимание!", "По данной позиции не разрешен прием вручную!");
                 }
