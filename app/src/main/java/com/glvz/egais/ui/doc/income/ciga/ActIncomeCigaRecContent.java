@@ -196,6 +196,10 @@ public class ActIncomeCigaRecContent extends Activity implements BarcodeReader.B
                 // Перед вычислением производится проверка: Количество принятое - не может быть больше количества по ТТН.
                 // Если превышает - сообщение “Принятое количество не может быть больше количества по ТТН”, вычисление не выполняется.
                 try {
+                    if (incomeRecContent.getId1c() == null) {
+                        MessageUtils.showToastMessage("Штрихкод еще не считан, выполните сопоставление перед вводом количества");
+                        return;
+                    }
                     double currQty = incomeRecContent.getQtyAccepted() == null ? 0 : incomeRecContent.getQtyAccepted();
                     double addQty = Double.parseDouble(etQtyAccepted.getText().toString());
                     if ((currQty + addQty) > incomeRecContent.getContentIn().getQty()) {
@@ -224,11 +228,21 @@ public class ActIncomeCigaRecContent extends Activity implements BarcodeReader.B
                         && incomeRecContent.getId1c() != null) {
                     etQtyAccepted.setEnabled(true);
                     llAccepted.setVisibility(View.VISIBLE);
+                    btnAdd.setVisibility(View.VISIBLE);
                 } else {
                     etQtyAccepted.setEnabled(false);
                     llAccepted.setVisibility(View.GONE);
+                    btnAdd.setVisibility(View.INVISIBLE);
                 }
-                tvAction.setText("Сканируйте марки этой позиции");
+                if (incomeRecContent.getContentIn().getMarked() == 1 && incomeRecContent.getContentIn().getQtyDirectInput() == 0) {
+                    tvAction.setText("Сканируйте марки этой позиции");
+                } else {
+                    if (incomeRecContent.getId1c() == null) {
+                        tvAction.setText("Сканируйте штрихкод");
+                    } else {
+                        tvAction.setText("Введите принимаемое количество");
+                    }
+                }
                 int countToAddInFuture = 0;
                 if (ActIncomeCigaRecContent.this.lastMark != null) {
                     // Посчитать количество добавляемое, в случае успеха сканирования ШК ЕАН (предварительное добавленное колво)
