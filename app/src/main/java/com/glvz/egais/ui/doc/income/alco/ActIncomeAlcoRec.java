@@ -34,6 +34,9 @@ import com.honeywell.aidc.BarcodeReadEvent;
 
 import java.util.*;
 
+import static com.glvz.egais.utils.BarcodeObject.BarCodeType.DATAMATRIX;
+import static com.glvz.egais.utils.BarcodeObject.BarCodeType.PDF417;
+
 public class ActIncomeAlcoRec extends ActBaseDocRec implements PickBottliingDateCallback, TransferCallback {
 
     private IncomeRec incomeRec;
@@ -121,7 +124,7 @@ public class ActIncomeAlcoRec extends ActBaseDocRec implements PickBottliingDate
                 }
                 return true;
             case R.id.action_reject:
-                MessageUtils.ShowModalAndConfirm(this, "Внимание!", "Отказать приемку по все накладной? Все данные о приеме будут удалены.",
+                MessageUtils.ShowModalAndConfirm(this, "Внимание!", "Отказать приемку по всей накладной? Все данные о приеме будут удалены.",
                         new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
@@ -131,7 +134,20 @@ public class ActIncomeAlcoRec extends ActBaseDocRec implements PickBottliingDate
                                 DaoMem.getDaoMem().writeFilterOnIncomeRec(incomeRec, cbFilter.isChecked());
                                 updateData();
                             }
-                });
+                        });
+                return true;
+            case R.id.action_clear:
+                MessageUtils.ShowModalAndConfirm(this, "Внимание!", "Очистить все данные о приемке по всей накладной? Все данные о приеме будут удалены.",
+                        new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                DaoMem.getDaoMem().clearData(incomeRec);
+                                MessageUtils.showToastMessage("По всей накладной данные о приемке очищены!");
+                                cbFilter.setChecked(false);
+                                DaoMem.getDaoMem().writeFilterOnIncomeRec(incomeRec, cbFilter.isChecked());
+                                updateData();
+                            }
+                        });
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -157,10 +173,14 @@ public class ActIncomeAlcoRec extends ActBaseDocRec implements PickBottliingDate
     public void onBarcodeEvent(final BarcodeReadEvent barcodeReadEvent) {
 
         // Определить тип ШК
-        final BarcodeObject.BarCodeType barCodeType = BarcodeObject.getBarCodeType(barcodeReadEvent);
+        BarcodeObject.BarCodeType barCodeType = BarcodeObject.getBarCodeType(barcodeReadEvent);
         final String barcode = barcodeReadEvent.getBarcodeData();
         Integer markScanned;
         IncomeRecContent incomeRecContent;
+        // В документах с CheckMark = “DataMatrixPDF417” событие сканирования PDF417 обрабатывается аналогично сканированию DataMatrix.
+        if (barCodeType == PDF417 && "DataMatrixPDF417".equals(incomeRec.getIncomeIn().getCheckMark())) {
+            barCodeType = DATAMATRIX;
+        }
         switch (barCodeType) {
             case EAN8:
             case EAN13:
@@ -170,7 +190,7 @@ public class ActIncomeAlcoRec extends ActBaseDocRec implements PickBottliingDate
                 break;
             case PDF417:
                 ActionOnScanPDF417Wrapper actionOnScanPDF417Wrapper = proceedPdf417(this, incomeRec, barcode, this);
-                if (actionOnScanPDF417Wrapper.ircList != null) {
+                if (actionOnScanPDF417Wrapper != null && actionOnScanPDF417Wrapper.ircList != null) {
                     if (actionOnScanPDF417Wrapper.ircList.size() == 1) {
                         // Перейти в форму "приемка позиции"
                         pickRec(this, incomeRec.getDocId(), actionOnScanPDF417Wrapper.ircList.get(0), actionOnScanPDF417Wrapper.addQty, actionOnScanPDF417Wrapper.addQty == 0 ? null : barcode, false, true);

@@ -161,6 +161,21 @@ public class ActWriteoffRec extends ActBaseDocRec {
                             }
                         });
                 return true;
+            case R.id.action_remove:
+                // удалять документ из списка и его out-файл (если есть).
+                MessageUtils.ShowModalAndConfirm(this, "Внимание!", "Подтвердите удаление документа",
+                        new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                DaoMem.getDaoMem().deleteData(writeoffRec);
+                                MessageUtils.showToastMessage("Документ удален!");
+                                ActWriteoffRec.this.finish();
+                            }
+                        });
+                return true;
+            case R.id.action_deletepositions:
+                // При выборе открыть дополнительную экранную форму выбора строки.
+                return true;
             default:
                 return super.onOptionsItemSelected(item);
         }

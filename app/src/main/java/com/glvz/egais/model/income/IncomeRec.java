@@ -46,6 +46,7 @@ public class IncomeRec extends BaseRec {
         rec.setSkladName(this.incomeIn.getSkladName());
         rec.setPostID(this.incomeIn.getPostID());
         rec.setPostName(this.incomeIn.getPostName());
+        rec.setCheckMark(this.incomeIn.getCheckMark());
         rec.setContent(new IncomeRecContentOutput[this.incomeIn.getContent().length]);
         int idx = 0;
         for (IncomeContentIn contentIn : this.incomeIn.getContent()) {
@@ -77,6 +78,18 @@ public class IncomeRec extends BaseRec {
             idx++;
         }
         return rec;
+    }
+
+    @Override
+    public void clearData() {
+        // Пройтись по всем строкам, очистить связки с товаром и проставить везде нули
+        for (BaseRecContent recContent : getRecContentList()) {
+            recContent.setNomenIn(null, null);
+            recContent.setQtyAccepted(null);
+            recContent.getBaseRecContentMarkList().clear();
+            recContent.setStatus(BaseRecContentStatus.NOT_ENTERED);
+        }
+        setStatus(BaseRecStatus.NEW);
     }
 
     @Override

@@ -26,6 +26,8 @@ public class IncomeIn implements DocIn {
     private String postName;
     @JsonProperty(value="MarkType")
     private String markType;
+    @JsonProperty(value="CheckMark")
+    private String checkMark;
 
     @JsonProperty(value="Content")
     private IncomeContentIn[] content;
@@ -102,6 +104,15 @@ public class IncomeIn implements DocIn {
         this.markType = markType;
     }
 
+
+    public String getCheckMark() {
+        return checkMark;
+    }
+
+    public void setCheckMark(String checkMark) {
+        this.checkMark = checkMark;
+    }
+
     @Override
     public String toString() {
         return "IncomeIn{" +
@@ -113,6 +124,7 @@ public class IncomeIn implements DocIn {
                 ", postID='" + postID + '\'' +
                 ", postName='" + postName + '\'' +
                 ", markType='" + markType + '\'' +
+                ", checkMark='" + checkMark + '\'' +
                 ", content=" + Arrays.toString(content) +
                 '}';
     }

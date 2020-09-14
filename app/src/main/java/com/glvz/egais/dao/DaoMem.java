@@ -898,6 +898,22 @@ public class DaoMem {
         return mapInvRec;
     }
 
+    public void deleteData(WriteoffRec writeoffRec) {
+        // удалять документ из списка и его out-файл (если есть).
+        mapWriteoffRec.remove(writeoffRec.getDocId());
+        SharedPreferences.Editor ed = sharedPreferences.edit();
+        Set<String> docIds = new HashSet<>();
+        for (WriteoffRec rec : mapWriteoffRec.values()) {
+            docIds.add(rec.getDocId());
+        }
+        ed.putStringSet(KEY_WRITEOFF+"_"+shopId, docIds);
+        ed.apply();
+        rejectData(writeoffRec);
+        writeLocalDataWriteoffRec(writeoffRec);
+        // Удалить сам файл
+        integrationFile.deleteFileRec(writeoffRec, shopId);
+    }
+
     public static class CheckMarkScannedResult {
         public Integer markScannedAsType;
         public BaseRecContent recContent;
@@ -1146,6 +1162,12 @@ public class DaoMem {
 
     public String getShopId() {
         return shopId;
+    }
+
+    public void clearData(IncomeRec rec) {
+        rec.clearData();
+        writeLocalDataBaseRec(rec);
+        exportDataBaseRec(rec);
     }
 
     public void rejectData(BaseRec rec) {

@@ -105,6 +105,7 @@ public class InvRec extends BaseRec {
 
     }
 
+
     @Override
     public BaseRecContent tryGetNextRecContent() {
         for (BaseRecContent recContent : getRecContentList()) {

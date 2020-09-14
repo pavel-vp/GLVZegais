@@ -47,4 +47,5 @@ public interface Integration {
 
     SetupFtp loadSetupFtp();
 
+    void deleteFileRec(BaseRec baseRec, String shopId);
 }

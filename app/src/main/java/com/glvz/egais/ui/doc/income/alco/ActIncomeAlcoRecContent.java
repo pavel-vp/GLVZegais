@@ -33,6 +33,9 @@ import com.honeywell.aidc.BarcodeReader;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.glvz.egais.utils.BarcodeObject.BarCodeType.DATAMATRIX;
+import static com.glvz.egais.utils.BarcodeObject.BarCodeType.PDF417;
+
 public class ActIncomeAlcoRecContent extends Activity implements BarcodeReader.BarcodeListener, PickBottliingDateCallback, TransferCallback {
 
     private static final int CHANGENOMEN_REQUESTCODE = 1;
@@ -316,8 +319,12 @@ public class ActIncomeAlcoRecContent extends Activity implements BarcodeReader.B
             addQty = DaoMem.getDaoMem().calculateQtyToAdd(this.incomeRec, this.incomeRecContent, this.lastMark);
         }
         // Определить тип ШК
-        final BarcodeObject.BarCodeType barCodeType = BarcodeObject.getBarCodeType(barcodeReadEvent);
+        BarcodeObject.BarCodeType barCodeType = BarcodeObject.getBarCodeType(barcodeReadEvent);
         IncomeRecContent incomeRecContentLocal;
+        // В документах с CheckMark = “DataMatrixPDF417” событие сканирования PDF417 обрабатывается аналогично сканированию DataMatrix.
+        if (barCodeType == PDF417 && "DataMatrixPDF417".equals(incomeRec.getIncomeIn().getCheckMark())) {
+            barCodeType = DATAMATRIX;
+        }
         switch (barCodeType) {
             case EAN8:
             case EAN13:

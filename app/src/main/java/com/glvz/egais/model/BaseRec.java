@@ -89,6 +89,10 @@ public abstract class BaseRec {
 
     public abstract BaseRecOutput formatAsOutput();
 
+    public void clearData() throws Exception {
+        throw new Exception("Not implemented method");
+    };
+
     public void rejectData() {
         // Пройтись по всем строкам, очистить связки с товаром и проставить везде нули
         for (BaseRecContent recContent : getRecContentList()) {

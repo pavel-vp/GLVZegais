@@ -21,6 +21,8 @@ public class IncomeRecOutput extends BaseRecOutput {
     private String postID;
     @JsonProperty(value="PostName")
     private String postName;
+    @JsonProperty(value="CheckMark")
+    private String checkMark;
 
     @JsonProperty(value="Content")
     private IncomeRecContentOutput[] content;
@@ -88,5 +90,13 @@ public class IncomeRecOutput extends BaseRecOutput {
 
     public void setContent(IncomeRecContentOutput[] content) {
         this.content = content;
+    }
+
+    public String getCheckMark() {
+        return checkMark;
+    }
+
+    public void setCheckMark(String checkMark) {
+        this.checkMark = checkMark;
     }
 }

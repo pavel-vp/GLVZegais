@@ -483,4 +483,10 @@ public class IntegrationSDCard implements Integration {
         return res;
     }
 
+    @Override
+    public void deleteFileRec(BaseRec baseRec, String shopId) {
+        File path = new File(basePath + "/" + SHOPS_DIR + "/" + shopId + "/" + OUT_DIR + "/" + baseRec.getDocIdForExport() + "_out.json");
+        path.delete();
+        MediaScannerConnection.scanFile(MainApp.getContext(), new String[] {path.toString()}, null, null);
+    }
 }

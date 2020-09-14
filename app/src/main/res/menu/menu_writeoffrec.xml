@@ -12,4 +12,14 @@
             android:orderInCategory="100"
             android:title="Очистить"
             app:showAsAction="never"/>
+    <item
+            android:id="@+id/action_remove"
+            android:orderInCategory="100"
+            android:title="Удалить"
+            app:showAsAction="never"/>
+    <item
+            android:id="@+id/action_deletepositions"
+            android:orderInCategory="100"
+            android:title="Удалить позиции документа..."
+            app:showAsAction="never"/>
 </menu>
