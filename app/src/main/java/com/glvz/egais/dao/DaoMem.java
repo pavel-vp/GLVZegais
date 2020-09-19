@@ -555,6 +555,24 @@ public class DaoMem {
         ed.apply();
     }
 
+    public void writeLocalDataRec_ClearAllMarks(BaseRec baseRec) {
+        for (BaseRecContent recContent : baseRec.getRecContentList()) {
+            writeLocalDataRecContent_ClearAllMarks(baseRec.getDocId(), recContent);
+        }
+    }
+
+    public void writeLocalDataRecContent_ClearAllMarks(String docId, BaseRecContent recContent) {
+        SharedPreferences.Editor ed = sharedPreferences.edit();
+        int idx = 1;
+        for (BaseRecContentMark baseRecContentMark : recContent.getBaseRecContentMarkList()) {
+            ed.remove(BaseRec.KEY_POS_MARKSCANNED + "_" + docId + "_" + recContent.getPosition() + "_" + idx);
+            ed.remove(BaseRec.KEY_POS_MARKSCANNED_ASTYPE + "_" + docId + "_" + recContent.getPosition() + "_" + idx);
+            ed.remove(BaseRec.KEY_POS_MARKSCANNEDREAL + "_" + docId + "_" + recContent.getPosition() + "_" + idx);
+            idx++;
+        }
+        ed.apply();
+    }
+
     private void writeLocalDataWriteoffRec(WriteoffRec writeoffRec) {
         SharedPreferences.Editor ed = sharedPreferences.edit();
         ed.putString(KEY_WRITEOFF + "_" + WriteoffRec.KEY_DOCNUM + "_" + writeoffRec.getDocId() + "_", writeoffRec.getDocNum());
@@ -1165,33 +1183,39 @@ public class DaoMem {
     }
 
     public void clearData(IncomeRec rec) {
+        writeLocalDataRec_ClearAllMarks(rec);
         rec.clearData();
         writeLocalDataBaseRec(rec);
         exportDataBaseRec(rec);
     }
 
     public void rejectData(BaseRec rec) {
+        writeLocalDataRec_ClearAllMarks(rec);
         rec.rejectData();
         writeLocalDataBaseRec(rec);
         exportDataBaseRec(rec);
     }
 
     public void rejectData(MoveRec rec) {
+        writeLocalDataRec_ClearAllMarks(rec);
         rec.rejectData();
         writeLocalDataBaseRec(rec);
     }
 
     public void rejectData(WriteoffRec rec) {
+        writeLocalDataRec_ClearAllMarks(rec);
         rec.rejectData();
         writeLocalWriteoffRec(rec);
     }
 
     public void rejectData(CheckMarkRec rec) {
+        writeLocalDataRec_ClearAllMarks(rec);
         rec.rejectData();
         writeLocalDataCheckMarkRec(rec);
     }
 
     public void rejectData(InvRec rec) {
+        writeLocalDataRec_ClearAllMarks(rec);
         rec.rejectData();
         writeLocalDataInvRec(rec);
     }

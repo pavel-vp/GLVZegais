@@ -72,6 +72,7 @@ public class ActFindMarkRec extends ActBaseDocRec {
                         new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
+                                DaoMem.getDaoMem().writeLocalDataRec_ClearAllMarks(findMarkRec);
                                 for (FindMarkRecContent rc : findMarkRec.getFindMarkRecContentList()) {
                                     rc.getBaseRecContentMarkList().clear();
                                 }

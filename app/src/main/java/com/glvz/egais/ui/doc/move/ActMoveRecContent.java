@@ -120,6 +120,7 @@ public class ActMoveRecContent extends Activity implements BarcodeReader.Barcode
                                 //  «Количество факт» = 0; в позиции удалить все марки; статус задания = «в работе».
                                 moveRecContent.setQtyAccepted((double) 0);
                                 moveRecContent.setStatus(BaseRecContentStatus.NOT_ENTERED);
+                                DaoMem.getDaoMem().writeLocalDataRecContent_ClearAllMarks(moveRec.getDocId(), moveRecContent);
                                 moveRecContent.getBaseRecContentMarkList().clear();
                                 moveRec.setStatus(BaseRecStatus.NEW);
                                 DaoMem.getDaoMem().writeLocalDataBaseRec(moveRec);

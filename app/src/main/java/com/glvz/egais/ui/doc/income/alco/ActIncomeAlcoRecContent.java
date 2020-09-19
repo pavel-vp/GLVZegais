@@ -227,6 +227,7 @@ public class ActIncomeAlcoRecContent extends Activity implements BarcodeReader.B
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
                                 incomeRecContent.setQtyAccepted(null);
+                                DaoMem.getDaoMem().writeLocalDataRecContent_ClearAllMarks(incomeRec.getDocId(), incomeRecContent);
                                 incomeRecContent.getBaseRecContentMarkList().clear();
                                 lastMark = null;
                                 isBoxScanned = false;

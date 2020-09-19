@@ -165,6 +165,7 @@ public class ActInvRecContent extends Activity implements BarcodeReader.BarcodeL
                 invRecContent.setQtyAccepted((double) 0);
                 //2) Установить статус позиции «Обработана»
                 invRecContent.setStatus(BaseRecContentStatus.DONE);
+                DaoMem.getDaoMem().writeLocalDataRecContent_ClearAllMarks(invRec.getDocId(), invRecContent);
                 invRecContent.getBaseRecContentMarkList().clear();
                 DaoMem.getDaoMem().writeLocalDataInvRec(invRec);
                 scannedMarkIn = null;
@@ -186,6 +187,7 @@ public class ActInvRecContent extends Activity implements BarcodeReader.BarcodeL
                                 //установить статус «Не обработана»
                                 invRecContent.setStatus(BaseRecContentStatus.NOT_ENTERED);
                                 //удалить все марки
+                                DaoMem.getDaoMem().writeLocalDataRecContent_ClearAllMarks(invRec.getDocId(), invRecContent);
                                 invRecContent.getBaseRecContentMarkList().clear();
                                 DaoMem.getDaoMem().writeLocalDataInvRec(invRec);
                                 scannedMarkIn = null;
