@@ -197,6 +197,7 @@ public class ActCheckMarkRec extends ActBaseDocRec {
                 }
                 break;
             case DATAMATRIX:
+            case PDF417:
                 if (currentState == STATE_SCAN_EAN) {
                     MessageUtils.showModalMessage(this, "Внимание!", "Сканируйте штрихкод с бутылки");
                     return;
@@ -204,6 +205,10 @@ public class ActCheckMarkRec extends ActBaseDocRec {
                 // выполнить проверку корректности ШК по длине:  PDF-417 должна быть 68 символов,  DataMatrix – 150
                 if (barCodeType == DATAMATRIX && barCode.length() != 150) {
                     MessageUtils.showModalMessage(this, "Внимание!", "Неверная длина считанного штрихкода ("+ barCode.length()+"). Сканируйте марку нового образца");
+                    return;
+                }
+                if (barCodeType == PDF417 && barCode.length() != 68) {
+                    MessageUtils.showModalMessage(this, "Внимание!", "Неверная длина сканированного ШК, повторите сканирование марки (должна быть 68, фактически " + barCode.length());
                     return;
                 }
                 // Проверить наличие считанного ШК среди всех марок задания (по всем позициям)

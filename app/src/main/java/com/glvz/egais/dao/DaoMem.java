@@ -1348,11 +1348,7 @@ public class DaoMem {
         return false;
     }
 
-    public boolean isNeedToCheckMarkForWriteoff(String typeDoc, BarcodeObject.BarCodeType barCodeType) {
-        if (WriteoffRec.TYEDOC_WRITEOFF.equals(typeDoc) ) {
-            return barCodeType == BarcodeObject.BarCodeType.DATAMATRIX;
-        }
-        // return
+    public boolean isNeedToCheckMarkForWriteoff(BarcodeObject.BarCodeType barCodeType) {
         ShopIn shopIn = findShopInById(shopId);
         if ( (ShopIn.CHECKMARK_DM.equals(shopIn.getCheckMark()) && barCodeType == BarcodeObject.BarCodeType.DATAMATRIX) ||
                 ShopIn.CHECKMARK_DMPDF.equals(shopIn.getCheckMark())) {

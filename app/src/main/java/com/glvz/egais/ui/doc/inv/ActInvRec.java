@@ -315,10 +315,13 @@ public class ActInvRec extends ActBaseDocRec implements PickMRCCallback{
                     if (barCodeType == PDF417 && StringUtils.isEmptyOrNull(markIn.getAlcCode())) {
                         markIn.setAlcCode(BarcodeObject.extractAlcode(barCode));
                     }
-                    // искать алкокод в справочнике «alccodes.json». Если найден -  сохранить значение NomenID из записи с алкокодом
-                    AlcCodeIn alcCodeIn = DaoMem.getDaoMem().findAlcCode(markIn.getAlcCode());
-                    if (alcCodeIn != null) {
-                        markIn.setNomenId(alcCodeIn.getNomenId());
+                    // у марок старого типа (PDF417) отключить идентификацию номенклатуры по справочнику alccodes.json
+                    if (barCodeType != PDF417) {
+                        // искать алкокод в справочнике «alccodes.json». Если найден -  сохранить значение NomenID из записи с алкокодом
+                        AlcCodeIn alcCodeIn = DaoMem.getDaoMem().findAlcCode(markIn.getAlcCode());
+                        if (alcCodeIn != null) {
+                            markIn.setNomenId(alcCodeIn.getNomenId());
+                        }
                     }
                 }
                 // если NomenID не определен

@@ -242,12 +242,11 @@ public class ActWriteoffRec extends ActBaseDocRec {
                     MessageUtils.showModalMessage(this, "Внимание!", "Эта марка ранее уже была отсканирована в этом задании в позиции " + markScanned.recContent.getPosition() + " товара " + markScanned.recContent.getNomenIn().getName());
                     return;
                 }
-                //- для списания — всегда «DataMatrix»
-                // - для Возврата - выполнить проверку допустимости добавления этой марки, типы проверяемых марок зависят от состояния CheckMark в справочнике магазинов shops.json:
+                // - для Всех типов док - выполнить проверку допустимости добавления этой марки, типы проверяемых марок зависят от состояния CheckMark в справочнике магазинов shops.json:
                 //   - «DataMatrix» - проверяются только марки DataMatrix (проверка PDF417 - пропускается)
                 //   - «DataMatrixPDF417» - проверяются марки DataMatrix и PDF417
                 MarkIn markIn = null;
-                if (DaoMem.getDaoMem().isNeedToCheckMarkForWriteoff(writeoffRec.getTypeDoc(), barCodeType)) {
+                if (DaoMem.getDaoMem().isNeedToCheckMarkForWriteoff(barCodeType)) {
                     //
                     // алгоритм допустимости добавления марки
                     //
@@ -272,10 +271,13 @@ public class ActWriteoffRec extends ActBaseDocRec {
                     if (barCodeType == PDF417 && StringUtils.isEmptyOrNull(markIn.getAlcCode())) {
                         markIn.setAlcCode(BarcodeObject.extractAlcode(barCode));
                     }
-                    // искать алкокод в справочнике «alccodes.json». Если найден -  сохранить значение NomenID из записи с алкокодом
-                    AlcCodeIn alcCodeIn = DaoMem.getDaoMem().findAlcCode(markIn.getAlcCode());
-                    if (alcCodeIn != null) {
-                        markIn.setNomenId(alcCodeIn.getNomenId());
+                    // у марок старого типа (PDF417) отключить идентификацию номенклатуры по справочнику alccodes.json
+                    if (barCodeType != PDF417) {
+                        // искать алкокод в справочнике «alccodes.json». Если найден -  сохранить значение NomenID из записи с алкокодом
+                        AlcCodeIn alcCodeIn = DaoMem.getDaoMem().findAlcCode(markIn.getAlcCode());
+                        if (alcCodeIn != null) {
+                            markIn.setNomenId(alcCodeIn.getNomenId());
+                        }
                     }
                 }
                 // если NomenID не определен
