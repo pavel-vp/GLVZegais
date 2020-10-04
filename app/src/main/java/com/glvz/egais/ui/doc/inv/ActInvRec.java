@@ -443,7 +443,7 @@ public class ActInvRec extends ActBaseDocRec implements PickMRCCallback{
     }
 
     private void proceedOneBottle(InvRecContent invRecContent, NomenIn nomenIn) {
-        ActInvRecContent.proceedOneBottle(invRec, invRecContent, nomenIn, scannedMarkIn);
+        ActInvRecContent.proceedOneBottle(this, invRec, invRecContent, nomenIn, scannedMarkIn);
         this.currentState = STATE_SCAN_ANY;
         this.scannedMarkIn = null;
         pickRec(this, invRec.getDocId(), invRecContent, 0, null, false, false);

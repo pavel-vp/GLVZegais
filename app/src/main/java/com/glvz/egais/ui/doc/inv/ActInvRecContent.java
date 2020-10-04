@@ -137,20 +137,37 @@ public class ActInvRecContent extends Activity implements BarcodeReader.BarcodeL
             @Override
             public void onClick(View v) {
                 if (edQtyAdd.getText() != null) {
-                    //1) сохраняет введенное пользователем количество: [Количество факт] = [Количество факт] + [Количество добавить]
-                    double qty = Double.valueOf(edQtyAdd.getText().toString());
-                    invRecContent.setQtyAccepted((invRecContent.getQtyAccepted() == null ? 0 : invRecContent.getQtyAccepted()) + qty);
-                    //2) у позиции установить статус «Обработана»
-                    invRecContent.setStatus(BaseRecContentStatus.DONE);
-                    invRec.setStatus(BaseRecStatus.INPROGRESS);
-                    DaoMem.getDaoMem().writeLocalDataInvRec(invRec);
-                    scannedMarkIn = null;
-                    currentState = STATE_SCAN_ANY;
-                    edQtyAdd.setText("");
-                    if (qty == 1) {
-                        MessageUtils.playSound(R.raw.bottle_one);
-                    } else {
-                        MessageUtils.playSound(R.raw.bottle_many);
+                    Double qtyAcceptedPrev = invRecContent.getQtyAccepted();
+                    boolean soundPlayed = false;
+                    try {
+                        //1) сохраняет введенное пользователем количество: [Количество факт] = [Количество факт] + [Количество добавить]
+                        double qty = Double.valueOf(edQtyAdd.getText().toString());
+                        invRecContent.setQtyAccepted((invRecContent.getQtyAccepted() == null ? 0 : invRecContent.getQtyAccepted()) + qty);
+                        //2) у позиции установить статус «Обработана»
+                        invRecContent.setStatus(BaseRecContentStatus.DONE);
+                        invRec.setStatus(BaseRecStatus.INPROGRESS);
+                        DaoMem.getDaoMem().writeLocalDataInvRec(invRec);
+                        scannedMarkIn = null;
+                        currentState = STATE_SCAN_ANY;
+                        edQtyAdd.setText("");
+                        if (qty == 1) {
+                            MessageUtils.playSound(R.raw.bottle_one);
+                        } else {
+                            MessageUtils.playSound(R.raw.bottle_many);
+                        }
+                        soundPlayed = true;
+                    } finally {
+                        if (soundPlayed) {
+                            // проверить что новое факт кол-во записанное - больше чем предыдущее на 1
+                            InvRecContent invRecContentNew = (InvRecContent) DaoMem.getDaoMem().getRecContentByPosition(invRec, invRecContent.getPosition());
+                            if (invRecContentNew == null || invRecContentNew.getQtyAccepted() == null ||
+                                    invRecContentNew.getQtyAccepted() - qtyAcceptedPrev <= 0) {
+
+                                MessageUtils.playSound(R.raw.alarm);
+                                MessageUtils.showModalMessage(ActInvRecContent.this, "Внимание!", "Произошла ошибка с сохранением количества по данной позиции! Немедленно обратитесь в ИТ-отдел!");
+                            }
+
+                        }
                     }
                     updateData();
                 }
@@ -384,25 +401,43 @@ public class ActInvRecContent extends Activity implements BarcodeReader.BarcodeL
 
     }
 
-    public static void proceedOneBottle(InvRec invRec, InvRecContent invRecContent, NomenIn nomenIn, MarkIn scannedMarkIn) {
-        invRecContent.setNomenIn(nomenIn, null);
-        //10) поле «Количество факт» добавить addQty шт к предыдущему значению
-        invRecContent.setQtyAccepted((invRecContent.getQtyAccepted() == null ? 0 : invRecContent.getQtyAccepted()) + 1);
-        //11) добавить марку к списку марок текущей позиции.
-        if (scannedMarkIn != null) {
-            invRecContent.getBaseRecContentMarkList().add(new BaseRecContentMark(scannedMarkIn.getMark(), BaseRecContentMark.MARK_SCANNED_AS_MARK, scannedMarkIn.getMark()));
+    public static void proceedOneBottle(Activity activity, InvRec invRec, InvRecContent invRecContent, NomenIn nomenIn, MarkIn scannedMarkIn) {
+        Double qtyAcceptedPrev = invRecContent.getQtyAccepted();
+        boolean soundPlayed = false;
+        try {
+            invRecContent.setNomenIn(nomenIn, null);
+            //10) поле «Количество факт» добавить addQty шт к предыдущему значению
+            invRecContent.setQtyAccepted((invRecContent.getQtyAccepted() == null ? 0 : invRecContent.getQtyAccepted()) + 1);
+            //11) добавить марку к списку марок текущей позиции.
+            if (scannedMarkIn != null) {
+                invRecContent.getBaseRecContentMarkList().add(new BaseRecContentMark(scannedMarkIn.getMark(), BaseRecContentMark.MARK_SCANNED_AS_MARK, scannedMarkIn.getMark()));
+            }
+            //13) установить статус документа «в работе»
+            invRecContent.setStatus(BaseRecContentStatus.DONE);
+            invRec.setStatus(BaseRecStatus.INPROGRESS);
+            DaoMem.getDaoMem().writeLocalDataInvRec(invRec);
+            //12) проиграть файл «bottle_one.mp3» - проигрываем файл в самом конце после успешного сохранения записи
+            MessageUtils.playSound(R.raw.bottle_one);
+            soundPlayed = true;
+        } finally {
+            if (soundPlayed) {
+                // проверить что новое факт кол-во записанное - больше чем предыдущее на 1
+                InvRecContent invRecContentNew = (InvRecContent) DaoMem.getDaoMem().getRecContentByPosition(invRec, invRecContent.getPosition());
+                if (invRecContentNew == null || invRecContentNew.getQtyAccepted() == null ||
+                        invRecContentNew.getQtyAccepted() - qtyAcceptedPrev != 1) {
+
+                    MessageUtils.playSound(R.raw.alarm);
+                    MessageUtils.showModalMessage(activity, "Внимание!", "Произошла ошибка с сохранением количества по данной позиции! Немедленно обратитесь в ИТ-отдел!");
+                }
+
+            }
+
         }
-        //12) проиграть файл «bottle_one.mp3»
-        MessageUtils.playSound(R.raw.bottle_one);
-        //13) установить статус документа «в работе»
-        invRecContent.setStatus(BaseRecContentStatus.DONE);
-        invRec.setStatus(BaseRecStatus.INPROGRESS);
-        DaoMem.getDaoMem().writeLocalDataInvRec(invRec);
 
     }
 
     private void proceedOneBottle(NomenIn nomenIn) {
-        proceedOneBottle(invRec, invRecContent, nomenIn, scannedMarkIn);
+        proceedOneBottle(this, invRec, invRecContent, nomenIn, scannedMarkIn);
         this.currentState = STATE_SCAN_ANY;
         this.scannedMarkIn = null;
         updateData();
