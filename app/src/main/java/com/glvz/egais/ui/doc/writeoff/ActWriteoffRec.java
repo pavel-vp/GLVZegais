@@ -192,7 +192,7 @@ public class ActWriteoffRec extends ActBaseDocRec {
         final AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
         switch(item.getItemId()) {
             case R.id.delete:
-                MessageUtils.ShowModalAndConfirm(this, "Внимание!", "Подтвердите удаление строки документа",
+                MessageUtils.ShowModalAndConfirm(this, "Внимание!", "Подтвердите удаление строки документа. Внимание: строка будет удалена целиком - все бутылки. Если бутылки подготовлены к отгрузке - уберите их из коробки.",
                         new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
