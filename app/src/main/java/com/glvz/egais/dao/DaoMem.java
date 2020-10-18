@@ -610,6 +610,39 @@ public class DaoMem {
         ed.apply();
     }
 
+    public void writeLocalDataWriteoffRec_Clear(WriteoffRec writeoffRec) {
+        SharedPreferences.Editor ed = sharedPreferences.edit();
+        ed.remove(KEY_WRITEOFF + "_" + WriteoffRec.KEY_DOCNUM + "_" + writeoffRec.getDocId() + "_");
+        ed.remove(KEY_WRITEOFF + "_" + WriteoffRec.KEY_DATE + "_" + writeoffRec.getDocId() + "_");
+        ed.remove(KEY_WRITEOFF + "_" + WriteoffRec.KEY_TYPEDOC + "_" + writeoffRec.getDocId() + "_");
+        ed.remove(KEY_WRITEOFF + "_" + WriteoffRec.KEY_SKLADID + "_" + writeoffRec.getDocId() + "_");
+        ed.remove(KEY_WRITEOFF + "_" + WriteoffRec.KEY_SKLADNAME + "_" + writeoffRec.getDocId() + "_");
+        ed.remove(KEY_WRITEOFF + "_" + WriteoffRec.KEY_COMMENT + "_" + writeoffRec.getDocId() + "_");
+        ed.remove(KEY_WRITEOFF + "_" + WriteoffRec.KEY_CONTENT_SIZE + "_" + writeoffRec.getDocId() + "_");
+        ed.apply();
+        // записать данные по строкам
+        for (WriteoffRecContent recContent : writeoffRec.getWriteoffRecContentList()) {
+            writeLocalDataWriteoffRecContent_Clear(writeoffRec.getDocId(), recContent);
+        }
+    }
+
+    private void writeLocalDataWriteoffRecContent_Clear(String docId, WriteoffRecContent recContent) {
+        SharedPreferences.Editor ed = sharedPreferences.edit();
+        ed.remove(KEY_WRITEOFF + "_" + BaseRec.KEY_POS_ID1C+"_"+docId+"_"+recContent.getPosition());
+        ed.remove(KEY_WRITEOFF + "_" + BaseRec.KEY_POS_BARCODE+"_"+docId+"_"+recContent.getPosition());
+        ed.remove(KEY_WRITEOFF + "_" + BaseRec.KEY_POS_STATUS+"_"+docId+"_"+recContent.getPosition());
+        ed.remove(KEY_WRITEOFF + "_" + BaseRec.KEY_POS_QTYACCEPTED+"_"+docId+"_"+recContent.getPosition());
+        ed.remove(KEY_WRITEOFF + "_" + BaseRec.KEY_POS_MARKSCANNED_CNT + "_"+docId+"_"+recContent.getPosition());
+        int idx = 1;
+        for (BaseRecContentMark baseRecContentMark : recContent.getBaseRecContentMarkList()) {
+            ed.remove(KEY_WRITEOFF + "_" + BaseRec.KEY_POS_MARKSCANNED + "_"+docId+"_"+recContent.getPosition()+"_"+idx);
+            ed.remove(KEY_WRITEOFF + "_" + BaseRec.KEY_POS_MARKSCANNED_ASTYPE + "_"+docId+"_"+recContent.getPosition()+"_"+idx);
+            ed.remove(KEY_WRITEOFF + "_" + BaseRec.KEY_POS_MARKSCANNEDREAL + "_"+docId+"_"+recContent.getPosition()+"_"+idx);
+            idx++;
+        }
+        ed.apply();
+    }
+
     public void writeLocalDataCheckMarkRec(CheckMarkRec checkMarkRec) {
         SharedPreferences.Editor ed = sharedPreferences.edit();
         ed.putBoolean(KEY_CHECKMARK + "_" + BaseRec.KEY_EXPORTED+"_"+checkMarkRec.getDocId()+"_", checkMarkRec.isExported());

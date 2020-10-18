@@ -4,9 +4,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.view.View;
+import android.view.*;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ListView;
@@ -85,6 +83,8 @@ public class ActWriteoffRec extends ActBaseDocRec {
                 pickRec(ActWriteoffRec.this, writeoffRec.getDocId(), list.get(position), 0, null, false, false);
             }
         });
+        registerForContextMenu(lvContent);
+
         adapter = new WriteoffContentArrayAdapter(this, R.layout.rec_writeoff_position, list);
         lvContent.setAdapter(adapter);
         tvCaption = (TextView)findViewById(R.id.tvCaption);
@@ -173,11 +173,40 @@ public class ActWriteoffRec extends ActBaseDocRec {
                             }
                         });
                 return true;
-            case R.id.action_deletepositions:
-                // При выборе открыть дополнительную экранную форму выбора строки.
-                return true;
             default:
                 return super.onOptionsItemSelected(item);
+        }
+    }
+
+    @Override
+    public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
+        super.onCreateContextMenu(menu, v, menuInfo);
+        if (v.getId()==R.id.lvContent) {
+            MenuInflater inflater = getMenuInflater();
+            inflater.inflate(R.menu.menu_writeoffrec_list, menu);
+        }
+    }
+
+    @Override
+    public boolean onContextItemSelected(MenuItem item) {
+        final AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
+        switch(item.getItemId()) {
+            case R.id.delete:
+                MessageUtils.ShowModalAndConfirm(this, "Внимание!", "Подтвердите удаление строки документа",
+                        new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                DaoMem.getDaoMem().writeLocalDataWriteoffRec_Clear(writeoffRec);
+                                writeoffRec.removeWriteoffRecContent(info.position+1);
+
+                                DaoMem.getDaoMem().writeLocalWriteoffRec(writeoffRec);
+                                MessageUtils.showToastMessage("Строка документа удалена!");
+                                updateDataWithScroll(info.position >= writeoffRec.getWriteoffRecContentList().size() ? writeoffRec.getWriteoffRecContentList().size() - 1 : info.position);
+                            }
+                        });
+                return true;
+            default:
+                return super.onContextItemSelected(item);
         }
     }
 

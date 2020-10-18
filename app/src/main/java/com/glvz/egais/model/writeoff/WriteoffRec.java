@@ -140,6 +140,21 @@ public class WriteoffRec extends BaseRec {
         return list;
     }
 
+    public void removeWriteoffRecContent(int position) {
+        Iterator<BaseRecContent> iterator = recContentList.iterator();
+        while (iterator.hasNext()) {
+            BaseRecContent wrc = iterator.next();
+            if (wrc.getPosition().equals(String.valueOf(position))) {
+                iterator.remove();
+            }
+        }
+        int pos = 1;
+        for (BaseRecContent wrc : recContentList) {
+            wrc.setPosition(String.valueOf(pos));
+            pos++;
+        }
+    }
+
     public void setDateStr(String date) {
         this.date = date;
     }

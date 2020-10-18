@@ -47,15 +47,21 @@ public class WriteoffRecContentHolder extends DocRecContentHolder {
         } else {
             tvQty.setText(addMark ==0 ? "" : String.valueOf(addMark));
         }
-        tvNomenId.setText(recContent.getNomenIn().getId());
-        if (writeoffRecContent.getNomenIn().getCapacity() != null) {
-            tvVolume.setText(StringUtils.formatQty(writeoffRecContent.getNomenIn().getCapacity() ));
+        if (recContent.getNomenIn() != null) {
+            tvNomenId.setText(recContent.getNomenIn().getId());
+            if (writeoffRecContent.getNomenIn().getCapacity() != null) {
+                tvVolume.setText(StringUtils.formatQty(writeoffRecContent.getNomenIn().getCapacity()));
+            } else {
+                tvVolume.setText("");
+            }
+            if (writeoffRecContent.getNomenIn().getAlcVolume() != null) {
+                tvAlc.setText(StringUtils.formatQty(writeoffRecContent.getNomenIn().getAlcVolume()));
+            } else {
+                tvAlc.setText("");
+            }
         } else {
+            tvNomenId.setText("");
             tvVolume.setText("");
-        }
-        if (writeoffRecContent.getNomenIn().getAlcVolume() != null) {
-            tvAlc.setText(StringUtils.formatQty(writeoffRecContent.getNomenIn().getAlcVolume() ));
-        } else {
             tvAlc.setText("");
         }
     }
