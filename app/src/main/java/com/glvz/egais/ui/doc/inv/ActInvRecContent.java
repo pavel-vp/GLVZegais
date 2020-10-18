@@ -160,10 +160,10 @@ public class ActInvRecContent extends Activity implements BarcodeReader.BarcodeL
                     } finally {
                         if (soundPlayed) {
                             try {
-                                // проверить что новое факт кол-во записанное - больше чем предыдущее на 1
+                                // проверить что новое факт кол-во записанное - не равно предыдущему
                                 InvRecContent invRecContentNew = (InvRecContent) DaoMem.getDaoMem().getRecContentByPosition(invRec, invRecContent.getPosition());
                                 if (invRecContentNew == null || invRecContentNew.getQtyAccepted() == null ||
-                                        invRecContentNew.getQtyAccepted() - (qtyAcceptedPrev == null ? 0 : qtyAcceptedPrev) != 1) {
+                                        invRecContentNew.getQtyAccepted() - (qtyAcceptedPrev == null ? 0 : qtyAcceptedPrev) == 0) {
 
                                     MessageUtils.playSound(R.raw.alarm);
                                     MessageUtils.showModalMessage(ActInvRecContent.this, "Внимание!", "Произошла ошибка с сохранением количества по данной позиции! Немедленно обратитесь в ИТ-отдел!");
@@ -427,10 +427,10 @@ public class ActInvRecContent extends Activity implements BarcodeReader.BarcodeL
         } finally {
             if (soundPlayed) {
                 try {
-                    // проверить что новое факт кол-во записанное - больше чем предыдущее на 1
+                    // проверить что новое факт кол-во записанное - не равно предыдущему
                     InvRecContent invRecContentNew = (InvRecContent) DaoMem.getDaoMem().getRecContentByPosition(invRec, invRecContent.getPosition());
                     if (invRecContentNew == null || invRecContentNew.getQtyAccepted() == null ||
-                            invRecContentNew.getQtyAccepted() - (qtyAcceptedPrev == null ? 0 : qtyAcceptedPrev) != 1) {
+                            invRecContentNew.getQtyAccepted() - (qtyAcceptedPrev == null ? 0 : qtyAcceptedPrev) == 0) {
 
                         MessageUtils.playSound(R.raw.alarm);
                         MessageUtils.showModalMessage(activity, "Внимание!", "Произошла ошибка с сохранением количества по данной позиции! Немедленно обратитесь в ИТ-отдел!");
