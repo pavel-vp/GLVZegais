@@ -3,6 +3,7 @@ package com.glvz.egais.ui.doc.inv;
 import android.app.Activity;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
@@ -158,13 +159,17 @@ public class ActInvRecContent extends Activity implements BarcodeReader.BarcodeL
                         soundPlayed = true;
                     } finally {
                         if (soundPlayed) {
-                            // проверить что новое факт кол-во записанное - больше чем предыдущее на 1
-                            InvRecContent invRecContentNew = (InvRecContent) DaoMem.getDaoMem().getRecContentByPosition(invRec, invRecContent.getPosition());
-                            if (invRecContentNew == null || invRecContentNew.getQtyAccepted() == null ||
-                                    invRecContentNew.getQtyAccepted() - qtyAcceptedPrev <= 0) {
+                            try {
+                                // проверить что новое факт кол-во записанное - больше чем предыдущее на 1
+                                InvRecContent invRecContentNew = (InvRecContent) DaoMem.getDaoMem().getRecContentByPosition(invRec, invRecContent.getPosition());
+                                if (invRecContentNew == null || invRecContentNew.getQtyAccepted() == null ||
+                                        invRecContentNew.getQtyAccepted() - (qtyAcceptedPrev == null ? 0 : qtyAcceptedPrev) != 1) {
 
-                                MessageUtils.playSound(R.raw.alarm);
-                                MessageUtils.showModalMessage(ActInvRecContent.this, "Внимание!", "Произошла ошибка с сохранением количества по данной позиции! Немедленно обратитесь в ИТ-отдел!");
+                                    MessageUtils.playSound(R.raw.alarm);
+                                    MessageUtils.showModalMessage(ActInvRecContent.this, "Внимание!", "Произошла ошибка с сохранением количества по данной позиции! Немедленно обратитесь в ИТ-отдел!");
+                                }
+                            } catch (Exception e) {
+                                Log.e("ActInvRecContent","Error in Catching", e);
                             }
 
                         }
@@ -421,13 +426,17 @@ public class ActInvRecContent extends Activity implements BarcodeReader.BarcodeL
             soundPlayed = true;
         } finally {
             if (soundPlayed) {
-                // проверить что новое факт кол-во записанное - больше чем предыдущее на 1
-                InvRecContent invRecContentNew = (InvRecContent) DaoMem.getDaoMem().getRecContentByPosition(invRec, invRecContent.getPosition());
-                if (invRecContentNew == null || invRecContentNew.getQtyAccepted() == null ||
-                        invRecContentNew.getQtyAccepted() - qtyAcceptedPrev != 1) {
+                try {
+                    // проверить что новое факт кол-во записанное - больше чем предыдущее на 1
+                    InvRecContent invRecContentNew = (InvRecContent) DaoMem.getDaoMem().getRecContentByPosition(invRec, invRecContent.getPosition());
+                    if (invRecContentNew == null || invRecContentNew.getQtyAccepted() == null ||
+                            invRecContentNew.getQtyAccepted() - (qtyAcceptedPrev == null ? 0 : qtyAcceptedPrev) != 1) {
 
-                    MessageUtils.playSound(R.raw.alarm);
-                    MessageUtils.showModalMessage(activity, "Внимание!", "Произошла ошибка с сохранением количества по данной позиции! Немедленно обратитесь в ИТ-отдел!");
+                        MessageUtils.playSound(R.raw.alarm);
+                        MessageUtils.showModalMessage(activity, "Внимание!", "Произошла ошибка с сохранением количества по данной позиции! Немедленно обратитесь в ИТ-отдел!");
+                    }
+                } catch (Exception e) {
+                    Log.e("ActInvRecContent","Error in Catching", e);
                 }
 
             }
