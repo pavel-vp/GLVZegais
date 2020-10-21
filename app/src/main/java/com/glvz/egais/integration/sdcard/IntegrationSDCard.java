@@ -1,6 +1,7 @@
 package com.glvz.egais.integration.sdcard;
 
 import android.media.MediaScannerConnection;
+import android.util.Base64;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -18,6 +19,7 @@ import com.glvz.egais.integration.model.doc.move.MoveIn;
 import com.glvz.egais.integration.model.doc.move.MoveRecOutput;
 import com.glvz.egais.integration.model.doc.writeoff.WriteoffRecOutput;
 import com.glvz.egais.model.BaseRec;
+import com.glvz.egais.model.photo.PhotoRec;
 import com.glvz.egais.model.writeoff.WriteoffRec;
 import com.glvz.egais.utils.StringUtils;
 
@@ -55,6 +57,7 @@ public class IntegrationSDCard implements Integration {
     private static final String DOC_PREFIX_CHECKMARK = "CHECK";
     private static final String DOC_PREFIX_FINDMARK = "FINDMARK";
     private static final String DOC_PREFIX_INV = "INV";
+    private static final String DOC_PREFIX_PHOTO = "IMG";
 
     private ObjectMapper objectMapper = new ObjectMapper();
 
@@ -270,15 +273,51 @@ public class IntegrationSDCard implements Integration {
     }
 
     @Override
-    public void writeBaseRec(String shopId, BaseRec rec) {
+    public List<File> loadPhotoFiles(String shopId) {
+        List<File> listPhoto = new ArrayList<>();
         File path = new File(basePath + "/" + SHOPS_DIR + "/" + shopId + "/" + OUT_DIR);
-        File file = new File(path, rec.getDocIdForExport() + "_out.json");
+        if (path.listFiles() != null) {
+            for (File file : path.listFiles()) {
+                if (file.getName().toUpperCase().startsWith(DOC_PREFIX_PHOTO) &&
+                        !file.getName().toUpperCase().startsWith(DOC_PREFIX_PHOTO+"-MINI")) {
+                    listPhoto.add(file);
+                }
+            }
+        }
+        return listPhoto;
+    }
+
+    @Override
+    public void writeBaseRec(String shopId, BaseRec rec) {
+        File path = null;
+        if (rec instanceof PhotoRec) {
+            path = new File(basePath + "/" + SHOPS_DIR + "/" + shopId + "/" + OUT_DIR);
+            File file = new File(path,  DOC_PREFIX_PHOTO + "-" + rec.getDocIdForExport() + ".jpeg");
+            try(FileOutputStream fos =  new FileOutputStream(file)) {
+                String out = ((PhotoRec) rec).getData();
+                byte[] data = Base64.decode(out, 0);
+                fos.write(data);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            file = new File(path,  DOC_PREFIX_PHOTO + "-MINI-" + rec.getDocIdForExport() + ".jpeg");
+            try(FileOutputStream fos =  new FileOutputStream(file)) {
+                String out = ((PhotoRec) rec).getDataMini();
+                byte[] data = Base64.decode(out, 0);
+                fos.write(data);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        } else {
+            path = new File(basePath + "/" + SHOPS_DIR + "/" + shopId + "/" + OUT_DIR);
+            File file = new File(path, rec.getDocIdForExport() + "_out.json");
             try {
                 BaseRecOutput out = rec.formatAsOutput();
                 objectMapper.writerWithDefaultPrettyPrinter().writeValue(file, out);
             } catch (IOException e) {
                 e.printStackTrace();
             }
+        }
         MediaScannerConnection.scanFile(MainApp.getContext(), new String[] {path.toString()}, null, null);
     }
 
@@ -474,6 +513,30 @@ public class IntegrationSDCard implements Integration {
                     }
                 }
             }
+            // Фото
+            if (file.getName().toUpperCase().startsWith(DOC_PREFIX_PHOTO)) {
+                // Если это экспорт
+                if (file.getAbsolutePath().contains("/" + OUT_DIR + "/")) {
+                    try {
+                        // распарсить имя файла - вытащить дату
+                        String date = null;
+                        // IMG-MINI-2020-10-10 20:20:20.
+                        // IMG-2020-10-10 20:20:20.
+                        if (file.getName().toUpperCase().startsWith(DOC_PREFIX_PHOTO+"-MINI")) {
+                            date = file.getName().substring(9,28);
+                        } else {
+                            date = file.getName().substring(4,23);
+                        }
+                        Date d = StringUtils.imgStringToDate(date);
+                        if (d.before(calendar.getTime())) {
+                            toDelete = true;
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        toDelete = true;
+                    }
+                }
+            }
 
             if (toDelete) {
                 file.delete();
@@ -485,8 +548,28 @@ public class IntegrationSDCard implements Integration {
 
     @Override
     public void deleteFileRec(BaseRec baseRec, String shopId) {
-        File path = new File(basePath + "/" + SHOPS_DIR + "/" + shopId + "/" + OUT_DIR + "/" + baseRec.getDocIdForExport() + "_out.json");
-        path.delete();
+        File path = null;
+        if (baseRec instanceof PhotoRec) {
+            path = new File(basePath + "/" + SHOPS_DIR + "/" + shopId + "/" + OUT_DIR + "/IMG-" + baseRec.getDocIdForExport() + ".jpeg");
+            path.delete();
+            path = new File(basePath + "/" + SHOPS_DIR + "/" + shopId + "/" + OUT_DIR + "/IMG-MINI-" + baseRec.getDocIdForExport() + ".jpeg");
+            path.delete();
+        } else {
+            path = new File(basePath + "/" + SHOPS_DIR + "/" + shopId + "/" + OUT_DIR + "/" + baseRec.getDocIdForExport() + "_out.json");
+            path.delete();
+        }
         MediaScannerConnection.scanFile(MainApp.getContext(), new String[] {path.toString()}, null, null);
     }
+
+    @Override
+    public String getPhotoFileName(String skladId, String name) {
+        return basePath + "/" + SHOPS_DIR + "/" + skladId + "/" + OUT_DIR + "/" + name;
+    }
+
+    @Override
+    public String getBasePath() {
+        return basePath;
+    }
+
+
 }

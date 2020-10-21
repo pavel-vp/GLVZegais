@@ -29,6 +29,10 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content" android:id="@+id/buttonInv"/>
     <Button
+            android:text="Фото"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" android:id="@+id/buttonPhoto"/>
+    <Button
             android:text="К выбору магазина"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" android:id="@+id/buttonBack"/>

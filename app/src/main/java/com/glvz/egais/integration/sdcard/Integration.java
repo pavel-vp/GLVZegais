@@ -34,6 +34,7 @@ public interface Integration {
     List<CheckMarkIn> loadCheckMark(String shopId);
     List<FindMarkIn> loadFindMark(String shopId);
     List<InvIn> loadInv(String shopId);
+    List<File> loadPhotoFiles(String shopId);
 
     void writeBaseRec(String shopId, BaseRec rec);
 
@@ -48,4 +49,8 @@ public interface Integration {
     SetupFtp loadSetupFtp();
 
     void deleteFileRec(BaseRec baseRec, String shopId);
+
+    String getPhotoFileName(String skladId, String name);
+
+    String getBasePath();
 }

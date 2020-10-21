@@ -13,6 +13,8 @@
     <uses-permission android:name="android.permission.INSTALL_PACKAGES" tools:ignore="ProtectedPermissions"/>
     <uses-permission android:name="android.permission.DELETE_PACKAGES" tools:ignore="ProtectedPermissions"/>
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-feature android:name="android.hardware.camera" android:required="false"></uses-feature>
 
     <application
             android:allowBackup="true"
@@ -68,6 +70,7 @@
         <activity android:name=".ui.doc.inv.ActInvRecContent" android:screenOrientation="portrait"/>
         <activity android:name=".ui.doc.inv.ActInvRecDiff" android:screenOrientation="portrait"/>
 
+        <activity android:name=".ui.doc.photo.ActPhotoList" android:screenOrientation="portrait"/>
 
         <activity android:name=".ui.ActEnterNomenId"
                   android:windowSoftInputMode="stateVisible|adjustResize"

@@ -20,6 +20,7 @@ import com.glvz.egais.ui.doc.findmark.ActFindMarkList;
 import com.glvz.egais.ui.doc.income.ActIncomeList;
 import com.glvz.egais.ui.doc.inv.ActInvList;
 import com.glvz.egais.ui.doc.move.ActMoveList;
+import com.glvz.egais.ui.doc.photo.ActPhotoList;
 import com.glvz.egais.ui.doc.writeoff.ActWriteoffList;
 import com.glvz.egais.utils.MessageUtils;
 
@@ -118,6 +119,17 @@ public class ActMainMenu extends Activity {
                 if (checkIfLoaded()) {
                     Intent intent = new Intent();
                     intent.setClass(ActMainMenu.this, ActInvList.class);
+                    startActivity(intent);
+                }
+            }
+        });
+        Button buttonPhoto = (Button) findViewById(R.id.buttonPhoto);
+        buttonPhoto.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (checkIfLoaded()) {
+                    Intent intent = new Intent();
+                    intent.setClass(ActMainMenu.this, ActPhotoList.class);
                     startActivity(intent);
                 }
             }

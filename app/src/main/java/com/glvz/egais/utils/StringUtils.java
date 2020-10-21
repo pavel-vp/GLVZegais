@@ -15,6 +15,9 @@ public class StringUtils {
     private static String formatDateDisplay = "dd.MM.yyyy";
     private static SimpleDateFormat dateFormatterDisplay = new SimpleDateFormat(formatDateDisplay);
 
+    private static String formatDateImg = "yyyy-MM-dd HH:mm:ss";
+    private static SimpleDateFormat dateFormatterImg = new SimpleDateFormat(formatDateImg);
+
     public static Date jsonStringToDate(String jsonString) {
         Date date = null;
         try {
@@ -35,6 +38,16 @@ public class StringUtils {
         return date;
     }
 
+    public static Date imgStringToDate(String string) {
+        Date date = null;
+        try {
+            date = dateFormatterImg.parse(string);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        return date;
+    }
+
     public static Date jsonBottlingStringToDate(String jsonString) {
         Date date = null;
         try {
@@ -49,6 +62,13 @@ public class StringUtils {
         if (date == null)
             return "";
         String s = dateFormatterDisplay.format(date);
+        return s;
+    }
+
+    public static String formatDateImg(Date date) {
+        if (date == null)
+            return "";
+        String s = dateFormatterImg.format(date);
         return s;
     }
 

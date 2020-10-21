@@ -41,10 +41,12 @@ import com.glvz.egais.model.inv.InvRec;
 import com.glvz.egais.model.inv.InvRecContent;
 import com.glvz.egais.model.move.MoveRec;
 import com.glvz.egais.model.move.MoveRecContent;
+import com.glvz.egais.model.photo.PhotoRec;
 import com.glvz.egais.model.writeoff.WriteoffRec;
 import com.glvz.egais.model.writeoff.WriteoffRecContent;
 import com.glvz.egais.utils.BarcodeObject;
 import com.glvz.egais.utils.MessageUtils;
+import com.glvz.egais.utils.StringUtils;
 
 import java.io.*;
 import java.util.*;
@@ -102,6 +104,7 @@ public class DaoMem {
     Map<String, CheckMarkRec> mapCheckMarkRec;
     Map<String, FindMarkRec> mapFindMarkRec;
     Map<String, InvRec> mapInvRec;
+    Map<String, PhotoRec> mapPhotoRec;
 
     SharedPreferences sharedPreferences;
 
@@ -181,6 +184,7 @@ public class DaoMem {
         mapMoveRec = readMoveRec();
         mapCheckMarkRec = readCheckMarkRec();
         mapWriteoffRec = readWriteoffRec(shopId);
+        mapPhotoRec = readPhotoRec(shopId);
         mapFindMarkRec = readFindMarkRec();
         mapInvRec = readInvRec();
         if (notify) {
@@ -225,6 +229,58 @@ public class DaoMem {
         }
 
         return map;
+    }
+
+    private Map<String,PhotoRec> readPhotoRec(String shopId) {
+        Map<String, PhotoRec> map = new HashMap<>();
+
+        for (File file : integrationFile.loadPhotoFiles(shopId) ) {
+            byte[] data = null;
+            byte[] dataMini = null;
+            try {
+
+                data = readBytes(file);
+                String fileName = file.getName();
+                // parse fileName IMG-2020-01-01 20:00:00.jpeg
+                String date = fileName.substring(4,23);
+                File fileMini = new File(file.getParent()+"/IMG-MINI-"+date+".jpeg");
+                dataMini = readBytes(fileMini);
+
+                PhotoRec photoRec = new PhotoRec(shopId, shopId, data, dataMini, date);
+                map.put(photoRec.getDocId(), photoRec);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        return map;
+    }
+
+    public byte[] readBytes(File file) throws IOException {
+        ByteArrayOutputStream ous = null;
+        InputStream ios = null;
+        try {
+            byte[] buffer = new byte[4096];
+            ous = new ByteArrayOutputStream();
+            ios = new FileInputStream(file);
+            int read = 0;
+            while ((read = ios.read(buffer)) != -1) {
+                ous.write(buffer, 0, read);
+            }
+        }finally {
+            try {
+                if (ous != null)
+                    ous.close();
+            } catch (IOException e) {
+            }
+
+            try {
+                if (ios != null)
+                    ios.close();
+            } catch (IOException e) {
+            }
+        }
+        return ous.toByteArray();
     }
 
     private Map<String,FindMarkRec> readFindMarkRec() {
@@ -965,6 +1021,26 @@ public class DaoMem {
         integrationFile.deleteFileRec(writeoffRec, shopId);
     }
 
+    public PhotoRec addPhotoRec(String shopId, String shopInName, byte[] byteArray, byte[] byteArrayMini) {
+        PhotoRec newRec = new PhotoRec(shopId, shopInName, byteArray, byteArrayMini, StringUtils.formatDateImg(Calendar.getInstance().getTime()));
+        mapPhotoRec.put(newRec.getDocId(),newRec);
+        exportData(newRec);
+        return newRec;
+    }
+
+    public Collection<PhotoRec> getPhotoRecListOrdered() {
+        List<PhotoRec> list = new ArrayList<>();
+        list.addAll(mapPhotoRec.values());
+
+        Collections.sort(list, docRecDateComparator);
+        return list;
+    }
+
+    public String getPhotoFileName(PhotoRec req) {
+        return integrationFile.getPhotoFileName(shopId, "IMG-"+req.getDocIdForExport()+".jpeg");
+    }
+
+
     public static class CheckMarkScannedResult {
         public Integer markScannedAsType;
         public BaseRecContent recContent;
@@ -1177,6 +1253,11 @@ public class DaoMem {
         writeoffRec.setExported(true);
         writeLocalDataWriteoffRec(writeoffRec);
         integrationFile.writeBaseRec(shopId, writeoffRec);
+        return true;
+    }
+
+    public boolean exportData(PhotoRec photoRec) {
+        integrationFile.writeBaseRec(shopId, photoRec);
         return true;
     }
 
@@ -1531,6 +1612,15 @@ public class DaoMem {
 
         Collections.sort(list, docRecDateComparator);
         return list;
+    }
+
+    public String getBasePath() {
+        return integrationFile.getBasePath();
+    }
+
+    public void deletePhoto(PhotoRec photoRec) {
+        integrationFile.deleteFileRec(photoRec, shopId);
+        mapPhotoRec.remove(photoRec.getDocId());
     }
 
 }
