@@ -15,7 +15,7 @@ public class StringUtils {
     private static String formatDateDisplay = "dd.MM.yyyy";
     private static SimpleDateFormat dateFormatterDisplay = new SimpleDateFormat(formatDateDisplay);
 
-    private static String formatDateImg = "yyyy-MM-dd HH:mm:ss";
+    private static String formatDateImg = "yyyy-MM-dd HH_mm_ss";
     private static SimpleDateFormat dateFormatterImg = new SimpleDateFormat(formatDateImg);
 
     public static Date jsonStringToDate(String jsonString) {
