@@ -224,6 +224,7 @@ public class ActPhotoList extends ActBaseDocList {
 
                     PhotoRec rec = DaoMem.getDaoMem().addPhotoRec(DaoMem.getDaoMem().getShopId(), DaoMem.getDaoMem().getShopInName(), byteArray, byteArrayMini);
                     updateList();
+                    syncDoc();
                     // scroll to it
                     lv.smoothScrollToPosition(0);
 
@@ -231,6 +232,22 @@ public class ActPhotoList extends ActBaseDocList {
                     e.printStackTrace();
                 }
         }
+    }
+
+    private void syncDoc() {
+        //- выполняется проверка подключенного WiFi, при наличии JPEG-файл выгружается по FTP с записью в журнал.
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    DaoMem.getDaoMem().syncWiFiFtpShared();
+                    DaoMem.getDaoMem().initDictionary();
+                    DaoMem.getDaoMem().syncWiFiFtpShopDocs();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
     }
 
     private static Bitmap getResizedBitmap(Bitmap image, int maxSize) {
