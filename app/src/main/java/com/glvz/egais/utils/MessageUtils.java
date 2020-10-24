@@ -46,7 +46,11 @@ public class MessageUtils {
                                     }
                                 });
                 AlertDialog alert = builder.create();
-                alert.show();
+                try {
+                    alert.show();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
         });
     }
