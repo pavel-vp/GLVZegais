@@ -542,10 +542,10 @@ public class DaoMem {
             // НЕ связанные с документами
             if (!entry.getKey().equals(BaseRec.KEY_SHOPID) &&
                     !entry.getKey().equals(KEY_LAST_DOCID) &&
-                    !entry.getKey().startsWith(KEY_WRITEOFF) &&
-                    //!entry.getKey().startsWith(KEY_INV) &&
+                    !entry.getKey().startsWith(KEY_WRITEOFF) /*&&
+                    !entry.getKey().startsWith(KEY_INV) &&
                     !entry.getKey().startsWith(KEY_CHECKMARK) &&
-                    !entry.getKey().startsWith(KEY_FINDMARK)) {
+                    !entry.getKey().startsWith(KEY_FINDMARK)*/) {
                 ed.putString(entry.getKey(), null);
             }
         }
