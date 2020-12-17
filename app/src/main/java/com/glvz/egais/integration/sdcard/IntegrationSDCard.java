@@ -49,6 +49,7 @@ public class IntegrationSDCard implements Integration {
     private static final String USER_FILE = "users.json";
     private static final String APK_FILE = "glvzegais.apk";
     private static final String SETUP_FTP_FILE = "setupftp.json";
+    private static final String COMMAND_FILE = "websevice.json";
 
 
     private static final String DOC_PREFIX_INCOME_ALCO = "TTN";
@@ -78,6 +79,20 @@ public class IntegrationSDCard implements Integration {
         }
 
         return listShop;
+    }
+
+    @Override
+    public List<CommandIn> loadCommands() {
+        File pathToFile = new File(basePath  + "/" + DIC_DIR, COMMAND_FILE);
+        List<CommandIn> listCommands = new ArrayList<>();
+        try {
+            listCommands = objectMapper.readValue(pathToFile, new TypeReference<ArrayList<CommandIn>>(){});
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return listCommands;
     }
 
     @Override

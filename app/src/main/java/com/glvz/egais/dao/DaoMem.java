@@ -44,6 +44,8 @@ import com.glvz.egais.model.move.MoveRecContent;
 import com.glvz.egais.model.photo.PhotoRec;
 import com.glvz.egais.model.writeoff.WriteoffRec;
 import com.glvz.egais.model.writeoff.WriteoffRecContent;
+import com.glvz.egais.service.CommandCall;
+import com.glvz.egais.service.CommandFinishCallback;
 import com.glvz.egais.utils.BarcodeObject;
 import com.glvz.egais.utils.MessageUtils;
 import com.glvz.egais.utils.StringUtils;
@@ -92,6 +94,7 @@ public class DaoMem {
     List<NomenIn> listN;
     List<AlcCodeIn> listA;
     List<MarkIn> listM;
+    List<CommandIn> listCommands;
     List<IncomeIn> listIncomeIn;
     List<MoveIn> listMoveIn;
     List<CheckMarkIn> listCheckMarkIn;
@@ -124,6 +127,7 @@ public class DaoMem {
         listP = integrationFile.loadPosts();
         listN = integrationFile.loadNomen();
         listA = integrationFile.loadAlcCode();
+        listCommands = integrationFile.loadCommands();
         String shopIdStored = sharedPreferences.getString(BaseRec.KEY_SHOPID, null);
         if (shopIdStored != null) {
             ShopIn shopInStored = findShopInById(shopIdStored);
@@ -149,6 +153,25 @@ public class DaoMem {
         for (ShopIn shopIn : listS) {
             if (shopIn.getId().equals(shopIdStored)){
                 return shopIn;
+            }
+        }
+        return null;
+    }
+
+    public List<CommandIn> getListCommands(String parent) {
+        List<CommandIn> result = new ArrayList<>();
+        for (CommandIn commandIn : listCommands) {
+            if (parent == null || "".equals(parent) || commandIn.getParentID().equals(parent)){
+                result.add(commandIn);
+            }
+        }
+        return result;
+    }
+
+    public CommandIn getCommandByID(String id) {
+        for (CommandIn commandIn : listCommands) {
+            if (commandIn.getId().equals(id)){
+                return commandIn;
             }
         }
         return null;
@@ -1040,6 +1063,11 @@ public class DaoMem {
         return integrationFile.getPhotoFileName(shopId, "IMG-"+req.getDocIdForExport()+".jpeg");
     }
 
+    public void callToWS(CommandIn commandIn, String barcode, CommandFinishCallback commandFinishCallback) {
+        // вызываем сервис
+        CommandCall commandCall = new CommandCall(commandIn, barcode, shopId, userIn.getId());
+        commandCall.call(commandFinishCallback);
+    }
 
     public static class CheckMarkScannedResult {
         public Integer markScannedAsType;
@@ -1478,6 +1506,16 @@ public class DaoMem {
             }
         }
         return null;
+    }
+
+    public List<MarkIn> findMarksByBoxBarcode(String barCode) {
+        List<MarkIn> result = new ArrayList<>();
+        for (MarkIn markIn : listM) {
+            if (markIn.getBox().equals(barCode)) {
+                result.add(markIn);
+            }
+        }
+        return result;
     }
 
     public AlcCodeIn findAlcCode(String alcCode) {

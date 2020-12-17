@@ -9,6 +9,8 @@ public class MarkIn {
     private String alcCode;
     @JsonProperty(value="NomenID")
     private String nomenId;
+    @JsonProperty(value="Box")
+    private String box;
 
     public String getMark() {
         return mark;
@@ -34,12 +36,22 @@ public class MarkIn {
         this.nomenId = nomenId;
     }
 
+
+    public String getBox() {
+        return box;
+    }
+
+    public void setBox(String box) {
+        this.box = box;
+    }
+
     @Override
     public String toString() {
         return "MarkIn{" +
                 "mark='" + mark + '\'' +
                 ", alcCode='" + alcCode + '\'' +
                 ", nomenId='" + nomenId + '\'' +
+                ", box='" + box + '\'' +
                 '}';
     }
 }

@@ -150,6 +150,17 @@ public class ActMainMenu extends Activity {
             }
         });
 
+        Button buttonServices = (Button) findViewById(R.id.buttonServices);
+        buttonServices.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (checkIfLoaded()) {
+                    Intent intent = new Intent();
+                    intent.setClass(ActMainMenu.this, ActCommandList.class);
+                    startActivity(intent);
+                }
+            }
+        });
     }
 
     private void checkPermissionToLoadData() {

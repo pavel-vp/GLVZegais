@@ -1,5 +1,6 @@
 package com.glvz.egais.ui.doc.writeoff;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -20,17 +21,20 @@ import com.glvz.egais.model.BaseRecContentStatus;
 import com.glvz.egais.model.BaseRecStatus;
 import com.glvz.egais.model.writeoff.WriteoffRec;
 import com.glvz.egais.model.writeoff.WriteoffRecContent;
+import com.glvz.egais.model.writeoff.WriteoffRecContentMark;
 import com.glvz.egais.service.writeoff.WriteoffContentArrayAdapter;
 import com.glvz.egais.service.writeoff.WriteoffRecHolder;
 import com.glvz.egais.ui.ActCommentEdit;
 import com.glvz.egais.ui.doc.ActBaseDocRec;
 import com.glvz.egais.utils.BarcodeObject;
+import com.glvz.egais.utils.DoubleValueOnEnterCallback;
 import com.glvz.egais.utils.MessageUtils;
 import com.glvz.egais.utils.StringUtils;
 import com.honeywell.aidc.BarcodeFailureEvent;
 import com.honeywell.aidc.BarcodeReadEvent;
 
 import java.util.Collection;
+import java.util.List;
 
 import static com.glvz.egais.utils.BarcodeObject.BarCodeType.DATAMATRIX;
 import static com.glvz.egais.utils.BarcodeObject.BarCodeType.PDF417;
@@ -231,9 +235,35 @@ public class ActWriteoffRec extends ActBaseDocRec {
         final String barCode = barcodeReadEvent.getBarcodeData();
         switch (barCodeType) {
             case EAN13:
-                // 1) Если форма находилась в режиме ожидания сканирования ШК PDF-417 (DataMatrix): вывести модальное сообщение , прервать обработку события.
+            case EAN8:
+                // 1) Если форма находилась в режиме ожидания сканирования ШК PDF-417 (DataMatrix):
+                // сейчас можно будет сканировать и добавлять произвольный товар - поэтому можно
                 if (currentState == STATE_SCAN_MARK) {
-                    MessageUtils.showModalMessage(this, "Внимание!", "Сканируйте марку");
+                    //1) по ШК найти товар в nomen.json
+                    final NomenIn nomenIn = DaoMem.getDaoMem().findNomenInByBarCode(barCode);
+                    // 2) если не найден вывести модальное сообщение “Товар по ШК #BarCode# не найден”, завершить обработку события.
+                    if (nomenIn == null) {
+                        MessageUtils.showModalMessage(this, "Внимание!", "Товар по штрихкоду " + barCode + ", не найден.");
+                        return;
+                    }
+                    // 3) если у найденного товара NomenType = 1 вывести модальное сообщение “Для маркированного алкоголя сканируйте марку или ШК коробки”, завершить обработку события.
+                    if (nomenIn.getNomenType() == NomenIn.NOMENTYPE_ALCO_MARK) {
+                        MessageUtils.showModalMessage(this, "Внимание!", "Для маркированного алкоголя сканируйте марку или ШК коробки");
+                        return;
+                    }
+                    // 4) для всех остальных товаров (NomenType in (0, 2, 3) продукты, пиво, сигареты):
+                    // 4.1) вывести модальный запрос на ввод добавляемого количества:
+                    MessageUtils.ShowModalToEntedDoubleValue(this, "Введите количество", "Введите добавляемое количество",
+                            new DoubleValueOnEnterCallback() {
+                                @Override
+                                public void handle(double value) {
+                                    // 4.2) после ввода пользователем в товарной части поискать строку с таким товаром:
+                                    // если найдена - добавить количество в нее, если не найдена - добавить строку с введенным количеством.
+                                    // (прим. поиск товарной строки выполнять только по коду товара, у сигарет МРЦ не учитывать).
+                                    // В соответствии с добавленным количеством проиграть озвучивание «bottle_many.mp3» или «bottle_one.mp3»
+                                    proceedOneBottle(nomenIn, value);
+                                }
+                            });
                     return;
                 }
                 if (currentState == STATE_SCAN_EAN) {
@@ -244,7 +274,7 @@ public class ActWriteoffRec extends ActBaseDocRec {
                         MessageUtils.showModalMessage(this, "Внимание!", "Номенклатура по штрихкоду " + barCode + ", не найдена. Обратитесь к категорийному менеджеру");
                         return;
                     }
-                    proceedOneBottle(nomenIn);
+                    proceedOneBottle(nomenIn, 1);
                     return;
                 }
                 break;
@@ -333,7 +363,71 @@ public class ActWriteoffRec extends ActBaseDocRec {
                     return;
                 }
                 NomenIn nomenIn = DaoMem.getDaoMem().findNomenInAlcoByNomenId(markIn.getNomenId());
-                proceedOneBottle(nomenIn);
+                proceedOneBottle(nomenIn, 1);
+                break;
+            case CODE128:
+                if (currentState == STATE_SCAN_EAN) {
+                    MessageUtils.showModalMessage(this, "Внимание!", "Сканируйте штрихкод, с той же бутылки с которой только что сканировали марку");
+                    return;
+                }
+                // в справочнике marks.json найти все марки с ШК коробки, соответствующей сканированной
+                List<MarkIn> marksInBox = DaoMem.getDaoMem().findMarksByBoxBarcode(barCode);
+                if (marksInBox.size() == 0) {
+                    // если ни одной марки не найдено вывести модальное сообщение: «По ШК коробки #BoxBarcode# марки не найдены». Прервать обработку.
+                    MessageUtils.showModalMessage(this, "Внимание!", "По ШК коробки "+barCode+" марки не найдены");
+                    break;
+                }
+                // Обнулить переменные «Числится марок в текущей коробке», «Количество, добавленное по текущей коробке»
+                int marksInCurrentBox = 0;
+                int qtyAddedCurrentBox = 0;
+                String foundNomenName = null;
+                String foundNomenId = null;
+                // для каждой найденной марки выполнить обработку
+                for (MarkIn mark : marksInBox) {
+                    // Увеличить на 1 переменную «Числится марок в текущей коробке»
+                    marksInCurrentBox++;
+                    // 4.2 из найденной записи марки извлечь номенклатуру, выполнить поиск в товарной части документа.
+                    // Уникальный ключ для поиска записей в документе - «NomenID»
+                    // Если записи товара в документе не найдено — добавить новую.
+                    NomenIn foundNomenIn = DaoMem.getDaoMem().findNomenInByNomenId(mark.getNomenId());
+                    if (foundNomenIn == null) {
+                        continue;
+                    }
+                    WriteoffRecContent row = findOrAddNomen(foundNomenIn);
+                    foundNomenName = row.getNomenIn().getName();
+                    foundNomenId = row.getNomenIn().getId();
+                    // проверить наличие текущей марки среди ранее сканированных в документе. При наличии — пропустить обработку марки
+                    if (findInContentByMark(mark.getMark())) {
+                        continue;
+                    }
+                    // в товарную позицию документа, найденную в п.4.2 добавить количество 1, добавить ШК найденной марки и сканированный ШК коробки.
+                    row.setQtyAccepted(row.getQtyAccepted() + 1);
+                    row.getBaseRecContentMarkList().add(new WriteoffRecContentMark(mark.getMark(), BaseRecContentMark.MARK_SCANNED_AS_BOX, mark.getMark(), barCode));
+                    //13) установить статус документа «в работе»
+                    row.setStatus(BaseRecContentStatus.IN_PROGRESS);
+                    writeoffRec.setStatus(BaseRecStatus.INPROGRESS);
+                    DaoMem.getDaoMem().writeLocalWriteoffRec(writeoffRec);
+                    this.currentState = STATE_SCAN_MARK;
+                    this.scannedMarkIn = null;
+                    // увеличить на 1 переменную «Количество, добавленное по текущей коробке»
+                    qtyAddedCurrentBox++;
+                }
+                // 6 Информировать пользователя, о результате сканирования ШК коробки:
+                //6.1 в зависимости от значения переменной «Количество, добавленное по текущей коробке»:
+                //- 0: звуковые файлы не проигрывать
+                //- 1: проиграть звуковой файл «bottle_one.mp3»
+                if (qtyAddedCurrentBox == 1) {
+                    MessageUtils.playSound(R.raw.bottle_one);
+                }
+                //- более 1: проиграть звуковой файл «bottle_many.mp3»
+                if (qtyAddedCurrentBox > 1) {
+                    MessageUtils.playSound(R.raw.bottle_many);
+                }
+                //6.2 вывести модальное сообщение:
+                //В коробке #ШККоробки# числится номенклатура #НаименованиеНоменклатуры# (#NomenID#) с учетным количеством #Числится марок в текущей коробке# марок.
+                //Количество марок, добавленное в документ #Количество, добавленное по текущей коробке# шт.
+                MessageUtils.showModalMessage(this, "Внимание!", "В коробке "+barCode+" числится номенклатура "+foundNomenName+" ("+foundNomenId+") с учетным количеством "+marksInCurrentBox+" марок." +
+                        " Количество марок, добавленное в документ "+qtyAddedCurrentBox+" шт.");
                 break;
             default:
                 if (currentState == STATE_SCAN_EAN) {
@@ -345,7 +439,48 @@ public class ActWriteoffRec extends ActBaseDocRec {
 
     }
 
-    private void proceedOneBottle(NomenIn nomenIn) {
+    private boolean findInContentByMark(String mark) {
+        for (WriteoffRecContent recContent : writeoffRec.getWriteoffRecContentList()) {
+            for (BaseRecContentMark baseRecContentMark : recContent.getBaseRecContentMarkList()) {
+                if (mark.equals(baseRecContentMark.getMarkScanned())) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private WriteoffRecContent findOrAddNomen(NomenIn nomenIn) {
+        WriteoffRecContent resultRecContent = null;
+        // 9) найти в документе позицию с NomenID (если такой нет — добавить) и у этой позиции
+        int position = 0;
+        for (WriteoffRecContent recContent : writeoffRec.getWriteoffRecContentList()) {
+            if (recContent.getNomenIn().getId().equals(nomenIn.getId())) {
+                resultRecContent = recContent;
+                break;
+            }
+            position++;
+        }
+        if (resultRecContent == null) {
+            position++;
+            resultRecContent = new WriteoffRecContent(String.valueOf(position), null);
+            resultRecContent.setNomenIn(nomenIn, null);
+            writeoffRec.getRecContentList().add(resultRecContent);
+        }
+        //10) поле «Количество факт» добавить 1 шт к предыдущему значению
+        resultRecContent.setQtyAccepted((resultRecContent.getQtyAccepted() == null ? 0 : resultRecContent.getQtyAccepted()) + 1);
+
+        //13) установить статус документа «в работе»
+        resultRecContent.setStatus(BaseRecContentStatus.IN_PROGRESS);
+        writeoffRec.setStatus(BaseRecStatus.INPROGRESS);
+        DaoMem.getDaoMem().writeLocalWriteoffRec(writeoffRec);
+        this.currentState = STATE_SCAN_MARK;
+        this.scannedMarkIn = null;
+        updateDataWithScroll(position);
+        return resultRecContent;
+    }
+
+    private void proceedOneBottle(NomenIn nomenIn, double value) {
         writeoffRecContentLocal = null;
         // 9) найти в документе позицию с NomenID (если такой нет — добавить) и у этой позиции
         int position = 0;
@@ -363,11 +498,15 @@ public class ActWriteoffRec extends ActBaseDocRec {
             writeoffRec.getRecContentList().add(writeoffRecContentLocal);
         }
         //10) поле «Количество факт» добавить 1 шт к предыдущему значению
-        writeoffRecContentLocal.setQtyAccepted((writeoffRecContentLocal.getQtyAccepted() == null ? 0 : writeoffRecContentLocal.getQtyAccepted()) + 1);
+        writeoffRecContentLocal.setQtyAccepted((writeoffRecContentLocal.getQtyAccepted() == null ? value : writeoffRecContentLocal.getQtyAccepted()) + value);
         //11) добавить марку к списку марок текущей позиции.
         writeoffRecContentLocal.getBaseRecContentMarkList().add(new BaseRecContentMark(scannedMarkIn.getMark(), BaseRecContentMark.MARK_SCANNED_AS_MARK, scannedMarkIn.getMark()));
         //12) проиграть файл «bottle_one.mp3»
-        MessageUtils.playSound(R.raw.bottle_one);
+        if (value == 1) {
+            MessageUtils.playSound(R.raw.bottle_one);
+        } else {
+            MessageUtils.playSound(R.raw.bottle_many);
+        }
         //13) установить статус документа «в работе»
         writeoffRecContentLocal.setStatus(BaseRecContentStatus.IN_PROGRESS);
         writeoffRec.setStatus(BaseRecStatus.INPROGRESS);

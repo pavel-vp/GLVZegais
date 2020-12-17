@@ -4,6 +4,7 @@ import com.glvz.egais.dao.DaoMem;
 import com.glvz.egais.integration.model.doc.BaseRecOutput;
 import com.glvz.egais.integration.model.doc.DocContentIn;
 import com.glvz.egais.integration.model.doc.DocIn;
+import com.glvz.egais.integration.model.doc.writeoff.WriteoffRecContentMarkOutput;
 import com.glvz.egais.integration.model.doc.writeoff.WriteoffRecContentOutput;
 import com.glvz.egais.integration.model.doc.writeoff.WriteoffRecOutput;
 import com.glvz.egais.model.*;
@@ -106,13 +107,16 @@ public class WriteoffRec extends BaseRec {
             contentOutput.setQtyFact(writeoffRecContent.getQtyAccepted());
             contentOutput.setNomenId(writeoffRecContent.getNomenIn().getId());
 
-            Set<BaseRecContentMark> scannedMarkSet = new HashSet<>();
-            scannedMarkSet.addAll(writeoffRecContent.getBaseRecContentMarkList());
+            Set<WriteoffRecContentMark> scannedMarkSet = new HashSet<>();
+            for (BaseRecContentMark recContentMark : writeoffRecContent.getBaseRecContentMarkList()) {
+                scannedMarkSet.add((WriteoffRecContentMark) recContentMark);
+            }
 
-            contentOutput.setMarks(new String[scannedMarkSet.size()]);
+            contentOutput.setMarks(new WriteoffRecContentMarkOutput[scannedMarkSet.size()]);
             int idx2 = 0;
-            for (BaseRecContentMark mark : scannedMarkSet) {
-                contentOutput.getMarks()[idx2] = mark.getMarkScanned();
+            for (WriteoffRecContentMark mark : scannedMarkSet) {
+                contentOutput.getMarks()[idx2].setMark(mark.getMarkScanned());
+                contentOutput.getMarks()[idx2].setBox(mark.getBox());
                 idx2++;
             }
             rec.getContent()[idx] = contentOutput;

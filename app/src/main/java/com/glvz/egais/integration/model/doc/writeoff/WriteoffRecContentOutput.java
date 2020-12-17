@@ -10,8 +10,8 @@ public class WriteoffRecContentOutput extends BaseRecContentOutput {
     private String nomenId;
     @JsonProperty(value="QTYFact")
     private Double qtyFact;
-    @JsonProperty(value="Mark")
-    private String[] marks;
+    @JsonProperty(value="Marks")
+    private WriteoffRecContentMarkOutput[] marks;
 
     public String getPosition() {
         return position;
@@ -37,11 +37,11 @@ public class WriteoffRecContentOutput extends BaseRecContentOutput {
         this.qtyFact = qtyFact;
     }
 
-    public String[] getMarks() {
+    public WriteoffRecContentMarkOutput[] getMarks() {
         return marks;
     }
 
-    public void setMarks(String[] marks) {
+    public void setMarks(WriteoffRecContentMarkOutput[] marks) {
         this.marks = marks;
     }
 }

@@ -6,9 +6,9 @@ public class BaseRecContentMark {
     public static final int MARK_SCANNED_AS_MARK = 0;
     public static final int MARK_SCANNED_AS_BOX = 1;
 
-    private String markScanned;
-    private Integer markScannedAsType = null;
-    private String markScannedReal;
+    protected String markScanned;
+    protected Integer markScannedAsType = null;
+    protected String markScannedReal;
 
     public BaseRecContentMark(String markScanned, Integer markScannedAsType, String markScannedReal) {
         this.markScanned = markScanned;

@@ -27,6 +27,8 @@ public interface Integration {
 
     List<UserIn> loadUsers();
 
+    List<CommandIn> loadCommands();
+
     void initDirectories(String shopId);
 
     List<IncomeIn> loadIncome(String shopId);

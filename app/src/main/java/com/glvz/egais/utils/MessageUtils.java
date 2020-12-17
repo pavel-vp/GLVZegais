@@ -5,6 +5,7 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.media.MediaPlayer;
 import android.os.Handler;
+import android.widget.EditText;
 import android.widget.Toast;
 import com.glvz.egais.MainApp;
 
@@ -84,6 +85,34 @@ public class MessageUtils {
                                            DialogInterface.OnClickListener listenerOk, Object... objects ) {
         String msg = String.format(msgFormat, objects);
         ShowModalAndConfirm(activity, title, msg, listenerOk);
+    }
+
+    public static void ShowModalToEntedDoubleValue(final Activity activity, final String title, final String msg,
+                                                   final DoubleValueOnEnterCallback doubleValueOnEnterCallback) {
+        handler.post(new Runnable() {
+            @Override
+            public void run() {
+                final EditText passtext = new EditText(activity);
+                new AlertDialog.Builder(activity)
+                        .setTitle(title)
+                        .setMessage(msg)
+                        .setView(passtext)
+                        .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                // Code to obtain the the bit array/int from the edittext box
+                                try {
+                                    double parsedDouble = Double.parseDouble(passtext.getText().toString());
+                                    doubleValueOnEnterCallback.handle(parsedDouble);
+                                } catch (Exception e) {
+                                    showToastMessage("Ошибка ввода дробного числа !");
+                                }
+                            }
+
+                        })
+                        .show();
+            }
+        });
     }
 
 ////////////////////

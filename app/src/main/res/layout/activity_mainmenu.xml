@@ -42,4 +42,9 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Загрузить данные" />
+    <Button
+            android:id="@+id/buttonServices"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Команды" />
 </LinearLayout>
