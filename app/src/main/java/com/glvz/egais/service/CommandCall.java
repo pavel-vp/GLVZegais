@@ -77,7 +77,7 @@ public class CommandCall {
 
         //авторизация
         List<HeaderProperty> headerList = new ArrayList<HeaderProperty>();
-        headerList.add(new HeaderProperty("Authorization", "Basic "+org.kobjects.base64.Base64.encode(password.getBytes())));
+        headerList.add(new HeaderProperty("Authorization", "Basic "+org.kobjects.base64.Base64.encode((user + ":" + password).getBytes())));
 
         //выполнение запроса к веб-сервису
         try {
