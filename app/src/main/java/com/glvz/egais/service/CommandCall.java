@@ -15,20 +15,22 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.ksoap2.serialization.MarshalHashtable.NAMESPACE;
-
 public class CommandCall {
     private final List<PropertyInfo> propertyInfoList = new ArrayList<>();
     private final String URL;
     private final String user;
     private final String password;
     private final String operation;
+    private final String ns;
+    private final String serviceName;
 
     public CommandCall(CommandIn commandIn, String barcode, String shopId, String userId) {
         this.URL = commandIn.getUrl();
         this.user = commandIn.getUser();
         this.password = commandIn.getPass();
         this.operation = commandIn.getOperation();
+        this.ns = commandIn.getNs();
+        this.serviceName = commandIn.getServiceName();
         for (String param : commandIn.getParams()) {
             PropertyInfo propertyInfo = new PropertyInfo();
             if (CommandIn.PARAM_BARCODE.equals(param)) {
@@ -64,7 +66,8 @@ public class CommandCall {
     @Nullable
     private SoapObject getData() {
         String errorText = "";
-        SoapObject request = new SoapObject(NAMESPACE, "post");
+
+        SoapObject request = new SoapObject(ns, operation);
         for (PropertyInfo propertyInfo : propertyInfoList) {
             request.addProperty(propertyInfo);
         }
@@ -73,6 +76,7 @@ public class CommandCall {
         envelope.setOutputSoapObject(request);
 
         HttpTransportSE androidHttpTransport = new HttpTransportSE(URL);
+        androidHttpTransport.debug = true;
         androidHttpTransport.setXmlVersionTag("<?xml version=\"1.0\" encoding=\"utf-8\"?>");
 
         //авторизация
@@ -82,13 +86,11 @@ public class CommandCall {
         //выполнение запроса к веб-сервису
         try {
 
-            androidHttpTransport.call(operation, envelope, headerList);
+            androidHttpTransport.call(ns+"#"+serviceName+":"+operation, envelope, headerList);
 
-        } catch (IOException e) {
+        } catch (Throwable e) {
             errorText = "CONNECTION_ERROR";
-            return null;
-        } catch (XmlPullParserException e) {
-            errorText = "XML_ERROR";
+            Log.e("KSOAP", e.getMessage(),e);
             return null;
         }
 

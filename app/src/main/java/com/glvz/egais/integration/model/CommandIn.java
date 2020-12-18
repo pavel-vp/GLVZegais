@@ -27,6 +27,10 @@ public class CommandIn {
     private String operation;
     @JsonProperty(value="Params")
     private String[] params;
+    @JsonProperty(value="NS")
+    private String ns;
+    @JsonProperty(value="ServiceName")
+    private String serviceName;
 
     public String getId() {
         return id;
@@ -100,6 +104,22 @@ public class CommandIn {
         this.params = params;
     }
 
+    public String getNs() {
+        return ns;
+    }
+
+    public void setNs(String ns) {
+        this.ns = ns;
+    }
+
+    public String getServiceName() {
+        return serviceName;
+    }
+
+    public void setServiceName(String serviceName) {
+        this.serviceName = serviceName;
+    }
+
     @Override
     public String toString() {
         return "CommandIn{" +
@@ -112,6 +132,8 @@ public class CommandIn {
                 ", pass='" + pass + '\'' +
                 ", operation='" + operation + '\'' +
                 ", params=" + Arrays.toString(params) +
+                ", ns='" + ns + '\'' +
+                ", serviceName='" + serviceName + '\'' +
                 '}';
     }
 }
