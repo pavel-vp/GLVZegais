@@ -64,7 +64,7 @@ public class CommandCall {
     @Nullable
     private SoapObject getData() {
         String errorText = "";
-        SoapObject request = new SoapObject(NAMESPACE, "get");
+        SoapObject request = new SoapObject(NAMESPACE, "post");
         for (PropertyInfo propertyInfo : propertyInfoList) {
             request.addProperty(propertyInfo);
         }
