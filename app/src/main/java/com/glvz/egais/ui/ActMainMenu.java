@@ -157,6 +157,7 @@ public class ActMainMenu extends Activity {
                 if (checkIfLoaded()) {
                     Intent intent = new Intent();
                     intent.setClass(ActMainMenu.this, ActCommandList.class);
+                    intent.putExtra(ActCommandList.PARENT, "");
                     startActivity(intent);
                 }
             }

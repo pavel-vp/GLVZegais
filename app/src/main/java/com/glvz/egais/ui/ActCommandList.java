@@ -18,7 +18,7 @@ import java.util.List;
 public class ActCommandList extends Activity {
 
 
-    private static final String PARENT = "parent";
+    public static final String PARENT = "parent";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
