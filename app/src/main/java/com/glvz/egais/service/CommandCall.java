@@ -7,6 +7,7 @@ import org.ksoap2.HeaderProperty;
 import org.ksoap2.SoapEnvelope;
 import org.ksoap2.serialization.PropertyInfo;
 import org.ksoap2.serialization.SoapObject;
+import org.ksoap2.serialization.SoapPrimitive;
 import org.ksoap2.serialization.SoapSerializationEnvelope;
 import org.ksoap2.transport.HttpTransportSE;
 import org.xmlpull.v1.XmlPullParserException;
@@ -53,15 +54,52 @@ public class CommandCall {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                SoapObject res = getData();
+                String res = callWS();
                 if (res != null) {
-                    commandFinishCallback.finishCommand(res.getInnerText().toString());
+                    commandFinishCallback.finishCommand(res);
                 } else {
                     commandFinishCallback.finishCommand("Произошла ошибка вызова сервиса 1с!");
                 }
             }
         }).start();
     }
+
+    private String callWS() {
+        //String pSOAP_ACTION = "http://www.webserviceX.NET/GetCitiesByCountry";
+        String pMETHOD_NAME = operation; //"GetCitiesByCountry";
+        String pNAMESPACE = ns; //"http://www.webserviceX.NET";
+        String pURL = URL; //"http://www.webservicex.com/globalweather.asmx?WSDL";
+
+        String pSOAP_ACTION = pNAMESPACE + "/" + pMETHOD_NAME;
+        String result="invalid";
+        try
+        {
+            SoapObject Request = new SoapObject(pNAMESPACE, pMETHOD_NAME);
+            //Request.addProperty("CountryName", "India");
+
+            SoapSerializationEnvelope soapEnvelope = new SoapSerializationEnvelope(SoapEnvelope.VER11);
+            soapEnvelope.dotNet = true;
+            soapEnvelope.setOutputSoapObject(Request);
+            HttpTransportSE transport = new HttpTransportSE(pURL);
+            transport.debug=true;
+            try {
+                transport.call(pSOAP_ACTION, soapEnvelope);
+            } catch (Throwable t) {
+                Log.e("KSOAP2", "transport.requestDump: " + transport.requestDump, t);
+                Log.e("KSOAP2", "transport.responseDump: " + transport.responseDump, t);
+            }
+            SoapPrimitive resultString;
+            resultString = (SoapPrimitive) soapEnvelope.getResponse();
+            result = resultString .toString() ;
+            return result ;
+        }
+        catch (Throwable e)
+        {
+            e.printStackTrace();
+            return e.getMessage();
+        }
+    }
+
 
     @Nullable
     private SoapObject getData() {
