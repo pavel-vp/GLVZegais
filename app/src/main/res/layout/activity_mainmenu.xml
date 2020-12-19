@@ -4,22 +4,36 @@
               android:layout_width="match_parent"
               android:layout_height="match_parent">
 
-    <Button
-            android:text="Приходы"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" android:id="@+id/buttonIncome"/>
-    <Button
-            android:text="Сборка товара по заданию"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" android:id="@+id/buttonMove"/>
-    <Button
-            android:text="Сборка товара произвольная"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" android:id="@+id/buttonWriteoff"/>
-    <Button
-            android:text="Проверка марок"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" android:id="@+id/buttonCheckMark"/>
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                  android:orientation="horizontal"
+                  android:layout_width="match_parent"
+                  android:layout_height="wrap_content">
+        <Button
+                android:text="Приходы"
+                android:layout_width="match_parent"
+                android:layout_weight="1"
+                android:layout_height="match_parent" android:id="@+id/buttonIncome"/>
+        <Button
+                android:text="Сборка товара по заданию"
+                android:layout_weight="1"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" android:id="@+id/buttonMove"/>
+    </LinearLayout>
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                  android:orientation="horizontal"
+                  android:layout_width="match_parent"
+                  android:layout_height="wrap_content">
+        <Button
+                android:text="Сборка товара произвольная"
+                android:layout_weight="1"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" android:id="@+id/buttonWriteoff"/>
+        <Button
+                android:text="Проверка марок"
+                android:layout_weight="1"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" android:id="@+id/buttonCheckMark"/>
+    </LinearLayout>
     <Button
             android:text="Поиск марок"
             android:layout_width="match_parent"

@@ -67,19 +67,26 @@ public class CommandCall {
     private String callWS() {
         //String pSOAP_ACTION = "http://www.webserviceX.NET/GetCitiesByCountry";
         String pMETHOD_NAME = operation; //"GetCitiesByCountry";
+        String pSERVICE = serviceName;
         String pNAMESPACE = ns; //"http://www.webserviceX.NET";
         String pURL = URL; //"http://www.webservicex.com/globalweather.asmx?WSDL";
 
-        String pSOAP_ACTION = pNAMESPACE + "/" + pMETHOD_NAME;
+        String pSOAP_ACTION = pNAMESPACE + "#" + pSERVICE + ":" + pMETHOD_NAME ;// NS + "#AcceptingOrders:" + method
         String result="invalid";
         try
         {
-            SoapObject Request = new SoapObject(pNAMESPACE, pMETHOD_NAME);
+            SoapObject request = new SoapObject(pNAMESPACE, pMETHOD_NAME);
+            for (PropertyInfo propertyInfo : propertyInfoList) {
+                request.addProperty(propertyInfo);
+            }
             //Request.addProperty("CountryName", "India");
 
             SoapSerializationEnvelope soapEnvelope = new SoapSerializationEnvelope(SoapEnvelope.VER11);
             soapEnvelope.dotNet = true;
-            soapEnvelope.setOutputSoapObject(Request);
+            soapEnvelope.setAddAdornments(false);
+            soapEnvelope.skipNullProperties=true;
+            soapEnvelope.implicitTypes=true;
+            soapEnvelope.setOutputSoapObject(request);
             HttpTransportSE transport = new HttpTransportSE(pURL);
             transport.debug=true;
             try {
