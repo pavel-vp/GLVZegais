@@ -89,8 +89,12 @@ public class CommandCall {
             soapEnvelope.setOutputSoapObject(request);
             HttpTransportSE transport = new HttpTransportSE(pURL);
             transport.debug=true;
+            //авторизация
+            List<HeaderProperty> headerList = new ArrayList<HeaderProperty>();
+            headerList.add(new HeaderProperty("Authorization", "Basic "+org.kobjects.base64.Base64.encode((user + ":" + password).getBytes())));
+
             try {
-                transport.call(pSOAP_ACTION, soapEnvelope);
+                transport.call(pSOAP_ACTION, soapEnvelope, headerList);
             } catch (Throwable t) {
                 Log.e("KSOAP2", "transport.requestDump: " + transport.requestDump, t);
                 Log.e("KSOAP2", "transport.responseDump: " + transport.responseDump, t);
