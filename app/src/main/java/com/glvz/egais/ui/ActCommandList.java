@@ -31,6 +31,13 @@ public class ActCommandList extends Activity {
     }
 
     private void createButtons(List<CommandIn> listCommands) {
+        Button btnBack = (Button) findViewById(R.id.btnBack);
+        btnBack.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                ActCommandList.this.finish();
+            }
+        });
 
         LinearLayout ll = (LinearLayout)findViewById(R.id.mainLL);
 

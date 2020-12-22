@@ -1,9 +1,12 @@
 package com.glvz.egais.ui;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
+import android.text.Html;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -21,6 +24,7 @@ public class ActCommandExec extends Activity implements BarcodeReader.BarcodeLis
     public static final String ID = "id";
     TextView tvResult;
     private CommandIn commandByID;
+    private ProgressDialog pg;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,6 +47,7 @@ public class ActCommandExec extends Activity implements BarcodeReader.BarcodeLis
     }
 
     private void callService(String barcode) {
+        pg.show();
         // Запустить запрос к сервису
         DaoMem.getDaoMem().callToWS(commandByID, barcode, new CommandFinishCallback() {
             @Override
@@ -50,7 +55,12 @@ public class ActCommandExec extends Activity implements BarcodeReader.BarcodeLis
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        tvResult.setText(result);
+                        pg.dismiss();
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                            tvResult.setText(Html.fromHtml(result, Html.FROM_HTML_MODE_COMPACT));
+                        } else {
+                            tvResult.setText(Html.fromHtml(result));
+                        }
                     }
                 });
             }
@@ -77,13 +87,8 @@ public class ActCommandExec extends Activity implements BarcodeReader.BarcodeLis
         caption.setText(commandByID.getCaption());
         tvResult = (TextView) findViewById(R.id.tvResult);
         tvResult.setText("");
-
-        TextView tvWaitForScan = (TextView) findViewById(R.id.tvWaitForScan);
-        if (isWaitForBarcode()) {
-            tvWaitForScan.setVisibility(View.VISIBLE);
-        } else {
-            tvWaitForScan.setVisibility(View.GONE);
-        }
+        pg = new ProgressDialog(this);
+        pg.setMessage("Выполняется запрос...");
     }
 
     private boolean isWaitForBarcode() {
@@ -99,7 +104,12 @@ public class ActCommandExec extends Activity implements BarcodeReader.BarcodeLis
     public void onBarcodeEvent(BarcodeReadEvent barcodeReadEvent) {
         final BarcodeObject.BarCodeType barCodeType = BarcodeObject.getBarCodeType(barcodeReadEvent);
         final String barCode = barcodeReadEvent.getBarcodeData();
-        callService(barCode);
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                callService(barCode);}
+            }
+        );
     }
 
     @Override

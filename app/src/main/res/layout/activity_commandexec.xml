@@ -10,12 +10,6 @@
             android:layout_height="wrap_content"
             android:id="@+id/tvCaption"/>
     <TextView
-            android:text="Сканируйте Марку или Штрихкод"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:visibility="invisible"
-            android:id="@+id/tvWaitForScan"/>
-    <TextView
             android:text=""
             android:layout_width="match_parent"
             android:layout_height="0dp"

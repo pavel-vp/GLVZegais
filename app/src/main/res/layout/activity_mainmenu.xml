@@ -34,14 +34,39 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent" android:id="@+id/buttonCheckMark"/>
     </LinearLayout>
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                  android:orientation="horizontal"
+                  android:layout_width="match_parent"
+                  android:layout_height="wrap_content">
     <Button
             android:text="Поиск марок"
+            android:layout_weight="1"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" android:id="@+id/buttonFindMark"/>
     <Button
             android:text="Инвентаризация"
+            android:layout_weight="1"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" android:id="@+id/buttonInv"/>
+
+    </LinearLayout>
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                  android:orientation="horizontal"
+                  android:layout_width="match_parent"
+                  android:layout_height="wrap_content">
+    <Button
+        android:id="@+id/buttonLoadData"
+        android:layout_weight="1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Загрузить данные" />
+    <Button
+            android:id="@+id/buttonServices"
+            android:layout_weight="1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Команды" />
+    </LinearLayout>
     <Button
             android:text="Фото"
             android:layout_width="match_parent"
@@ -50,15 +75,4 @@
             android:text="К выбору магазина"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" android:id="@+id/buttonBack"/>
-
-    <Button
-        android:id="@+id/buttonLoadData"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Загрузить данные" />
-    <Button
-            android:id="@+id/buttonServices"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Команды" />
 </LinearLayout>

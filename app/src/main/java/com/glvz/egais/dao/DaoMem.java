@@ -1511,7 +1511,7 @@ public class DaoMem {
     public List<MarkIn> findMarksByBoxBarcode(String barCode) {
         List<MarkIn> result = new ArrayList<>();
         for (MarkIn markIn : listM) {
-            if (markIn.getBox().equals(barCode)) {
+            if (barCode.equals(markIn.getBox())) {
                 result.add(markIn);
             }
         }
