@@ -5,6 +5,7 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.media.MediaPlayer;
 import android.os.Handler;
+import android.util.Log;
 import android.widget.EditText;
 import android.widget.Toast;
 import com.glvz.egais.MainApp;
@@ -105,6 +106,7 @@ public class MessageUtils {
                                     double parsedDouble = Double.parseDouble(passtext.getText().toString());
                                     doubleValueOnEnterCallback.handle(parsedDouble);
                                 } catch (Exception e) {
+                                    Log.e("Error number", e.getMessage(), e);
                                     showToastMessage("Ошибка ввода дробного числа !");
                                 }
                             }

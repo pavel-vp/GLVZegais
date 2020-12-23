@@ -496,9 +496,11 @@ public class ActWriteoffRec extends ActBaseDocRec {
             writeoffRec.getRecContentList().add(writeoffRecContentLocal);
         }
         //10) поле «Количество факт» добавить 1 шт к предыдущему значению
-        writeoffRecContentLocal.setQtyAccepted((writeoffRecContentLocal.getQtyAccepted() == null ? value : writeoffRecContentLocal.getQtyAccepted()) + value);
+        writeoffRecContentLocal.setQtyAccepted((writeoffRecContentLocal.getQtyAccepted() == null ? value : writeoffRecContentLocal.getQtyAccepted() + value));
         //11) добавить марку к списку марок текущей позиции.
-        writeoffRecContentLocal.getBaseRecContentMarkList().add(new BaseRecContentMark(scannedMarkIn.getMark(), BaseRecContentMark.MARK_SCANNED_AS_MARK, scannedMarkIn.getMark()));
+        if (scannedMarkIn != null) {
+            writeoffRecContentLocal.getBaseRecContentMarkList().add(new BaseRecContentMark(scannedMarkIn.getMark(), BaseRecContentMark.MARK_SCANNED_AS_MARK, scannedMarkIn.getMark()));
+        }
         //12) проиграть файл «bottle_one.mp3»
         if (value == 1) {
             MessageUtils.playSound(R.raw.bottle_one);

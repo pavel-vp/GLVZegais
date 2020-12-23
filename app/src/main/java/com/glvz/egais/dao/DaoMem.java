@@ -393,7 +393,7 @@ public class DaoMem {
         String id1c = sharedPreferences.getString(KEY_WRITEOFF + "_" + BaseRec.KEY_POS_ID1C+"_"+writeoffRec.getDocId()+"_"+position, "");
         recContent.setId1c(id1c);
         String barcode = sharedPreferences.getString(KEY_WRITEOFF + "_" + BaseRec.KEY_POS_BARCODE+"_"+writeoffRec.getDocId()+"_"+position, "");
-        recContent.setNomenIn(findNomenInAlcoByNomenId(id1c), barcode);
+        recContent.setNomenIn(findNomenInByNomenId(id1c), barcode);
 
         String posStatus = sharedPreferences.getString(KEY_WRITEOFF + "_" + BaseRec.KEY_POS_STATUS+"_"+writeoffRec.getDocId()+"_"+position, BaseRecContentStatus.IN_PROGRESS.toString());
         recContent.setStatus(BaseRecContentStatus.valueOf(posStatus));
