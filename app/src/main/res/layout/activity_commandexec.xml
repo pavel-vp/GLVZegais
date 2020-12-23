@@ -15,7 +15,14 @@
             android:layout_height="0dp"
             android:layout_weight="1"
             android:textSize="20sp"
+            android:visibility="gone"
             android:id="@+id/tvResult"/>
+    <WebView
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:id="@+id/wvResult"
+            android:layout_weight="1"/>
+
     <Button
             android:text="Назад"
             android:layout_width="match_parent"

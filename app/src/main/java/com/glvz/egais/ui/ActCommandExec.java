@@ -8,6 +8,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.text.Html;
 import android.view.View;
+import android.webkit.WebView;
 import android.widget.Button;
 import android.widget.TextView;
 import com.glvz.egais.R;
@@ -23,6 +24,7 @@ import com.honeywell.aidc.BarcodeReader;
 public class ActCommandExec extends Activity implements BarcodeReader.BarcodeListener {
     public static final String ID = "id";
     TextView tvResult;
+    WebView wvResult;
     private CommandIn commandByID;
     private ProgressDialog pg;
 
@@ -56,11 +58,12 @@ public class ActCommandExec extends Activity implements BarcodeReader.BarcodeLis
                     @Override
                     public void run() {
                         pg.dismiss();
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                        /*if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
                             tvResult.setText(Html.fromHtml(result, Html.FROM_HTML_MODE_COMPACT));
                         } else {
                             tvResult.setText(Html.fromHtml(result));
-                        }
+                        }*/
+                        wvResult.loadData(result, "text/html; charset=utf-8", "UTF-8");
                     }
                 });
             }
@@ -87,8 +90,11 @@ public class ActCommandExec extends Activity implements BarcodeReader.BarcodeLis
         caption.setText(commandByID.getCaption());
         tvResult = (TextView) findViewById(R.id.tvResult);
         tvResult.setText("");
+        wvResult = (WebView) findViewById(R.id.wvResult);
         pg = new ProgressDialog(this);
         pg.setMessage("Выполняется запрос...");
+        pg.setCancelable(false);
+        pg.setCanceledOnTouchOutside(false);
     }
 
     private boolean isWaitForBarcode() {
