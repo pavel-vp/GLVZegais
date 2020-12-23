@@ -44,6 +44,7 @@ import com.glvz.egais.model.move.MoveRecContent;
 import com.glvz.egais.model.photo.PhotoRec;
 import com.glvz.egais.model.writeoff.WriteoffRec;
 import com.glvz.egais.model.writeoff.WriteoffRecContent;
+import com.glvz.egais.model.writeoff.WriteoffRecContentMark;
 import com.glvz.egais.service.CommandCall;
 import com.glvz.egais.service.CommandFinishCallback;
 import com.glvz.egais.utils.BarcodeObject;
@@ -403,12 +404,13 @@ public class DaoMem {
 
         int markScannedSize = sharedPreferences.getInt(KEY_WRITEOFF + "_" + BaseRec.KEY_POS_MARKSCANNED_CNT + "_"+writeoffRec.getDocId()+"_"+position, 0);
         for (int idx = 1; idx <= markScannedSize; idx++) {
-            BaseRecContentMark baseRecContentMark = new BaseRecContentMark(
+            WriteoffRecContentMark writeoffRecContentMark = new WriteoffRecContentMark(
                 sharedPreferences.getString(KEY_WRITEOFF + "_" + BaseRec.KEY_POS_MARKSCANNED + "_"+writeoffRec.getDocId()+"_"+position+"_"+idx, ""),
                 sharedPreferences.getInt(KEY_WRITEOFF + "_" + BaseRec.KEY_POS_MARKSCANNED_ASTYPE + "_"+writeoffRec.getDocId()+"_"+position+"_"+idx, 0),
-                sharedPreferences.getString(KEY_WRITEOFF + "_" + BaseRec.KEY_POS_MARKSCANNEDREAL + "_"+writeoffRec.getDocId()+"_"+position+"_"+idx, "")
+                sharedPreferences.getString(KEY_WRITEOFF + "_" + BaseRec.KEY_POS_MARKSCANNEDREAL + "_"+writeoffRec.getDocId()+"_"+position+"_"+idx, ""),
+                sharedPreferences.getString(KEY_WRITEOFF + "_" + BaseRec.KEY_POS_MARKBOX + "_"+writeoffRec.getDocId()+"_"+position+"_"+idx, "")
             );
-            recContent.getBaseRecContentMarkList().add(baseRecContentMark);
+            recContent.getBaseRecContentMarkList().add(writeoffRecContentMark);
         }
         return recContent;
     }
@@ -681,9 +683,11 @@ public class DaoMem {
         ed.putInt(KEY_WRITEOFF + "_" + BaseRec.KEY_POS_MARKSCANNED_CNT + "_"+docId+"_"+recContent.getPosition(), recContent.getBaseRecContentMarkList().size());
         int idx = 1;
         for (BaseRecContentMark baseRecContentMark : recContent.getBaseRecContentMarkList()) {
-            ed.putString(KEY_WRITEOFF + "_" + BaseRec.KEY_POS_MARKSCANNED + "_"+docId+"_"+recContent.getPosition()+"_"+idx, baseRecContentMark.getMarkScanned());
-            ed.putInt(KEY_WRITEOFF + "_" + BaseRec.KEY_POS_MARKSCANNED_ASTYPE + "_"+docId+"_"+recContent.getPosition()+"_"+idx, baseRecContentMark.getMarkScannedAsType());
-            ed.putString(KEY_WRITEOFF + "_" + BaseRec.KEY_POS_MARKSCANNEDREAL + "_"+docId+"_"+recContent.getPosition()+"_"+idx, baseRecContentMark.getMarkScannedReal());
+            WriteoffRecContentMark writeoffRecContentMark = (WriteoffRecContentMark) baseRecContentMark;
+            ed.putString(KEY_WRITEOFF + "_" + BaseRec.KEY_POS_MARKSCANNED + "_"+docId+"_"+recContent.getPosition()+"_"+idx, writeoffRecContentMark.getMarkScanned());
+            ed.putInt(KEY_WRITEOFF + "_" + BaseRec.KEY_POS_MARKSCANNED_ASTYPE + "_"+docId+"_"+recContent.getPosition()+"_"+idx, writeoffRecContentMark.getMarkScannedAsType());
+            ed.putString(KEY_WRITEOFF + "_" + BaseRec.KEY_POS_MARKSCANNEDREAL + "_"+docId+"_"+recContent.getPosition()+"_"+idx, writeoffRecContentMark.getMarkScannedReal());
+            ed.putString(KEY_WRITEOFF + "_" + BaseRec.KEY_POS_MARKBOX + "_"+docId+"_"+recContent.getPosition()+"_"+idx, writeoffRecContentMark.getBox());
             idx++;
         }
         ed.apply();
@@ -717,6 +721,7 @@ public class DaoMem {
             ed.remove(KEY_WRITEOFF + "_" + BaseRec.KEY_POS_MARKSCANNED + "_"+docId+"_"+recContent.getPosition()+"_"+idx);
             ed.remove(KEY_WRITEOFF + "_" + BaseRec.KEY_POS_MARKSCANNED_ASTYPE + "_"+docId+"_"+recContent.getPosition()+"_"+idx);
             ed.remove(KEY_WRITEOFF + "_" + BaseRec.KEY_POS_MARKSCANNEDREAL + "_"+docId+"_"+recContent.getPosition()+"_"+idx);
+            ed.remove(KEY_WRITEOFF + "_" + BaseRec.KEY_POS_MARKBOX + "_"+docId+"_"+recContent.getPosition()+"_"+idx);
             idx++;
         }
         ed.apply();

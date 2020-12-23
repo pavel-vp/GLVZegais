@@ -296,7 +296,7 @@ public class ActWriteoffRec extends ActBaseDocRec {
                 // Проверить наличие этой марки среди ранее сохраненных марок всех товарных позиций этого задания.
                 // Проверить что этот ШК ранее не сканировался в данной ТТН
                 DaoMem.CheckMarkScannedResult markScanned = DaoMem.getDaoMem().checkMarkScanned(writeoffRec, barCode);
-                if (markScanned != null && markScanned.markScannedAsType == BaseRecContentMark.MARK_SCANNED_AS_MARK) {
+                if (markScanned != null && (markScanned.markScannedAsType == BaseRecContentMark.MARK_SCANNED_AS_MARK || markScanned.markScannedAsType == BaseRecContentMark.MARK_SCANNED_AS_BOX)) {
                     // Если марка найдена — модальное сообщение «», прервать обработку события
                     MessageUtils.showModalMessage(this, "Внимание!", "Эта марка ранее уже была отсканирована в этом задании в позиции " + markScanned.recContent.getPosition() + " товара " + markScanned.recContent.getNomenIn().getName());
                     return;
@@ -499,7 +499,7 @@ public class ActWriteoffRec extends ActBaseDocRec {
         writeoffRecContentLocal.setQtyAccepted((writeoffRecContentLocal.getQtyAccepted() == null ? value : writeoffRecContentLocal.getQtyAccepted() + value));
         //11) добавить марку к списку марок текущей позиции.
         if (scannedMarkIn != null) {
-            writeoffRecContentLocal.getBaseRecContentMarkList().add(new BaseRecContentMark(scannedMarkIn.getMark(), BaseRecContentMark.MARK_SCANNED_AS_MARK, scannedMarkIn.getMark()));
+            writeoffRecContentLocal.getBaseRecContentMarkList().add(new WriteoffRecContentMark(scannedMarkIn.getMark(), BaseRecContentMark.MARK_SCANNED_AS_MARK, scannedMarkIn.getMark(), ""));
         }
         //12) проиграть файл «bottle_one.mp3»
         if (value == 1) {

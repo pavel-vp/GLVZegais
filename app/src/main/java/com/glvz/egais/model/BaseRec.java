@@ -24,6 +24,7 @@ public abstract class BaseRec {
     public static final String KEY_POS_MARKSCANNED = "pos_markscanned";
     public static final String KEY_POS_MARKSCANNED_ASTYPE = "pos_markscanned_astype";
     public static final String KEY_POS_MARKSCANNEDREAL = "pos_markscannedreal";
+    public static final String KEY_POS_MARKBOX = "pos_markbox";
     public static final String KEY_POS_MARKSTATE = "pos_markstate";
     public static final String KEY_POS_POSITION = "pos_position";
     public static final String KEY_POS_MANUAL_MRC = "pos_manual_mrc";

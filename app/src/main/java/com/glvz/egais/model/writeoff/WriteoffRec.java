@@ -115,8 +115,10 @@ public class WriteoffRec extends BaseRec {
             contentOutput.setMarks(new WriteoffRecContentMarkOutput[scannedMarkSet.size()]);
             int idx2 = 0;
             for (WriteoffRecContentMark mark : scannedMarkSet) {
-                contentOutput.getMarks()[idx2].setMark(mark.getMarkScanned());
-                contentOutput.getMarks()[idx2].setBox(mark.getBox());
+                WriteoffRecContentMarkOutput out = new WriteoffRecContentMarkOutput();
+                out.setMark(mark.getMarkScanned());
+                out.setBox(mark.getBox());
+                contentOutput.getMarks()[idx2] = out;
                 idx2++;
             }
             rec.getContent()[idx] = contentOutput;
