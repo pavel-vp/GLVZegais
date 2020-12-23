@@ -14,10 +14,10 @@
                 android:layout_weight="1"
                 android:layout_height="match_parent" android:id="@+id/buttonIncome"/>
         <Button
-                android:text="Сборка товара по заданию"
-                android:layout_weight="1"
+                android:text="Фото"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent" android:id="@+id/buttonMove"/>
+                android:layout_weight="1"
+                android:layout_height="match_parent" android:id="@+id/buttonPhoto"/>
     </LinearLayout>
     <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
                   android:orientation="horizontal"
@@ -29,50 +29,52 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent" android:id="@+id/buttonWriteoff"/>
         <Button
-                android:text="Проверка марок"
+                android:text="Сборка товара по заданию"
                 android:layout_weight="1"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent" android:id="@+id/buttonCheckMark"/>
+                android:layout_height="match_parent" android:id="@+id/buttonMove"/>
     </LinearLayout>
     <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
                   android:orientation="horizontal"
                   android:layout_width="match_parent"
                   android:layout_height="wrap_content">
-    <Button
-            android:text="Поиск марок"
-            android:layout_weight="1"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" android:id="@+id/buttonFindMark"/>
-    <Button
-            android:text="Инвентаризация"
-            android:layout_weight="1"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" android:id="@+id/buttonInv"/>
+        <Button
+                android:text="Проверка марок"
+                android:layout_weight="1"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" android:id="@+id/buttonCheckMark"/>
+        <Button
+                android:text="Поиск марок"
+                android:layout_weight="1"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" android:id="@+id/buttonFindMark"/>
 
     </LinearLayout>
     <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
                   android:orientation="horizontal"
                   android:layout_width="match_parent"
                   android:layout_height="wrap_content">
-    <Button
-        android:id="@+id/buttonLoadData"
-        android:layout_weight="1"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Загрузить данные" />
-    <Button
-            android:id="@+id/buttonServices"
-            android:layout_weight="1"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Команды" />
+        <Button
+                android:id="@+id/buttonServices"
+                android:layout_weight="1"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:text="Команды" />
+        <Button
+                android:text="Инвентаризация"
+                android:layout_weight="1"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:id="@+id/buttonInv"/>
     </LinearLayout>
     <Button
-            android:text="Фото"
+            android:id="@+id/buttonLoadData"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" android:id="@+id/buttonPhoto"/>
+            android:layout_height="wrap_content"
+            android:text="Загрузить данные" />
     <Button
             android:text="К выбору магазина"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" android:id="@+id/buttonBack"/>
+            android:layout_height="wrap_content"
+            android:id="@+id/buttonBack"/>
 </LinearLayout>
