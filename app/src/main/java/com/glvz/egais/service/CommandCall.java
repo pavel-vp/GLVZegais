@@ -24,6 +24,7 @@ public class CommandCall {
     private final String operation;
     private final String ns;
     private final String serviceName;
+    private final Integer timeOut;
 
     public CommandCall(CommandIn commandIn, String barcode, String shopId, String userId) {
         this.URL = commandIn.getUrl();
@@ -32,6 +33,7 @@ public class CommandCall {
         this.operation = commandIn.getOperation();
         this.ns = commandIn.getNs();
         this.serviceName = commandIn.getServiceName();
+        this.timeOut = commandIn.getTimeOut();
         for (String param : commandIn.getParams()) {
             PropertyInfo propertyInfo = new PropertyInfo();
             if (CommandIn.PARAM_BARCODE.equals(param)) {
@@ -89,6 +91,9 @@ public class CommandCall {
             soapEnvelope.setOutputSoapObject(request);
             HttpTransportSE transport = new HttpTransportSE(pURL);
             transport.debug=true;
+            if (this.timeOut != null) {
+                transport.setReadTimeout(this.timeOut);
+            }
             //авторизация
             List<HeaderProperty> headerList = new ArrayList<HeaderProperty>();
             headerList.add(new HeaderProperty("Authorization", "Basic "+org.kobjects.base64.Base64.encode((user + ":" + password).getBytes())));

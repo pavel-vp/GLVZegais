@@ -31,6 +31,8 @@ public class CommandIn {
     private String ns;
     @JsonProperty(value="ServiceName")
     private String serviceName;
+    @JsonProperty(value="TimeOut")
+    private Integer timeOut;
 
     public String getId() {
         return id;
@@ -120,6 +122,14 @@ public class CommandIn {
         this.serviceName = serviceName;
     }
 
+    public Integer getTimeOut() {
+        return timeOut;
+    }
+
+    public void setTimeOut(Integer timeOut) {
+        this.timeOut = timeOut;
+    }
+
     @Override
     public String toString() {
         return "CommandIn{" +
@@ -134,6 +144,7 @@ public class CommandIn {
                 ", params=" + Arrays.toString(params) +
                 ", ns='" + ns + '\'' +
                 ", serviceName='" + serviceName + '\'' +
+                ", timeout='" + timeOut + '\'' +
                 '}';
     }
 }
