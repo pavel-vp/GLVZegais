@@ -2,6 +2,7 @@ package com.glvz.egais.integration.model.doc.inv;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.glvz.egais.integration.model.doc.BaseRecContentOutput;
+import com.glvz.egais.integration.model.doc.writeoff.WriteoffRecContentMarkOutput;
 
 import java.util.Arrays;
 
@@ -15,7 +16,7 @@ public class InvRecContentOutput extends BaseRecContentOutput {
     @JsonProperty(value="QTYFact")
     private Double qtyFact;
     @JsonProperty(value="Marks")
-    private String[] marks;
+    private InvRecContentMarkOutput[] marks;
     @JsonProperty(value="MRC")
     private Double mrc;
 
@@ -51,14 +52,6 @@ public class InvRecContentOutput extends BaseRecContentOutput {
         this.qtyFact = qtyFact;
     }
 
-    public String[] getMarks() {
-        return marks;
-    }
-
-    public void setMarks(String[] marks) {
-        this.marks = marks;
-    }
-
     public Double getMrc() {
         return mrc;
     }
@@ -67,6 +60,13 @@ public class InvRecContentOutput extends BaseRecContentOutput {
         this.mrc = mrc;
     }
 
+    public InvRecContentMarkOutput[] getMarks() {
+        return marks;
+    }
+
+    public void setMarks(InvRecContentMarkOutput[] marks) {
+        this.marks = marks;
+    }
 
     @Override
     public String toString() {

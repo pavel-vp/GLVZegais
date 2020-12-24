@@ -23,6 +23,7 @@ import com.glvz.egais.model.BaseRecContentStatus;
 import com.glvz.egais.model.BaseRecStatus;
 import com.glvz.egais.model.inv.InvRec;
 import com.glvz.egais.model.inv.InvRecContent;
+import com.glvz.egais.model.inv.InvRecContentMark;
 import com.glvz.egais.service.DocContentArrayAdapter;
 import com.glvz.egais.service.PickMRCCallback;
 import com.glvz.egais.service.inv.InvRecContentHolder;
@@ -415,7 +416,7 @@ public class ActInvRecContent extends Activity implements BarcodeReader.BarcodeL
             invRecContent.setQtyAccepted((invRecContent.getQtyAccepted() == null ? 0 : invRecContent.getQtyAccepted()) + 1);
             //11) добавить марку к списку марок текущей позиции.
             if (scannedMarkIn != null) {
-                invRecContent.getBaseRecContentMarkList().add(new BaseRecContentMark(scannedMarkIn.getMark(), BaseRecContentMark.MARK_SCANNED_AS_MARK, scannedMarkIn.getMark()));
+                invRecContent.getBaseRecContentMarkList().add(new InvRecContentMark(scannedMarkIn.getMark(), BaseRecContentMark.MARK_SCANNED_AS_MARK, scannedMarkIn.getMark(), null));
             }
             //13) установить статус документа «в работе»
             invRecContent.setStatus(BaseRecContentStatus.DONE);

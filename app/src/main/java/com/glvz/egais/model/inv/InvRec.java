@@ -4,11 +4,10 @@ import com.glvz.egais.dao.DaoMem;
 import com.glvz.egais.integration.model.doc.BaseRecOutput;
 import com.glvz.egais.integration.model.doc.DocContentIn;
 import com.glvz.egais.integration.model.doc.DocIn;
-import com.glvz.egais.integration.model.doc.inv.InvContentIn;
-import com.glvz.egais.integration.model.doc.inv.InvIn;
-import com.glvz.egais.integration.model.doc.inv.InvRecContentOutput;
-import com.glvz.egais.integration.model.doc.inv.InvRecOutput;
+import com.glvz.egais.integration.model.doc.inv.*;
+import com.glvz.egais.integration.model.doc.writeoff.WriteoffRecContentMarkOutput;
 import com.glvz.egais.model.*;
+import com.glvz.egais.model.writeoff.WriteoffRecContentMark;
 import com.glvz.egais.utils.StringUtils;
 import java.util.*;
 
@@ -90,12 +89,18 @@ public class InvRec extends BaseRec {
 
             }
 
-            Set<BaseRecContentMark> scannedMarkSet = new HashSet<>(invRecContent.getBaseRecContentMarkList());
+            Set<InvRecContentMark> scannedMarkSet = new HashSet<>();
+            for (BaseRecContentMark recContentMark : invRecContent.getBaseRecContentMarkList()) {
+                scannedMarkSet.add((InvRecContentMark) recContentMark);
+            }
 
-            contentOutput.setMarks(new String[scannedMarkSet.size()]);
+            contentOutput.setMarks(new InvRecContentMarkOutput[scannedMarkSet.size()]);
             int idx2 = 0;
-            for (BaseRecContentMark mark : scannedMarkSet) {
-                contentOutput.getMarks()[idx2] = mark.getMarkScanned();
+            for (InvRecContentMark mark : scannedMarkSet) {
+                InvRecContentMarkOutput out = new InvRecContentMarkOutput();
+                out.setMark(mark.getMarkScanned());
+                out.setBox(mark.getBox());
+                contentOutput.getMarks()[idx2] = out;
                 idx2++;
             }
             rec.getContent()[idx] = contentOutput;

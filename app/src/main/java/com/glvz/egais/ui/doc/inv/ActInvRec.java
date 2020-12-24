@@ -19,10 +19,14 @@ import com.glvz.egais.integration.model.MarkIn;
 import com.glvz.egais.integration.model.NomenIn;
 import com.glvz.egais.integration.model.doc.inv.InvIn;
 import com.glvz.egais.model.BaseRecContent;
+import com.glvz.egais.model.BaseRecContentMark;
 import com.glvz.egais.model.BaseRecContentStatus;
 import com.glvz.egais.model.BaseRecStatus;
 import com.glvz.egais.model.inv.InvRec;
 import com.glvz.egais.model.inv.InvRecContent;
+import com.glvz.egais.model.inv.InvRecContentMark;
+import com.glvz.egais.model.writeoff.WriteoffRecContent;
+import com.glvz.egais.model.writeoff.WriteoffRecContentMark;
 import com.glvz.egais.service.PickMRCCallback;
 import com.glvz.egais.service.inv.InvContentArrayAdapter;
 import com.glvz.egais.service.inv.InvRecHolder;
@@ -341,6 +345,68 @@ public class ActInvRec extends ActBaseDocRec implements PickMRCCallback{
                 InvRecContent irc = ActInvRecContent.fillInvRecContent(invRec, nomenIn2, null);
                 proceedOneBottle(irc, nomenIn2);
                 break;
+            case CODE128:
+                if (currentState == STATE_SCAN_EAN) {
+                    MessageUtils.showModalMessage(this, "Внимание!", "Сканируйте штрихкод, с той же бутылки с которой только что сканировали марку");
+                    return;
+                }
+                // в справочнике marks.json найти все марки с ШК коробки, соответствующей сканированной
+                List<MarkIn> marksInBox = DaoMem.getDaoMem().findMarksByBoxBarcode(barCode);
+                if (marksInBox.size() == 0) {
+                    // если ни одной марки не найдено вывести модальное сообщение: «По ШК коробки #BoxBarcode# марки не найдены». Прервать обработку.
+                    MessageUtils.showModalMessage(this, "Внимание!", "По ШК коробки "+barCode+" марки не найдены");
+                    break;
+                }
+                // Обнулить переменные «Числится марок в текущей коробке», «Количество, добавленное по текущей коробке»
+                int marksInCurrentBox = 0;
+                int qtyAddedCurrentBox = 0;
+                Integer position = null;
+                NomenIn foundNomenIn = null;
+                InvRecContent row = null;
+                // для каждой найденной марки выполнить обработку
+                for (MarkIn mark : marksInBox) {
+                    // Увеличить на 1 переменную «Числится марок в текущей коробке»
+                    marksInCurrentBox++;
+                    // 4.2 из найденной записи марки извлечь номенклатуру, выполнить поиск в товарной части документа.
+                    // Уникальный ключ для поиска записей в документе - «NomenID»
+                    // Если записи товара в документе не найдено — добавить новую.
+                    foundNomenIn = DaoMem.getDaoMem().findNomenInByNomenId(mark.getNomenId());
+                    if (foundNomenIn == null) {
+                        continue;
+                    }
+                    // проверить наличие текущей марки среди ранее сканированных в документе. При наличии — пропустить обработку марки
+                    position = findInContentByMark(mark.getMark());
+                    if (position != null) {
+                        continue;
+                    }
+                    row = findOrAddNomen(foundNomenIn, mark, barCode);
+                    position = Integer.parseInt(row.getPosition());
+                    // увеличить на 1 переменную «Количество, добавленное по текущей коробке»
+                    qtyAddedCurrentBox++;
+                }
+                if (position != null && row != null) {
+                    pickRec(this, invRec.getDocId(), row, 0, null, false, false);
+                    //updateDataWithScroll(position);
+                }
+                if (foundNomenIn != null) {
+                    // 6 Информировать пользователя, о результате сканирования ШК коробки:
+                    //6.1 в зависимости от значения переменной «Количество, добавленное по текущей коробке»:
+                    //- 0: звуковые файлы не проигрывать
+                    //- 1: проиграть звуковой файл «bottle_one.mp3»
+                    if (qtyAddedCurrentBox == 1) {
+                        MessageUtils.playSound(R.raw.bottle_one);
+                    }
+                    //- более 1: проиграть звуковой файл «bottle_many.mp3»
+                    if (qtyAddedCurrentBox > 1) {
+                        MessageUtils.playSound(R.raw.bottle_many);
+                    }
+                    //6.2 вывести модальное сообщение:
+                    //В коробке #ШККоробки# числится номенклатура #НаименованиеНоменклатуры# (#NomenID#) с учетным количеством #Числится марок в текущей коробке# марок.
+                    //Количество марок, добавленное в документ #Количество, добавленное по текущей коробке# шт.
+                    MessageUtils.showModalMessage(this, "Внимание!", "В коробке " + barCode + " числится номенклатура " + foundNomenIn.getName() + " (" + foundNomenIn.getId() + ") с учетным количеством " + marksInCurrentBox + " марок." +
+                            " Количество марок, добавленное в документ " + qtyAddedCurrentBox + " шт.");
+                }
+                break;
             default:
                 if (currentState == STATE_SCAN_EAN) {
                     MessageUtils.showModalMessage(this, "Внимание!", "Неврный тип штрихкода. Сканируйте штрихкод");
@@ -348,6 +414,49 @@ public class ActInvRec extends ActBaseDocRec implements PickMRCCallback{
                     MessageUtils.showModalMessage(this, "Внимание!", "Неврный тип штрихкода. Сканируйте марку");
                 }
         }
+    }
+
+    private Integer findInContentByMark(String mark) {
+        Integer pos = 0;
+        for (InvRecContent recContent : invRec.getInvRecContentList()) {
+            pos++;
+            for (BaseRecContentMark baseRecContentMark : recContent.getBaseRecContentMarkList()) {
+                if (mark.equals(baseRecContentMark.getMarkScanned())) {
+                    return pos;
+                }
+            }
+        }
+        return null;
+    }
+
+    private InvRecContent findOrAddNomen(NomenIn nomenIn, MarkIn mark, String barCode) {
+        InvRecContent resultRecContent = null;
+        // 9) найти в документе позицию с NomenID (если такой нет — добавить) и у этой позиции
+        int position = 0;
+        for (InvRecContent recContent : invRec.getInvRecContentList()) {
+            if (recContent.getNomenIn().getId().equals(nomenIn.getId())) {
+                resultRecContent = recContent;
+                break;
+            }
+            position++;
+        }
+        if (resultRecContent == null) {
+            position++;
+            resultRecContent = new InvRecContent(String.valueOf(position));
+            resultRecContent.setNomenIn(nomenIn, null);
+            invRec.getRecContentList().add(resultRecContent);
+        }
+        //10) поле «Количество факт» добавить 1 шт к предыдущему значению
+        resultRecContent.setQtyAccepted((resultRecContent.getQtyAccepted() == null ? 0 : resultRecContent.getQtyAccepted()) + 1);
+        resultRecContent.getBaseRecContentMarkList().add(new InvRecContentMark(mark.getMark(), BaseRecContentMark.MARK_SCANNED_AS_BOX, mark.getMark(), barCode));
+
+        //13) установить статус документа «в работе»
+        resultRecContent.setStatus(BaseRecContentStatus.DONE);
+        invRec.setStatus(BaseRecStatus.INPROGRESS);
+        DaoMem.getDaoMem().writeLocalDataInvRec(invRec);
+        this.currentState = STATE_SCAN_ANY;
+        this.scannedMarkIn = null;
+        return resultRecContent;
     }
 
     public void onActivityResult(int requestCode, int resultCode, Intent i){
