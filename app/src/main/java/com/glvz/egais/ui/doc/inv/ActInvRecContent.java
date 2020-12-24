@@ -35,6 +35,8 @@ import com.honeywell.aidc.BarcodeFailureEvent;
 import com.honeywell.aidc.BarcodeReadEvent;
 import com.honeywell.aidc.BarcodeReader;
 
+import java.util.List;
+
 import static com.glvz.egais.utils.BarcodeObject.BarCodeType.DATAMATRIX;
 import static com.glvz.egais.utils.BarcodeObject.BarCodeType.PDF417;
 
@@ -107,6 +109,46 @@ public class ActInvRecContent extends Activity implements BarcodeReader.BarcodeL
         }
 
         return invRecContent;
+    }
+    public static Integer findInContentByMark(InvRec invRec, String mark) {
+        Integer pos = 0;
+        for (InvRecContent recContent : invRec.getInvRecContentList()) {
+            pos++;
+            for (BaseRecContentMark baseRecContentMark : recContent.getBaseRecContentMarkList()) {
+                if (mark.equals(baseRecContentMark.getMarkScanned())) {
+                    return pos;
+                }
+            }
+        }
+        return null;
+    }
+
+    public static InvRecContent findOrAddNomen(InvRec invRec, NomenIn nomenIn, MarkIn mark, String barCode) {
+        InvRecContent resultRecContent = null;
+        // 9) найти в документе позицию с NomenID (если такой нет — добавить) и у этой позиции
+        int position = 0;
+        for (InvRecContent recContent : invRec.getInvRecContentList()) {
+            if (recContent.getNomenIn().getId().equals(nomenIn.getId())) {
+                resultRecContent = recContent;
+                break;
+            }
+            position++;
+        }
+        if (resultRecContent == null) {
+            position++;
+            resultRecContent = new InvRecContent(String.valueOf(position));
+            resultRecContent.setNomenIn(nomenIn, null);
+            invRec.getRecContentList().add(resultRecContent);
+        }
+        //10) поле «Количество факт» добавить 1 шт к предыдущему значению
+        resultRecContent.setQtyAccepted((resultRecContent.getQtyAccepted() == null ? 0 : resultRecContent.getQtyAccepted()) + 1);
+        resultRecContent.getBaseRecContentMarkList().add(new InvRecContentMark(mark.getMark(), BaseRecContentMark.MARK_SCANNED_AS_BOX, mark.getMark(), barCode));
+
+        //13) установить статус документа «в работе»
+        resultRecContent.setStatus(BaseRecContentStatus.DONE);
+        invRec.setStatus(BaseRecStatus.INPROGRESS);
+        DaoMem.getDaoMem().writeLocalDataInvRec(invRec);
+        return resultRecContent;
     }
 
     private void fillActWithNomenIdPosition(NomenIn nomenIn, Double mrc) {
@@ -396,6 +438,67 @@ public class ActInvRecContent extends Activity implements BarcodeReader.BarcodeL
                 }
                 fillActWithNomenIdPosition(nomenIn2, null);
                 proceedOneBottle(nomenIn2);
+                break;
+            case CODE128:
+                if (currentState == STATE_SCAN_EAN) {
+                    MessageUtils.showModalMessage(this, "Внимание!", "Сканируйте штрихкод, с той же бутылки с которой только что сканировали марку");
+                    return;
+                }
+                // в справочнике marks.json найти все марки с ШК коробки, соответствующей сканированной
+                List<MarkIn> marksInBox = DaoMem.getDaoMem().findMarksByBoxBarcode(barCode);
+                if (marksInBox.size() == 0) {
+                    // если ни одной марки не найдено вывести модальное сообщение: «По ШК коробки #BoxBarcode# марки не найдены». Прервать обработку.
+                    MessageUtils.showModalMessage(this, "Внимание!", "По ШК коробки "+barCode+" марки не найдены");
+                    break;
+                }
+                // Обнулить переменные «Числится марок в текущей коробке», «Количество, добавленное по текущей коробке»
+                int marksInCurrentBox = 0;
+                int qtyAddedCurrentBox = 0;
+                Integer position = null;
+                NomenIn foundNomenIn = null;
+                InvRecContent row = null;
+                // для каждой найденной марки выполнить обработку
+                for (MarkIn mark : marksInBox) {
+                    // Увеличить на 1 переменную «Числится марок в текущей коробке»
+                    marksInCurrentBox++;
+                    // 4.2 из найденной записи марки извлечь номенклатуру, выполнить поиск в товарной части документа.
+                    // Уникальный ключ для поиска записей в документе - «NomenID»
+                    // Если записи товара в документе не найдено — добавить новую.
+                    foundNomenIn = DaoMem.getDaoMem().findNomenInByNomenId(mark.getNomenId());
+                    if (foundNomenIn == null) {
+                        continue;
+                    }
+                    // проверить наличие текущей марки среди ранее сканированных в документе. При наличии — пропустить обработку марки
+                    position = ActInvRecContent.findInContentByMark(invRec, mark.getMark());
+                    if (position != null) {
+                        continue;
+                    }
+                    row = ActInvRecContent.findOrAddNomen(invRec, foundNomenIn, mark, barCode);
+                    position = Integer.parseInt(row.getPosition());
+                    // увеличить на 1 переменную «Количество, добавленное по текущей коробке»
+                    qtyAddedCurrentBox++;
+                }
+                this.currentState = STATE_SCAN_ANY;
+                this.scannedMarkIn = null;
+                if (position != null && foundNomenIn != null) {
+                    fillActWithNomenIdPosition(foundNomenIn, null);
+                    MessageUtils.showModalMessage(this, "Внимание!", "В коробке " + barCode + " числится номенклатура " + foundNomenIn.getName() + " (" + foundNomenIn.getId() + ") с учетным количеством " + marksInCurrentBox + " марок." +
+                            " Количество марок, добавленное в документ " + qtyAddedCurrentBox + " шт.");
+                    updateData();
+                }
+                if (foundNomenIn != null) {
+                    // 6 Информировать пользователя, о результате сканирования ШК коробки:
+                    //6.1 в зависимости от значения переменной «Количество, добавленное по текущей коробке»:
+                    //- 0: звуковые файлы не проигрывать
+                    //- 1: проиграть звуковой файл «bottle_one.mp3»
+                    if (qtyAddedCurrentBox == 1) {
+                        MessageUtils.playSound(R.raw.bottle_one);
+                    }
+                    //- более 1: проиграть звуковой файл «bottle_many.mp3»
+                    if (qtyAddedCurrentBox > 1) {
+                        MessageUtils.playSound(R.raw.bottle_many);
+                    }
+                }
                 break;
             default:
                 if (currentState == STATE_SCAN_EAN) {
