@@ -200,6 +200,7 @@ public class ActInvRec extends ActBaseDocRec implements PickMRCCallback{
         in.putExtra(ActInvRec.RECCONTENT_POSITION, req.getPosition().toString());
         in.putExtra(ActInvRec.RECCONTENT_MESSAGE, message);
         ctx.startActivity(in);
+        message = null;
     }
 
     @Override
