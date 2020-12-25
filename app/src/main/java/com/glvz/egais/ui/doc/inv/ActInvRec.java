@@ -351,6 +351,10 @@ public class ActInvRec extends ActBaseDocRec implements PickMRCCallback{
                     MessageUtils.showModalMessage(this, "Внимание!", "Сканируйте штрихкод, с той же бутылки с которой только что сканировали марку");
                     return;
                 }
+                if (((InvIn)invRec.getDocIn()).ableDirectInput()) {
+                    MessageUtils.playSound(R.raw.scan_ean_inv);
+                    return;
+                }
                 // в справочнике marks.json найти все марки с ШК коробки, соответствующей сканированной
                 List<MarkIn> marksInBox = DaoMem.getDaoMem().findMarksByBoxBarcode(barCode);
                 if (marksInBox.size() == 0) {
