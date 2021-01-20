@@ -185,21 +185,28 @@ public class ActInvRecContent extends Activity implements BarcodeReader.BarcodeL
                     boolean soundPlayed = false;
                     try {
                         //1) сохраняет введенное пользователем количество: [Количество факт] = [Количество факт] + [Количество добавить]
-                        double qty = Double.valueOf(edQtyAdd.getText().toString());
-                        invRecContent.setQtyAccepted((invRecContent.getQtyAccepted() == null ? 0 : invRecContent.getQtyAccepted()) + qty);
-                        //2) у позиции установить статус «Обработана»
-                        invRecContent.setStatus(BaseRecContentStatus.DONE);
-                        invRec.setStatus(BaseRecStatus.INPROGRESS);
-                        DaoMem.getDaoMem().writeLocalDataInvRec(invRec);
-                        scannedMarkIn = null;
-                        currentState = STATE_SCAN_ANY;
-                        edQtyAdd.setText("");
-                        if (qty == 1) {
-                            MessageUtils.playSound(R.raw.bottle_one);
-                        } else {
-                            MessageUtils.playSound(R.raw.bottle_many);
+                        double qty = 0;
+                        try {
+                            qty = Double.valueOf(edQtyAdd.getText().toString());
+                        } catch (Exception e) {
+                            Log.e("ActInvRecContent","Error while parsing the qty", e);
                         }
-                        soundPlayed = true;
+                        if (qty != 0 ) {
+                            invRecContent.setQtyAccepted((invRecContent.getQtyAccepted() == null ? 0 : invRecContent.getQtyAccepted()) + qty);
+                            //2) у позиции установить статус «Обработана»
+                            invRecContent.setStatus(BaseRecContentStatus.DONE);
+                            invRec.setStatus(BaseRecStatus.INPROGRESS);
+                            DaoMem.getDaoMem().writeLocalDataInvRec(invRec);
+                            scannedMarkIn = null;
+                            currentState = STATE_SCAN_ANY;
+                            edQtyAdd.setText("");
+                            if (qty == 1) {
+                                MessageUtils.playSound(R.raw.bottle_one);
+                            } else {
+                                MessageUtils.playSound(R.raw.bottle_many);
+                            }
+                            soundPlayed = true;
+                        }
                     } finally {
                         if (soundPlayed) {
                             try {
