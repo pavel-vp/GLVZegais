@@ -93,6 +93,10 @@ public class PhotoRec extends BaseRec {
         return data;
     }
 
+    public void setData(String data) {
+        this.data = data;
+    }
+
     public String getDataMini() {
         return dataMini;
     }

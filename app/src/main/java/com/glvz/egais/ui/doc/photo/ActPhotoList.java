@@ -9,6 +9,7 @@ import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.StrictMode;
@@ -217,7 +218,7 @@ public class ActPhotoList extends ActBaseDocList {
                 getContentResolver().notifyChange(imageToUploadUri, null);
                 try {
                     byte[] byteArray = DaoMem.getDaoMem().readBytes(new File(imageToUploadUri.getPath()));
-
+                    System.gc();
                     Bitmap photo = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.length);
                     Bitmap photoMini = getResizedBitmap(photo, 100);
                     //Bitmap photoMini = (Bitmap) data.getExtras().get("data");
@@ -278,14 +279,27 @@ public class ActPhotoList extends ActBaseDocList {
 
     @Override
     protected void pickRec(BaseRec req) {
-
         File file = new File(DaoMem.getDaoMem().getPhotoFileName((PhotoRec)req));
+
         Intent intent = new Intent(android.content.Intent.ACTION_VIEW);
         //Uri data = Uri.parse("file://" + file.getAbsolutePath());
         Uri data = FileProvider.getUriForFile(this, this.getApplicationContext().getPackageName() + ".provider", file);
         intent.setDataAndType(data, "image/*");
         intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
         startActivity(intent);
+
+/*        Intent intent = new Intent();
+        intent.setAction(Intent.ACTION_VIEW);
+        intent.setDataAndType(Uri.parse("file://" + file.getAbsolutePath()), "image/*");
+        startActivity(intent);*/
+/*
+        final Intent intent = new Intent(Intent.ACTION_VIEW)//
+                .setDataAndType(Build.VERSION.SDK_INT >= Build.VERSION_CODES.N ?
+                                FileProvider.getUriForFile(this,getPackageName() + ".provider", file) : Uri.fromFile(file),
+                        "image/*").addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        startActivity(intent);
+*/
+
     }
 
 }

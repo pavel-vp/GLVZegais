@@ -260,11 +260,11 @@ public class DaoMem {
         Map<String, PhotoRec> map = new HashMap<>();
 
         for (File file : integrationFile.loadPhotoFiles(shopId) ) {
-            byte[] data = null;
+            byte[] data = new byte[0];
             byte[] dataMini = null;
             try {
 
-                data = readBytes(file);
+                //data = readBytes(file);
                 String fileName = file.getName();
                 // parse fileName IMG-2020-01-01 20:00:00.jpeg
                 String date = fileName.substring(4,23);
@@ -1058,6 +1058,7 @@ public class DaoMem {
         PhotoRec newRec = new PhotoRec(shopId, shopInName, byteArray, byteArrayMini, StringUtils.formatDateImg(Calendar.getInstance().getTime()));
         mapPhotoRec.put(newRec.getDocId(),newRec);
         exportData(newRec);
+        newRec.setData(null);
         return newRec;
     }
 
