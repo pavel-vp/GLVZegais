@@ -9,6 +9,7 @@ import com.glvz.egais.dao.SyncroMem;
 import com.glvz.egais.integration.model.SetupFtp;
 import com.glvz.egais.integration.wifi.model.LocalFileRec;
 import com.glvz.egais.integration.wifi.model.SyncFileRec;
+import com.glvz.egais.utils.StringUtils;
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPConnectionClosedException;
@@ -19,10 +20,11 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
+
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 
 public class SyncWiFiFtp {
 
@@ -119,10 +121,34 @@ public class SyncWiFiFtp {
                 localFileRec.setProcessed(true);
             }
         }
+        ObjectMapper objectMapper = new ObjectMapper();
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-");
         // По оставшимся необработанным локальным файлам пройтись и удалить
         for (LocalFileRec localFileRec : localFileRecList) {
             if (!localFileRec.isProcessed()) {
-                syncro.deleteLocalFileRec(localFileRec.getPath(), localFileRec.getFileName());
+                boolean toDelete = true;
+                try {
+                    // Попробовать прочитать файл (если это json)
+                    if (localFileRec.getFileName().toLowerCase().endsWith(".json")) {
+                        File pathToFile = new File(localFileRec.getPath(), localFileRec.getFileName());
+                        TypeReference<HashMap<String,Object>> typeRef = new TypeReference<HashMap<String,Object>>() {};
+                        HashMap<String,Object> mapData = objectMapper.readValue(pathToFile, typeRef);
+                        if (mapData != null && mapData.containsKey("Date")) {
+                            // Сконвертировать "2020-08-31T13:00:43" и сравнить с текущей датой
+                            Date dateInJson = StringUtils.jsonStringToDate((String) mapData.get("Date"));
+                            if ((System.currentTimeMillis() - dateInJson.getTime()) < (30L * 24L * 60L * 60L * 1000L) ) { // 30 дней в миллисекундах
+                                toDelete = false;
+                            }
+                        }
+                    }
+                } catch (Exception e) {
+                    Log.e("DaoMem", "File local check error", e);
+                }
+                if (toDelete) {
+                    syncro.deleteLocalFileRec(localFileRec.getPath(), localFileRec.getFileName());
+                } else {
+                    Log.w("DaoMem", "Do not delete file "+ localFileRec.getPath() + "/" + localFileRec.getFileName());
+                }
             }
         }
     }
