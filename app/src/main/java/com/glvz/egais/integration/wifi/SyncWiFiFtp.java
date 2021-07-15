@@ -136,7 +136,7 @@ public class SyncWiFiFtp {
                         if (mapData != null && mapData.containsKey("Date")) {
                             // Сконвертировать "2020-08-31T13:00:43" и сравнить с текущей датой
                             Date dateInJson = StringUtils.jsonStringToDate((String) mapData.get("Date"));
-                            if ((System.currentTimeMillis() - dateInJson.getTime()) < (30L * 24L * 60L * 60L * 1000L) ) { // 30 дней в миллисекундах
+                            if ((System.currentTimeMillis() - dateInJson.getTime()) < (7L * 24L * 60L * 60L * 1000L) ) { // 30 дней в миллисекундах
                                 toDelete = false;
                             }
                         }

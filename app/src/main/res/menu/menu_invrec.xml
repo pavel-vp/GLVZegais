@@ -26,5 +26,6 @@
             android:id="@+id/action_clear"
             android:orderInCategory="100"
             android:title="Очистить"
+            android:enabled="false"
             app:showAsAction="never"/>
 </menu>
