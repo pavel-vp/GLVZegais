@@ -113,8 +113,9 @@ public class BarcodeObject implements BarcodeReader.BarcodeListener {
             // Set Symbologies On/Off
             properties.put(BarcodeReader.PROPERTY_CODE_128_ENABLED, true);
             properties.put(BarcodeReader.PROPERTY_GS1_128_ENABLED, true);
-            properties.put(BarcodeReader.PROPERTY_QR_CODE_ENABLED, false);
+            properties.put(BarcodeReader.PROPERTY_QR_CODE_ENABLED, true);
             properties.put(BarcodeReader.PROPERTY_CODE_39_ENABLED, true);
+            properties.put(BarcodeReader.PROPERTY_DATA_PROCESSOR_LAUNCH_BROWSER, false);
             properties.put(BarcodeReader.PROPERTY_DATAMATRIX_ENABLED, true);
             properties.put(BarcodeReader.PROPERTY_UPC_A_ENABLE, true);
             properties.put(BarcodeReader.PROPERTY_UPC_A_CHECK_DIGIT_TRANSMIT_ENABLED , true);
@@ -230,9 +231,13 @@ public class BarcodeObject implements BarcodeReader.BarcodeListener {
             // "01" стартовый тег групповой маркировки, содержит еан13 после тега и одного лидирующего нуля
             code = input.substring(3, 16);
         }
-        else {
-            // если стартового тега не было значит штучная маркировка еан8
+        else if ("00".equals(input.substring(0, 2))) {
+            // еан8 by LAG 2022-01-18 разделил еан8 и еан13
             code = input.substring(6, 14);
+        }
+        else {
+            // еан13 by LAG 2022-01-18 разделил еан8 и еан13
+            code = input.substring(1, 14);
         }
 
         // EAN содержится в первом поле, дина фиксированная 14 символов с забивкой лидирующими нулями. Для блока это будет  EAN 13, для пачек  EAN 8

@@ -1219,7 +1219,8 @@ public class DaoMem {
         // в каждой позиции пройтись по маркам в ТТН
         for (IncomeContentIn incomeContentIn : incomeRec.getIncomeIn().getContent()) {
             for (IncomeContentMarkIn incomeContentMarkIn : incomeContentIn.getMarkInfo()) {
-                if (incomeContentMarkIn.getMark().equals(barcode)) {
+//                if (incomeContentMarkIn.getMark().equals(barcode)) { // by LAG 2022-01-18 было
+                if (barcode.startsWith(incomeContentMarkIn.getMark())) { // by LAG 2022-01-18 стало
                     foundIncomeContentIn = incomeContentIn;
                 }
             }

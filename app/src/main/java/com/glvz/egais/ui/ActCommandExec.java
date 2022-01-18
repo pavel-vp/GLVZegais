@@ -8,6 +8,8 @@ import android.os.Build;
 import android.os.Bundle;
 import android.text.Html;
 import android.view.View;
+import android.webkit.WebChromeClient;
+import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.widget.Button;
 import android.widget.TextView;
@@ -63,7 +65,15 @@ public class ActCommandExec extends Activity implements BarcodeReader.BarcodeLis
                         } else {
                             tvResult.setText(Html.fromHtml(result));
                         }*/
-                        wvResult.loadData(result, "text/html; charset=utf-8", "UTF-8");
+                        TextView tvCaption = (TextView) findViewById(R.id.tvCaption);
+                        if ((result.startsWith("https://www.gosuslugi.ru/covid-cert"))||(result.startsWith("https://immune.mos.ru/qr?id"))) {
+                            tvCaption.setVisibility(View.GONE);
+                            wvResult.getSettings().setJavaScriptEnabled(true);
+                            wvResult.setInitialScale(137);
+                            wvResult.loadUrl(result);
+                        } else {
+                            tvCaption.setVisibility(View.VISIBLE);
+                            wvResult.loadData(result,"text/html; charset=utf-8","UTF-8"); }
                     }
                 });
             }
