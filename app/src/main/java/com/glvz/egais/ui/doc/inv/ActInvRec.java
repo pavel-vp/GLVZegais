@@ -58,6 +58,9 @@ public class ActInvRec extends ActBaseDocRec implements PickMRCCallback{
         Bundle extras = getIntent().getExtras();
         String key = extras.getString(ActBaseDocRec.REC_DOCID);
         this.invRec = DaoMem.getDaoMem().getMapInvRec().get(key);
+        if ((System.currentTimeMillis() - this.invRec.getDate().getTime() ) > (5L * 24L * 60L * 60L * 1000L) ) {
+            MessageUtils.showModalMessage(this, "Внимание!", "Выбран старый документ или на ТСД установлена неверная дата. Проверьте правильно ли выбран документ или обратитесь в техподдержку. Работа с документом не заблокирована."); //LAG 20220413
+        }
     }
 
     @Override

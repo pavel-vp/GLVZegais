@@ -4,9 +4,12 @@ import android.content.Context;
 import android.net.wifi.WifiManager;
 import android.util.Log;
 import com.glvz.egais.MainApp;
+import com.glvz.egais.dao.DaoMem;
 import com.glvz.egais.dao.Syncro;
 import com.glvz.egais.dao.SyncroMem;
 import com.glvz.egais.integration.model.SetupFtp;
+import com.glvz.egais.integration.sdcard.Integration;
+import com.glvz.egais.integration.sdcard.IntegrationSDCard;
 import com.glvz.egais.integration.wifi.model.LocalFileRec;
 import com.glvz.egais.integration.wifi.model.SyncFileRec;
 import com.glvz.egais.utils.StringUtils;
@@ -26,8 +29,9 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
-public class SyncWiFiFtp {
 
+public class SyncWiFiFtp {
+    Integration integrationFile;
     public static final int SYNC_SUCCESS = 1;
     public static final int SYNC_NO_WIFI = 2;
     public static final int SYNC_ERROR = 3;
@@ -46,6 +50,7 @@ public class SyncWiFiFtp {
         this.syncro.init(context);
         this.basePath = basePath;
         this.setupFtp = setupFtp;
+        integrationFile = new IntegrationSDCard(this.basePath);
     }
 
 
@@ -127,6 +132,7 @@ public class SyncWiFiFtp {
         for (LocalFileRec localFileRec : localFileRecList) {
             if (!localFileRec.isProcessed()) {
                 boolean toDelete = true;
+                integrationFile.LogWrite(DaoMem.getDaoMem().getShopId(), "Check before delete(1): " + localFileRec.getFileName());
                 try {
                     // Попробовать прочитать файл (если это json)
                     if (localFileRec.getFileName().toLowerCase().endsWith(".json")) {
@@ -146,6 +152,7 @@ public class SyncWiFiFtp {
                 }
                 if (toDelete) {
                     syncro.deleteLocalFileRec(localFileRec.getPath(), localFileRec.getFileName());
+                    integrationFile.LogWrite(DaoMem.getDaoMem().getShopId(), "After delete(3): " + localFileRec.getFileName());
                 } else {
                     Log.w("DaoMem", "Do not delete file "+ localFileRec.getPath() + "/" + localFileRec.getFileName());
                 }

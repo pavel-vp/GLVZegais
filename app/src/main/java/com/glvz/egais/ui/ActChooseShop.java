@@ -5,13 +5,20 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Environment;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+
+import com.glvz.egais.MainApp;
 import com.glvz.egais.R;
 import com.glvz.egais.dao.DaoMem;
 import com.glvz.egais.integration.model.ShopIn;
+import com.glvz.egais.integration.sdcard.Integration;
+import com.glvz.egais.integration.sdcard.IntegrationSDCard;
+import com.glvz.egais.utils.MessageUtils;
 
+import java.io.File;
 import java.util.List;
 
 public class ActChooseShop extends Activity {
@@ -20,6 +27,7 @@ public class ActChooseShop extends Activity {
     private TextView tvUser;
     private Button buttonLoadDocs;
     private Button buttonMainMenu;
+    Integration integrationFile;
 
 
     @Override
@@ -87,7 +95,8 @@ public class ActChooseShop extends Activity {
         buttonLoadDocs.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                DaoMem.getDaoMem().initDocuments(true);
+                //DaoMem.getDaoMem().initDocuments(true);
+                clearAllShared();
             }
         });
 
@@ -108,6 +117,17 @@ public class ActChooseShop extends Activity {
         });
     }
 
+    private void clearAllShared(){
+        MessageUtils.ShowModalAndConfirm(this, "Внимание!", "Подтвердите удаление ВСЕХ данных введенных в ТСД. Операция необратима\n\n После выполнения необходимо перезапустить приложение.",
+                new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        DaoMem.getDaoMem().clearAllSharedPreferences();
+                        MessageUtils.showToastMessage("Все данные приложения удалены");
+                    }
+                });
+    }
+
     private void proceedMainMenu() {
         Intent intent = new Intent();
         intent.setClass(ActChooseShop.this, ActMainMenu.class);
@@ -121,7 +141,12 @@ public class ActChooseShop extends Activity {
             buttonLoadDocs.setEnabled(false);
             buttonMainMenu.setEnabled(false);
         } else {
-            buttonLoadDocs.setEnabled(true);
+            if ((DaoMem.getDaoMem().getUserIn().getId().equals("290a6e3a974-4e9c-11e8-83d3-2c59e542040c")) ||   //Ложкин
+                    (DaoMem.getDaoMem().getUserIn().getId().equals("2907657a845-597d-11eb-9cde-2c59e542040c"))) //Марков
+            {buttonLoadDocs.setEnabled(true);
+            }else{
+                buttonLoadDocs.setEnabled(false);}
+
             buttonMainMenu.setEnabled(true);
         }
     }

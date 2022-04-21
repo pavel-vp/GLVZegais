@@ -192,6 +192,11 @@ public class DaoMem {
         ed.apply();
     }
 
+    public void clearAllSharedPreferences() {
+        // test by LAG
+        MainApp.getContext().getSharedPreferences("settings", Activity.MODE_PRIVATE).edit().clear().apply();
+    }
+
     public void initDocuments(boolean notify) {
         integrationFile.initDirectories(shopId);
         listIncomeIn = integrationFile.loadIncome(shopId);

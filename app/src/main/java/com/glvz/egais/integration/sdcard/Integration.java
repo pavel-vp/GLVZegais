@@ -55,4 +55,6 @@ public interface Integration {
     String getPhotoFileName(String skladId, String name);
 
     String getBasePath();
+
+    void LogWrite(String shopId, String log_text);
 }

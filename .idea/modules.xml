@@ -3,8 +3,6 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/GLVZegais.iml" filepath="$PROJECT_DIR$/GLVZegais.iml" />
-      <module fileurl="file://$PROJECT_DIR$/app/GLVZegais-app.iml" filepath="$PROJECT_DIR$/app/GLVZegais-app.iml" group="GLVZegais/app" />
-      <module fileurl="file://$PROJECT_DIR$/StudioProjects-GLVZegais.iml" filepath="$PROJECT_DIR$/StudioProjects-GLVZegais.iml" group="GLVZegais" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
     </modules>
   </component>

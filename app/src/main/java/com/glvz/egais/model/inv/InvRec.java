@@ -1,14 +1,22 @@
 package com.glvz.egais.model.inv;
 
+import android.os.Environment;
+
+import com.glvz.egais.MainApp;
+import com.glvz.egais.R;
 import com.glvz.egais.dao.DaoMem;
 import com.glvz.egais.integration.model.doc.BaseRecOutput;
 import com.glvz.egais.integration.model.doc.DocContentIn;
 import com.glvz.egais.integration.model.doc.DocIn;
 import com.glvz.egais.integration.model.doc.inv.*;
 import com.glvz.egais.integration.model.doc.writeoff.WriteoffRecContentMarkOutput;
+import com.glvz.egais.integration.sdcard.Integration;
+import com.glvz.egais.integration.sdcard.IntegrationSDCard;
 import com.glvz.egais.model.*;
 import com.glvz.egais.model.writeoff.WriteoffRecContentMark;
 import com.glvz.egais.utils.StringUtils;
+
+import java.io.File;
 import java.util.*;
 
 public class InvRec extends BaseRec {
@@ -16,10 +24,13 @@ public class InvRec extends BaseRec {
     // ссылка наисходный имопртированный документ
     private String docId;
     private InvIn invIn;
+    Integration integrationFile;
 
     public InvRec(String docId, InvIn invIn) {
         this.docId = docId;
         this.invIn = invIn;
+        File path = new File(Environment.getExternalStorageDirectory(), MainApp.getContext().getResources().getString(R.string.path_exchange));
+        integrationFile = new IntegrationSDCard(path.getAbsolutePath());
     }
 
     @Override
@@ -134,6 +145,7 @@ public class InvRec extends BaseRec {
 
     @Override
     public void rejectData() {
+        integrationFile.LogWrite(DaoMem.getDaoMem().getShopId(), "Before clear (1): " + docId);
         // Пройтись по всем строкам, и проставить везде нули
         for (BaseRecContent recContent : getRecContentList()) {
             recContent.setQtyAccepted(null);
@@ -142,6 +154,7 @@ public class InvRec extends BaseRec {
         }
         // у документа статус — Новый
         setStatus(BaseRecStatus.NEW);
+        integrationFile.LogWrite(DaoMem.getDaoMem().getShopId(), "After clear (2): " + docId);
     }
 
     @Override

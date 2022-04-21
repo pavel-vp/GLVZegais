@@ -3,6 +3,12 @@ package com.glvz.egais.dao;
 import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.os.Environment;
+
+import com.glvz.egais.MainApp;
+import com.glvz.egais.R;
+import com.glvz.egais.integration.sdcard.Integration;
+import com.glvz.egais.integration.sdcard.IntegrationSDCard;
 import com.glvz.egais.integration.wifi.model.LocalFileRec;
 
 import java.io.File;
@@ -15,10 +21,13 @@ public class SyncroMem implements Syncro {
     private static final String KEY_LOCAL = "local";
     private static final String KEY_REMOTE = "remote";
     private SharedPreferences sharedPreferences;
+    Integration integrationFile;
 
     @Override
     public void init(Context context) {
         sharedPreferences = context.getSharedPreferences("syncro", Activity.MODE_PRIVATE);
+        File path = new File(Environment.getExternalStorageDirectory(), MainApp.getContext().getResources().getString(R.string.path_exchange));
+        integrationFile = new IntegrationSDCard(path.getAbsolutePath());
     }
 
     @Override
@@ -49,6 +58,7 @@ public class SyncroMem implements Syncro {
         if (found != null) {
             File file = new File(path + "/" + found.getFileName());
             file.delete();
+            integrationFile.LogWrite(DaoMem.getDaoMem().getShopId(), "Do delete(2): " + found.getFileName());
             localFileRecList.remove(found);
         }
         writeList(KEY_LOCAL, path, localFileRecList);

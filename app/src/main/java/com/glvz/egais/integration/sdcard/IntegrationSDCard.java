@@ -1,11 +1,14 @@
 package com.glvz.egais.integration.sdcard;
 
 import android.media.MediaScannerConnection;
+import android.os.Environment;
 import android.util.Base64;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.glvz.egais.MainApp;
+import com.glvz.egais.R;
+import com.glvz.egais.dao.DaoMem;
 import com.glvz.egais.integration.model.*;
 import com.glvz.egais.integration.model.doc.BaseRecOutput;
 import com.glvz.egais.integration.model.doc.checkmark.CheckMarkIn;
@@ -24,6 +27,8 @@ import com.glvz.egais.model.writeoff.WriteoffRec;
 import com.glvz.egais.utils.StringUtils;
 
 import java.io.*;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -59,6 +64,7 @@ public class IntegrationSDCard implements Integration {
     private static final String DOC_PREFIX_FINDMARK = "FINDMARK";
     private static final String DOC_PREFIX_INV = "INV";
     private static final String DOC_PREFIX_PHOTO = "IMG";
+    private static final String DOC_PREFIX_LOG = "LOG";
 
     private ObjectMapper objectMapper = new ObjectMapper();
 
@@ -529,7 +535,8 @@ public class IntegrationSDCard implements Integration {
                 }
             }
             // Фото
-            if (file.getName().toUpperCase().startsWith(DOC_PREFIX_PHOTO)) {
+            if (file.getName().toUpperCase().startsWith(DOC_PREFIX_PHOTO) ||
+                    file.getName().toUpperCase().startsWith(DOC_PREFIX_LOG)) {
                 // Если это экспорт
                 if (file.getAbsolutePath().contains("/" + OUT_DIR + "/")) {
                     try {
@@ -586,5 +593,19 @@ public class IntegrationSDCard implements Integration {
         return basePath;
     }
 
+    public void LogWrite(String shopId, String log_text) {
+        try {
+            DateFormat dtf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+            Date date = new Date();
+            String FILENAME = "LOG-" + df.format(date) + " 00_00_00-" + DaoMem.getDaoMem().getDeviceId() + ".json";
+            File sdFile = new File(basePath + "/" + SHOPS_DIR + "/" + shopId + "/" + OUT_DIR, FILENAME);
+            FileWriter fw = new FileWriter (sdFile, true);
+            fw.write(dtf.format(date) + ": " + log_text + "\n");
+            fw.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
 }
