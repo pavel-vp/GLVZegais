@@ -407,6 +407,8 @@ public class DaoMem {
 
         float qtyAccepted = sharedPreferences.getFloat(KEY_WRITEOFF + "_" + BaseRec.KEY_POS_QTYACCEPTED+"_"+writeoffRec.getDocId()+"_"+position, 0);
         recContent.setQtyAccepted(Double.valueOf(qtyAccepted));
+        float mrc = sharedPreferences.getFloat(KEY_WRITEOFF + "_" + BaseRec.KEY_POS_MRC+"_"+writeoffRec.getDocId()+"_"+position, 0);
+        recContent.setMrc(Double.valueOf(mrc));
 
         int markScannedSize = sharedPreferences.getInt(KEY_WRITEOFF + "_" + BaseRec.KEY_POS_MARKSCANNED_CNT + "_"+writeoffRec.getDocId()+"_"+position, 0);
         for (int idx = 1; idx <= markScannedSize; idx++) {
@@ -688,6 +690,11 @@ public class DaoMem {
             qty = recContent.getQtyAccepted().floatValue();
         }
         ed.putFloat(KEY_WRITEOFF + "_" + BaseRec.KEY_POS_QTYACCEPTED+"_"+docId+"_"+recContent.getPosition(), qty);
+        float mrc = 0;
+        if (recContent.getMrc() != null) {
+            mrc = recContent.getMrc().floatValue();
+        }
+        ed.putFloat(KEY_WRITEOFF + "_" + BaseRec.KEY_POS_MRC+"_"+docId+"_"+recContent.getPosition(), mrc);
         ed.putInt(KEY_WRITEOFF + "_" + BaseRec.KEY_POS_MARKSCANNED_CNT + "_"+docId+"_"+recContent.getPosition(), recContent.getBaseRecContentMarkList().size());
         int idx = 1;
         for (BaseRecContentMark baseRecContentMark : recContent.getBaseRecContentMarkList()) {
@@ -723,6 +730,7 @@ public class DaoMem {
         ed.remove(KEY_WRITEOFF + "_" + BaseRec.KEY_POS_BARCODE+"_"+docId+"_"+recContent.getPosition());
         ed.remove(KEY_WRITEOFF + "_" + BaseRec.KEY_POS_STATUS+"_"+docId+"_"+recContent.getPosition());
         ed.remove(KEY_WRITEOFF + "_" + BaseRec.KEY_POS_QTYACCEPTED+"_"+docId+"_"+recContent.getPosition());
+        ed.remove(KEY_WRITEOFF + "_" + BaseRec.KEY_POS_MRC+"_"+docId+"_"+recContent.getPosition());
         ed.remove(KEY_WRITEOFF + "_" + BaseRec.KEY_POS_MARKSCANNED_CNT + "_"+docId+"_"+recContent.getPosition());
         int idx = 1;
         for (BaseRecContentMark baseRecContentMark : recContent.getBaseRecContentMarkList()) {

@@ -101,6 +101,28 @@
 
 
             <LinearLayout
+                android:orientation="horizontal"
+                android:id="@+id/llMrc"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="?android:attr/textAppearanceSmall"
+                    android:paddingRight="10dp"
+                    android:text="МРЦ"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="?android:attr/textAppearanceMedium"
+                    android:textStyle="bold"
+                    android:text="200"
+                    android:paddingRight="10dp"
+                    android:id="@+id/tvMrc" />
+
+            </LinearLayout>
+            <LinearLayout
                     android:orientation="horizontal"
                     android:id="@+id/llEmk"
                     android:layout_width="wrap_content"

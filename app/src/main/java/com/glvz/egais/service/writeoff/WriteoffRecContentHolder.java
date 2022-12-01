@@ -19,6 +19,7 @@ public class WriteoffRecContentHolder extends DocRecContentHolder {
     TextView tvQty;
     TextView tvVolume;
     TextView tvAlc;
+    TextView tvMrc;
 
     public WriteoffRecContentHolder(View v) {
         super(v);
@@ -29,6 +30,7 @@ public class WriteoffRecContentHolder extends DocRecContentHolder {
         tvNomenId = (TextView)v.findViewById(R.id.tvNomenId);
         tvVolume = (TextView)v.findViewById(R.id.tvVolume);
         tvAlc = (TextView)v.findViewById(R.id.tvAlc);
+        tvMrc = (TextView)v.findViewById(R.id.tvMrc);
         v.setTag(this);
     }
 
@@ -63,6 +65,11 @@ public class WriteoffRecContentHolder extends DocRecContentHolder {
             tvNomenId.setText("");
             tvVolume.setText("");
             tvAlc.setText("");
+        }
+        if (writeoffRecContent.getMrc() != null) {
+            tvMrc.setText(StringUtils.formatQty(writeoffRecContent.getMrc()));
+        } else {
+            tvMrc.setText("");
         }
     }
 }

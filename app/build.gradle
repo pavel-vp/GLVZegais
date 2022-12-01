@@ -4,13 +4,15 @@ apply plugin: 'idea'
 android {
     compileSdkVersion 28
     buildToolsVersion "29.0.2"
-
+    task wrapper(type: Wrapper){
+        gradleVersion = '7.2'
+    }
     defaultConfig {
         applicationId "com.glvz.egais"
         minSdkVersion 25
-        targetSdkVersion 28
-        versionCode 34
-        versionName "34.0"
+        targetSdkVersion 32
+        versionCode 35
+        versionName "35.0"
     }
     buildTypes {
         release {
@@ -41,4 +43,5 @@ dependencies {
     implementation 'com.fasterxml.jackson.core:jackson-annotations:2.4.1'
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.4.1'
     implementation 'commons-net:commons-net:3.6'
+    testImplementation project(path: ':app')
 }

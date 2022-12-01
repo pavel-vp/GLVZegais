@@ -5,7 +5,7 @@ import com.glvz.egais.model.BaseRecContent;
 import com.glvz.egais.model.BaseRecContentPositionType;
 
 public class WriteoffRecContent extends BaseRecContent {
-
+    private Double mrc;
 
     public WriteoffRecContent(String position, DocContentIn docContentIn) {
         super(position, docContentIn);
@@ -14,5 +14,14 @@ public class WriteoffRecContent extends BaseRecContent {
     @Override
     public BaseRecContentPositionType getPositionType() {
         return null;
+    }
+
+
+    public Double getMrc() {
+        return mrc;
+    }
+
+    public void setMrc(Double mrc) {
+        this.mrc = mrc;
     }
 }

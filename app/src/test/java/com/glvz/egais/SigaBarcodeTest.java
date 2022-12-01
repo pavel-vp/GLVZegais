@@ -11,7 +11,7 @@ public class SigaBarcodeTest {
     public void one_piece_mark_test() {
         String m = "00000046218070p\"01b<,0P9kkTG2";
         String exMark = BarcodeObject.extractSigaMark(m);
-        Assert.assertEquals(m, exMark);
+        Assert.assertEquals(m.substring(0, 25), exMark);
     }
 
     @Test
