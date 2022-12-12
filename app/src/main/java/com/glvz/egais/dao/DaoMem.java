@@ -1,18 +1,23 @@
 package com.glvz.egais.dao;
 
 import android.app.Activity;
+import android.content.ContentValues;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
+import android.provider.BaseColumns;
 import android.support.v4.content.FileProvider;
 import android.util.Log;
 import com.glvz.egais.BuildConfig;
 import com.glvz.egais.MainApp;
 import com.glvz.egais.R;
+import com.glvz.egais.daodb.AppDbHelper;
 import com.glvz.egais.integration.model.doc.DocContentIn;
 import com.glvz.egais.integration.model.doc.checkmark.CheckMarkContentIn;
 import com.glvz.egais.integration.model.doc.checkmark.CheckMarkIn;
@@ -60,9 +65,11 @@ public class DaoMem {
 
     public static final String KEY_LAST_DOCID = "last_docid";
     public static final String KEY_WRITEOFF = "writeoff";
-    private static final String KEY_CHECKMARK = "checkmark";
-    private static final String KEY_FINDMARK = "findmark";
-    private static final String KEY_INV = "inv";
+    public static final String KEY_CHECKMARK = "checkmark";
+    public static final String KEY_FINDMARK = "findmark";
+    public static final String KEY_INV = "inv";
+    public static final String CONTENT = "_content";
+    public static final String CONTENT_MARK = "_content_mark";
 
     private static DaoMem daoMem = null;
 
@@ -75,6 +82,7 @@ public class DaoMem {
 
     private DaoMem() {
         sharedPreferences = MainApp.getContext().getSharedPreferences("settings", Activity.MODE_PRIVATE);
+        appDbHelper = new AppDbHelper(MainApp.getContext());
         initDictionary();
         //deviceId = Settings.Secure.getString(MainApp.getContext().getContentResolver(), Settings.Secure.ANDROID_ID);
         deviceId = Build.SERIAL;
@@ -112,6 +120,7 @@ public class DaoMem {
     Map<String, PhotoRec> mapPhotoRec;
 
     SharedPreferences sharedPreferences;
+    AppDbHelper appDbHelper;
 
     private String deviceId;
 
@@ -423,76 +432,111 @@ public class DaoMem {
 
     private void readLocalDataInv(InvRec invRec) {
         Log.v("DaoMem", "readLocalDataInv start");
-        invRec.setStatus(BaseRecStatus.valueOf(sharedPreferences.getString(KEY_INV + "_" + BaseRec.KEY_STATUS + "_" + invRec.getDocId() + "_", BaseRecStatus.NEW.toString())));
-        invRec.setExported(sharedPreferences.getBoolean(KEY_INV + "_" + BaseRec.KEY_EXPORTED + "_" + invRec.getDocId() + "_", false));
-        // пройтись по строкам и прочитать доп.данные
-        invRec.getRecContentList().clear();
-        // Сначала читаем по всем входным строкам и создать по ним обертки
-        for (DocContentIn contentIn : invRec.getDocContentInList()) {
-            InvContentIn invContentIn = (InvContentIn)contentIn;
-            InvRecContent recContent = new InvRecContent(invContentIn.getPosition());
-            recContent.setContentIn(invContentIn);
-            recContent.setId1c(invContentIn.getNomenId());
-            recContent.setNomenIn(DaoMem.getDaoMem().findNomenInByNomenId(invContentIn.getNomenId()), null);
-            invRec.getRecContentList().add(recContent);
-        }
+        SQLiteDatabase db = appDbHelper.getReadableDatabase();
+        Cursor cursor = db.query(
+                DaoMem.KEY_INV,   // The table to query
+                null,             // The array of columns to return (pass null to get all)
+                BaseRec.KEY_DOCID + " = ?",              // The columns for the WHERE clause
+                new String[] { invRec.getDocId() },                              // The values for the WHERE clause
+                null,                   // don't group the rows
+                null,                   // don't filter by row groups
+                BaseColumns._ID + " ASC"               // The sort order
+        );
 
-        // Прочитать доп данные по входным строкам, плюс дополнительные данные по добаленным строкам
-        int contentSize = sharedPreferences.getInt(KEY_INV + "_" + InvRec.KEY_CONTENT_SIZE + "_" + invRec.getDocId() + "_", 0);
-        for (int i = 1; i <= contentSize; i++) {
-            readLocalDataInvContentAndMerge(invRec, i);
+        while(cursor.moveToNext()) {
+            invRec.setStatus(BaseRecStatus.valueOf( cursor.getString(cursor.getColumnIndexOrThrow(BaseRec.KEY_STATUS))));
+            invRec.setExported(Boolean.parseBoolean( cursor.getString(cursor.getColumnIndexOrThrow(BaseRec.KEY_EXPORTED))));
+
+            // пройтись по строкам и прочитать доп.данные
+            invRec.getRecContentList().clear();
+            // Сначала читаем по всем входным строкам и создать по ним обертки
+            for (DocContentIn contentIn : invRec.getDocContentInList()) {
+                InvContentIn invContentIn = (InvContentIn)contentIn;
+                InvRecContent recContent = new InvRecContent(invContentIn.getPosition());
+                recContent.setContentIn(invContentIn);
+                recContent.setId1c(invContentIn.getNomenId());
+                recContent.setNomenIn(DaoMem.getDaoMem().findNomenInByNomenId(invContentIn.getNomenId()), null);
+                invRec.getRecContentList().add(recContent);
+            }
+
+            // Прочитать доп данные по входным строкам, плюс дополнительные данные по добаленным строкам
+            readLocalDataInvContentAndMerge(invRec);
+
+            Log.v("DaoMem", "readLocalDataInv end contentSize="+invRec.getRecContentList().size());
         }
-        Log.v("DaoMem", "readLocalDataInv end contentSize="+contentSize);
+        cursor.close();
     }
 
-    private void readLocalDataInvContentAndMerge(InvRec invRec, int position) {
+    private void readLocalDataInvContentAndMerge(InvRec invRec) {
+        SQLiteDatabase db = appDbHelper.getReadableDatabase();
+        Cursor cursor = db.query(
+                DaoMem.KEY_INV+CONTENT,   // The table to query
+                null,             // The array of columns to return (pass null to get all)
+                BaseRec.KEY_DOCID + " = ?",              // The columns for the WHERE clause
+                new String[] { invRec.getDocId() },                              // The values for the WHERE clause
+                null,                   // don't group the rows
+                null,                   // don't filter by row groups
+                BaseColumns._ID + " ASC"               // The sort order
+        );
 
-        String id1c = sharedPreferences.getString(KEY_INV + "_" + BaseRec.KEY_POS_ID1C+"_"+invRec.getDocId()+"_"+position, "");
-        String barcode = sharedPreferences.getString(KEY_INV + "_" + BaseRec.KEY_POS_BARCODE+"_"+invRec.getDocId()+"_"+position, "");
-        String posStatus = sharedPreferences.getString(KEY_INV + "_" + BaseRec.KEY_POS_STATUS+"_"+invRec.getDocId()+"_"+position, BaseRecContentStatus.IN_PROGRESS.toString());
-        float qtyAccepted = sharedPreferences.getFloat(KEY_INV + "_" + BaseRec.KEY_POS_QTYACCEPTED+"_"+invRec.getDocId()+"_"+position, 0);
-        float manualMrcFload = sharedPreferences.getFloat(KEY_INV + "_" + BaseRec.KEY_POS_MANUAL_MRC+"_"+invRec.getDocId()+"_"+position, 0);
-        int realPosition = Integer.parseInt(sharedPreferences.getString(KEY_INV + "_" + BaseRec.KEY_POS_POSITION+"_"+invRec.getDocId()+"_"+position, "1"));
+        while(cursor.moveToNext()) {
+            String id1c = cursor.getString(cursor.getColumnIndexOrThrow(BaseRec.KEY_POS_ID1C));
+            String barcode = cursor.getString(cursor.getColumnIndexOrThrow(BaseRec.KEY_POS_BARCODE));
+            String posStatus = cursor.getString(cursor.getColumnIndexOrThrow(BaseRec.KEY_POS_STATUS));
+            float qtyAccepted = Float.parseFloat(cursor.getString(cursor.getColumnIndexOrThrow(BaseRec.KEY_POS_QTYACCEPTED)));
+            float manualMrcFload = Float.parseFloat(cursor.getString(cursor.getColumnIndexOrThrow(BaseRec.KEY_POS_MANUAL_MRC)));
+            String docContentId = cursor.getString(cursor.getColumnIndexOrThrow(BaseRec.KEY_DOC_CONTENTID));
 
-        Double manualMrc = manualMrcFload == 0 ? null : (double) manualMrcFload;
+            Double manualMrc = manualMrcFload == 0 ? null : (double) manualMrcFload;
 
-        int markScannedSize = sharedPreferences.getInt(KEY_INV + "_" + BaseRec.KEY_POS_MARKSCANNED_CNT + "_"+invRec.getDocId()+"_"+position, 0);
-        // Попробовать найти уже созданную строку
-        InvRecContent recContent = null;
-        int maxPos = 0;
-        for (BaseRecContent brc : invRec.getRecContentList()) {
+            // Попробовать найти уже созданную строку
+            InvRecContent recContent = null;
+            int maxPos = 0;
+            for (BaseRecContent brc : invRec.getRecContentList()) {
 
-            InvRecContent ircTemp = (InvRecContent)brc;
-            if (ircTemp.getId1c() != null &&
-                    ircTemp.getId1c().equals(id1c) &&
-                    ( manualMrc == null ||  // не указана ручная введенная МРЦ
-                      ircTemp.getContentIn() != null && ircTemp.getContentIn().getMrc() != null && ircTemp.getContentIn().getMrc().equals(manualMrc)  // или она равна искомой
-                    )
-                 ) {
-                recContent = ircTemp;
+                InvRecContent ircTemp = (InvRecContent) brc;
+                if (ircTemp.getId1c() != null &&
+                        ircTemp.getId1c().equals(id1c) &&
+                        (manualMrc == null ||  // не указана ручная введенная МРЦ
+                                ircTemp.getContentIn() != null && ircTemp.getContentIn().getMrc() != null && ircTemp.getContentIn().getMrc().equals(manualMrc)  // или она равна искомой
+                        )
+                ) {
+                    recContent = ircTemp;
+                }
+                maxPos = Math.max(maxPos, Integer.parseInt(ircTemp.getPosition()));
             }
-            maxPos = Math.max(maxPos, Integer.parseInt(ircTemp.getPosition()));
-        }
-        // Если записи такой нет - то создать ее и добавить (вычислив новую позицию как максимум +1)
-        if (recContent == null) {
-            recContent = new InvRecContent(String.valueOf(maxPos + 1));
-            invRec.getRecContentList().add(recContent);
-        }
-        recContent.setId1c(id1c);
-        recContent.setNomenIn(findNomenInByNomenId(id1c), barcode);
-        recContent.setStatus(BaseRecContentStatus.valueOf(posStatus));
-        recContent.setQtyAccepted((double) qtyAccepted);
-        recContent.setManualMrc(manualMrc);
+            // Если записи такой нет - то создать ее и добавить (вычислив новую позицию как максимум +1)
+            if (recContent == null) {
+                recContent = new InvRecContent(String.valueOf(maxPos + 1));
+                invRec.getRecContentList().add(recContent);
+            }
+            recContent.setId1c(id1c);
+            recContent.setNomenIn(findNomenInByNomenId(id1c), barcode);
+            recContent.setStatus(BaseRecContentStatus.valueOf(posStatus));
+            recContent.setQtyAccepted((double) qtyAccepted);
+            recContent.setManualMrc(manualMrc);
 
-        for (int idx = 1; idx <= markScannedSize; idx++) {
-            InvRecContentMark baseRecContentMark = new InvRecContentMark(
-                    sharedPreferences.getString(KEY_INV + "_" + BaseRec.KEY_POS_MARKSCANNED + "_"+invRec.getDocId()+"_"+position+"_"+idx, ""),
-                    sharedPreferences.getInt(KEY_INV + "_" + BaseRec.KEY_POS_MARKSCANNED_ASTYPE + "_"+invRec.getDocId()+"_"+position+"_"+idx, 0),
-                    sharedPreferences.getString(KEY_INV + "_" + BaseRec.KEY_POS_MARKSCANNEDREAL + "_"+invRec.getDocId()+"_"+position+"_"+idx, ""),
-                    sharedPreferences.getString(KEY_INV + "_" + BaseRec.KEY_POS_MARKBOX + "_"+invRec.getDocId()+"_"+position+"_"+idx, "")
+            Cursor cursorMark = db.query(
+                    DaoMem.KEY_INV+CONTENT_MARK,   // The table to query
+                    null,             // The array of columns to return (pass null to get all)
+                    BaseRec.KEY_DOC_CONTENTID + " = ?",              // The columns for the WHERE clause
+                    new String[] { docContentId },                              // The values for the WHERE clause
+                    null,                   // don't group the rows
+                    null,                   // don't filter by row groups
+                    BaseColumns._ID + " ASC"               // The sort order
             );
-            recContent.getBaseRecContentMarkList().add(baseRecContentMark);
+
+            while(cursorMark.moveToNext()) {
+                InvRecContentMark baseRecContentMark = new InvRecContentMark(
+                        cursorMark.getString(cursor.getColumnIndexOrThrow(BaseRec.KEY_POS_MARKSCANNED)),
+                        Integer.parseInt(cursorMark.getString(cursor.getColumnIndexOrThrow(BaseRec.KEY_POS_MARKSCANNED_ASTYPE))),
+                        cursorMark.getString(cursor.getColumnIndexOrThrow(BaseRec.KEY_POS_MARKSCANNEDREAL)),
+                        cursorMark.getString(cursor.getColumnIndexOrThrow(BaseRec.KEY_POS_MARKBOX))
+                );
+                recContent.getBaseRecContentMarkList().add(baseRecContentMark);
+            }
         }
+        cursor.close();
     }
 
     private void readLocalDataCheckMark(CheckMarkRec rec) {
@@ -802,25 +846,36 @@ public class DaoMem {
 
     public void writeLocalDataInvRec(InvRec invRec) {
         Log.v("DaoMem", "writeLocalDataInvRec start");
-        SharedPreferences.Editor ed = sharedPreferences.edit();
-        ed.putBoolean(KEY_INV + "_" + BaseRec.KEY_EXPORTED+"_"+invRec.getDocId()+"_", invRec.isExported());
-        ed.putString(KEY_INV + "_" + BaseRec.KEY_STATUS+"_"+invRec.getDocId()+"_", invRec.getStatus().toString());
-        ed.putInt(KEY_INV + "_" + InvRec.KEY_CONTENT_SIZE +"_"+invRec.getDocId()+"_", invRec.getRecContentList().size());
+        SQLiteDatabase db = appDbHelper.getWritableDatabase();
+        int deletedRowsMark = db.delete(KEY_INV+CONTENT_MARK, BaseRec.KEY_DOCID + " = ?", new String[] { invRec.getDocId() });
+        int deletedRowsContent = db.delete(KEY_INV+CONTENT, BaseRec.KEY_DOCID + " = ?", new String[] { invRec.getDocId() });
+        int deletedRow = db.delete(KEY_INV, BaseRec.KEY_DOCID + " = ?", new String[] { invRec.getDocId() });
+
+        ContentValues values = new ContentValues();
+        values.put(BaseRec.KEY_EXPORTED, invRec.isExported() ? "true" : "false");
+        values.put(BaseRec.KEY_STATUS, invRec.getStatus().toString());
+        values.put(BaseRec.KEY_DOCID, invRec.getDocId());
+        long newDbDocId = db.insert(KEY_INV, null, values);
+
         // записать данные по строкам
         int position = 1;
         for (InvRecContent recContent : invRec.getInvRecContentList()) {
-            writeLocalDataInvRecContent(ed,invRec.getDocId(), recContent, position);
+            writeLocalDataInvRecContent(invRec.getDocId(), recContent, position);
             position++;
         }
-        ed.apply();
         Log.v("DaoMem", "writeLocalDataInvRec end");
     }
 
-    private void writeLocalDataInvRecContent(SharedPreferences.Editor ed, String docId, InvRecContent recContent, int position) {
-        ed.putString(KEY_INV + "_" + BaseRec.KEY_POS_ID1C+"_"+docId+"_"+position, recContent.getId1c());
-        ed.putString(KEY_INV + "_" + BaseRec.KEY_POS_BARCODE+"_"+docId+"_"+position, recContent.getBarcode());
-        ed.putString(KEY_INV + "_" + BaseRec.KEY_POS_STATUS+"_"+docId+"_"+position, recContent.getStatus().toString());
-        ed.putString(KEY_INV + "_" + BaseRec.KEY_POS_POSITION+"_"+docId+"_"+position, recContent.getPosition().toString());
+    private void writeLocalDataInvRecContent(String docId, InvRecContent recContent, int position) {
+        SQLiteDatabase db = appDbHelper.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(BaseRec.KEY_DOCID, docId);
+        values.put(BaseRec.KEY_DOC_CONTENTID, docId+"_"+position);
+        values.put(BaseRec.KEY_POS_ID1C, recContent.getId1c());
+        values.put(BaseRec.KEY_POS_BARCODE, recContent.getBarcode());
+        values.put(BaseRec.KEY_POS_STATUS, recContent.getStatus().toString());
+        values.put(BaseRec.KEY_POS_POSITION, recContent.getPosition().toString());
+
         float qty = 0;
         if (recContent.getQtyAccepted() != null) {
             qty = recContent.getQtyAccepted().floatValue();
@@ -833,16 +888,22 @@ public class DaoMem {
                 manualMrc = recContent.getContentIn().getMrc().floatValue();
             }
         }
-        ed.putFloat(KEY_INV + "_" + BaseRec.KEY_POS_QTYACCEPTED+"_"+docId+"_"+position, qty);
-        ed.putFloat(KEY_INV + "_" + BaseRec.KEY_POS_MANUAL_MRC+"_"+docId+"_"+position, manualMrc);
-        ed.putInt(KEY_INV + "_" + BaseRec.KEY_POS_MARKSCANNED_CNT + "_"+docId+"_"+position, recContent.getBaseRecContentMarkList().size());
+        values.put(BaseRec.KEY_POS_QTYACCEPTED, qty);
+        values.put(BaseRec.KEY_POS_MANUAL_MRC, manualMrc);
+        values.put(BaseRec.KEY_POS_MARKSCANNED_CNT, recContent.getBaseRecContentMarkList().size());
+        long newContentRowId = db.insert(KEY_INV+CONTENT, null, values);
         int idx = 1;
         for (BaseRecContentMark baseRecContentMark : recContent.getBaseRecContentMarkList()) {
             InvRecContentMark invRecContentMark = (InvRecContentMark)baseRecContentMark;
-            ed.putString(KEY_INV + "_" + BaseRec.KEY_POS_MARKSCANNED + "_"+docId+"_"+position+"_"+idx, invRecContentMark.getMarkScanned());
-            ed.putInt(KEY_INV + "_" + BaseRec.KEY_POS_MARKSCANNED_ASTYPE + "_"+docId+"_"+position+"_"+idx, invRecContentMark.getMarkScannedAsType());
-            ed.putString(KEY_INV + "_" + BaseRec.KEY_POS_MARKSCANNEDREAL + "_"+docId+"_"+position+"_"+idx, invRecContentMark.getMarkScannedReal());
-            ed.putString(KEY_INV + "_" + BaseRec.KEY_POS_MARKBOX + "_"+docId+"_"+position+"_"+idx, invRecContentMark.getBox());
+            ContentValues valuesMark = new ContentValues();
+            valuesMark.put(BaseRec.KEY_DOCID, docId);
+            valuesMark.put(BaseRec.KEY_DOC_CONTENTID, docId+"_"+position);
+            valuesMark.put(BaseRec.KEY_DOC_CONTENT_MARKID, docId+"_"+position+"_"+idx);
+            valuesMark.put(BaseRec.KEY_POS_MARKSCANNED, invRecContentMark.getMarkScanned());
+            valuesMark.put(BaseRec.KEY_POS_MARKSCANNED_ASTYPE, invRecContentMark.getMarkScannedAsType());
+            valuesMark.put(BaseRec.KEY_POS_MARKSCANNEDREAL, invRecContentMark.getMarkScannedReal());
+            valuesMark.put(BaseRec.KEY_POS_MARKBOX, invRecContentMark.getBox());
+            long newContentMarkRowId = db.insert(KEY_INV+CONTENT_MARK, null, valuesMark);
             idx++;
         }
     }
