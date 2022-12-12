@@ -528,10 +528,10 @@ public class DaoMem {
 
             while(cursorMark.moveToNext()) {
                 InvRecContentMark baseRecContentMark = new InvRecContentMark(
-                        cursorMark.getString(cursor.getColumnIndexOrThrow(BaseRec.KEY_POS_MARKSCANNED)),
-                        Integer.parseInt(cursorMark.getString(cursor.getColumnIndexOrThrow(BaseRec.KEY_POS_MARKSCANNED_ASTYPE))),
-                        cursorMark.getString(cursor.getColumnIndexOrThrow(BaseRec.KEY_POS_MARKSCANNEDREAL)),
-                        cursorMark.getString(cursor.getColumnIndexOrThrow(BaseRec.KEY_POS_MARKBOX))
+                        cursorMark.getString(cursorMark.getColumnIndexOrThrow(BaseRec.KEY_POS_MARKSCANNED)),
+                        Integer.parseInt(cursorMark.getString(cursorMark.getColumnIndexOrThrow(BaseRec.KEY_POS_MARKSCANNED_ASTYPE))),
+                        cursorMark.getString(cursorMark.getColumnIndexOrThrow(BaseRec.KEY_POS_MARKSCANNEDREAL)),
+                        cursorMark.getString(cursorMark.getColumnIndexOrThrow(BaseRec.KEY_POS_MARKBOX))
                 );
                 recContent.getBaseRecContentMarkList().add(baseRecContentMark);
             }
