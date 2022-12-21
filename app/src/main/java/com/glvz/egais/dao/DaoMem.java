@@ -446,25 +446,25 @@ public class DaoMem {
         while(cursor.moveToNext()) {
             invRec.setStatus(BaseRecStatus.valueOf( cursor.getString(cursor.getColumnIndexOrThrow(BaseRec.KEY_STATUS))));
             invRec.setExported(Boolean.parseBoolean( cursor.getString(cursor.getColumnIndexOrThrow(BaseRec.KEY_EXPORTED))));
-
-            // пройтись по строкам и прочитать доп.данные
-            invRec.getRecContentList().clear();
-            // Сначала читаем по всем входным строкам и создать по ним обертки
-            for (DocContentIn contentIn : invRec.getDocContentInList()) {
-                InvContentIn invContentIn = (InvContentIn)contentIn;
-                InvRecContent recContent = new InvRecContent(invContentIn.getPosition());
-                recContent.setContentIn(invContentIn);
-                recContent.setId1c(invContentIn.getNomenId());
-                recContent.setNomenIn(DaoMem.getDaoMem().findNomenInByNomenId(invContentIn.getNomenId()), null);
-                invRec.getRecContentList().add(recContent);
-            }
-
-            // Прочитать доп данные по входным строкам, плюс дополнительные данные по добаленным строкам
-            readLocalDataInvContentAndMerge(invRec);
-
-            Log.v("DaoMem", "readLocalDataInv end contentSize="+invRec.getRecContentList().size());
         }
         cursor.close();
+
+        // пройтись по строкам и прочитать доп.данные
+        invRec.getRecContentList().clear();
+        // Сначала читаем по всем входным строкам и создать по ним обертки
+        for (DocContentIn contentIn : invRec.getDocContentInList()) {
+            InvContentIn invContentIn = (InvContentIn)contentIn;
+            InvRecContent recContent = new InvRecContent(invContentIn.getPosition());
+            recContent.setContentIn(invContentIn);
+            recContent.setId1c(invContentIn.getNomenId());
+            recContent.setNomenIn(DaoMem.getDaoMem().findNomenInByNomenId(invContentIn.getNomenId()), null);
+            invRec.getRecContentList().add(recContent);
+        }
+
+        // Прочитать доп данные по входным строкам, плюс дополнительные данные по добаленным строкам
+        readLocalDataInvContentAndMerge(invRec);
+
+        Log.v("DaoMem", "readLocalDataInv end contentSize="+invRec.getRecContentList().size());
     }
 
     private void readLocalDataInvContentAndMerge(InvRec invRec) {
@@ -535,6 +535,7 @@ public class DaoMem {
                 );
                 recContent.getBaseRecContentMarkList().add(baseRecContentMark);
             }
+            cursorMark.close();
         }
         cursor.close();
     }
