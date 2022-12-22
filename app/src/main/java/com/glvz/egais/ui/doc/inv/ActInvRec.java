@@ -503,7 +503,7 @@ public class ActInvRec extends ActBaseDocRec implements PickMRCCallback{
             irc.setStatus(BaseRecContentStatus.DONE);
             irc.setManualMrc(mrc);
             invRec.getRecContentList().add(irc);
-            DaoMem.getDaoMem().writeLocalDataInvRec(invRec);
+            DaoMem.getDaoMem().saveDbInvRecContent(invRec, irc);
         }
         // переход к карточке этой строки
         pickRec(this, invRec.getDocId(), irc, 0, null, false, false);

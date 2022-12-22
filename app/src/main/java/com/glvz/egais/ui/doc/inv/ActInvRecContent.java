@@ -103,7 +103,7 @@ public class ActInvRecContent extends Activity implements BarcodeReader.BarcodeL
             invRecContent.setStatus(BaseRecContentStatus.DONE);
             invRecContent.setManualMrc(mrc);
             invRec.getRecContentList().add(invRecContent);
-            DaoMem.getDaoMem().writeLocalDataInvRec(invRec);
+            DaoMem.getDaoMem().saveDbInvRecContent(invRec, invRecContent);
         } else {
             invRecContent = irc;
         }
@@ -147,7 +147,8 @@ public class ActInvRecContent extends Activity implements BarcodeReader.BarcodeL
         //13) установить статус документа «в работе»
         resultRecContent.setStatus(BaseRecContentStatus.DONE);
         invRec.setStatus(BaseRecStatus.INPROGRESS);
-        DaoMem.getDaoMem().writeLocalDataInvRec(invRec);
+        DaoMem.getDaoMem().saveDbInvRecContent(invRec, resultRecContent);
+
         return resultRecContent;
     }
 
@@ -196,7 +197,8 @@ public class ActInvRecContent extends Activity implements BarcodeReader.BarcodeL
                             //2) у позиции установить статус «Обработана»
                             invRecContent.setStatus(BaseRecContentStatus.DONE);
                             invRec.setStatus(BaseRecStatus.INPROGRESS);
-                            DaoMem.getDaoMem().writeLocalDataInvRec(invRec);
+                            DaoMem.getDaoMem().saveDbInvRecContent(invRec, invRecContent);
+
                             scannedMarkIn = null;
                             currentState = STATE_SCAN_ANY;
                             edQtyAdd.setText("");
@@ -239,7 +241,8 @@ public class ActInvRecContent extends Activity implements BarcodeReader.BarcodeL
                 invRecContent.setStatus(BaseRecContentStatus.DONE);
                 DaoMem.getDaoMem().writeLocalDataRecContent_ClearAllMarks(invRec.getDocId(), invRecContent);
                 invRecContent.getBaseRecContentMarkList().clear();
-                DaoMem.getDaoMem().writeLocalDataInvRec(invRec);
+                DaoMem.getDaoMem().saveDbInvRecContent(invRec, invRecContent);
+
                 scannedMarkIn = null;
                 currentState = STATE_SCAN_ANY;
                 updateData();
@@ -261,7 +264,7 @@ public class ActInvRecContent extends Activity implements BarcodeReader.BarcodeL
                                 //удалить все марки
                                 DaoMem.getDaoMem().writeLocalDataRecContent_ClearAllMarks(invRec.getDocId(), invRecContent);
                                 invRecContent.getBaseRecContentMarkList().clear();
-                                DaoMem.getDaoMem().writeLocalDataInvRec(invRec);
+                                DaoMem.getDaoMem().saveDbInvRecContent(invRec, invRecContent);
                                 scannedMarkIn = null;
                                 currentState = STATE_SCAN_ANY;
                                 updateData();
@@ -535,7 +538,7 @@ public class ActInvRecContent extends Activity implements BarcodeReader.BarcodeL
             //13) установить статус документа «в работе»
             invRecContent.setStatus(BaseRecContentStatus.DONE);
             invRec.setStatus(BaseRecStatus.INPROGRESS);
-            DaoMem.getDaoMem().writeLocalDataInvRec(invRec);
+            DaoMem.getDaoMem().saveDbInvRecContent(invRec, invRecContent);
             //12) проиграть файл «bottle_one.mp3» - проигрываем файл в самом конце после успешного сохранения записи
             MessageUtils.playSound(R.raw.bottle_one);
             soundPlayed = true;
