@@ -476,6 +476,36 @@ public class DaoMem {
         return result;
     }
 
+    private List<Map<String, Object>> readDbInvRecContentMarks(String contentId) {
+        List<Map<String, Object>> result = null;
+        SQLiteDatabase db = appDbHelper.getReadableDatabase();
+        Cursor cursor = db.query(
+                DaoMem.KEY_INV+CONTENT_MARK,   // The table to query
+                null,             // The array of columns to return (pass null to get all)
+                BaseRec.KEY_DOC_CONTENTID + " = ?",              // The columns for the WHERE clause
+                new String[] { contentId },                              // The values for the WHERE clause
+                null,                   // don't group the rows
+                null,                   // don't filter by row groups
+                BaseColumns._ID + " ASC"               // The sort order
+        );
+        while(cursor.moveToNext()) {
+            if (result == null) {
+                result = new ArrayList<>();
+            }
+            Map<String, Object> record = new HashMap<>();
+            record.put(BaseRec.KEY_DOCID, cursor.getString(cursor.getColumnIndexOrThrow(BaseRec.KEY_DOCID) ));
+            record.put(BaseRec.KEY_DOC_CONTENTID, cursor.getString(cursor.getColumnIndexOrThrow(BaseRec.KEY_DOC_CONTENTID)) );
+            record.put(BaseRec.KEY_DOC_CONTENT_MARKID, cursor.getString(cursor.getColumnIndexOrThrow(BaseRec.KEY_DOC_CONTENT_MARKID)) );
+            record.put(BaseRec.KEY_POS_MARKSCANNED, cursor.getString(cursor.getColumnIndexOrThrow(BaseRec.KEY_POS_MARKSCANNED) ));
+            record.put(BaseRec.KEY_POS_MARKSCANNED_ASTYPE, cursor.getString(cursor.getColumnIndexOrThrow(BaseRec.KEY_POS_MARKSCANNED_ASTYPE) ));
+            record.put(BaseRec.KEY_POS_MARKSCANNEDREAL, cursor.getString(cursor.getColumnIndexOrThrow(BaseRec.KEY_POS_MARKSCANNEDREAL)) );
+            record.put(BaseRec.KEY_POS_MARKBOX, cursor.getString(cursor.getColumnIndexOrThrow(BaseRec.KEY_POS_MARKBOX) ));
+            result.add(record);
+        }
+        cursor.close();
+        return result;
+    }
+
     private void readLocalDataInv(InvRec invRec) {
         Log.v("DaoMem", "readLocalDataInv start");
         Map<String, Object> dbInvRec = readDbInvRec(invRec.getDocId());
@@ -957,29 +987,35 @@ public class DaoMem {
         String contentId = invRec.getDocId()+"_"+recContent.getId1c()+"_"+mrcS;
         values.put(BaseRec.KEY_DOC_CONTENTID, contentId);
 
-        Map<String, Object> dbInvRec = readDbInvRecContent(contentId);
+        Map<String, Object> dbInvRecContent = readDbInvRecContent(contentId);
 
         SQLiteDatabase db = appDbHelper.getWritableDatabase();
-        if (dbInvRec == null) {
+        if (dbInvRecContent == null) {
             db.insert(KEY_INV+CONTENT, null, values);
         } else {
             db.update(KEY_INV+CONTENT, values, BaseRec.KEY_DOC_CONTENTID + " = ?", new String[] { contentId });
         }
-        int deletedRowsMark = db.delete(KEY_INV+CONTENT_MARK, BaseRec.KEY_DOC_CONTENTID + " = ?", new String[] { contentId });
+        if (recContent.getBaseRecContentMarkList().isEmpty()) {
+            int deletedRowsMark = db.delete(KEY_INV + CONTENT_MARK, BaseRec.KEY_DOC_CONTENTID + " = ?", new String[]{contentId});
+        } else {
+            List<Map<String, Object>> dbInvRecContentMarks = readDbInvRecContentMarks(contentId);
 
-        int idx = 1;
-        for (BaseRecContentMark baseRecContentMark : recContent.getBaseRecContentMarkList()) {
-            InvRecContentMark invRecContentMark = (InvRecContentMark)baseRecContentMark;
-            ContentValues valuesMark = new ContentValues();
-            valuesMark.put(BaseRec.KEY_DOCID, invRec.getDocId());
-            valuesMark.put(BaseRec.KEY_DOC_CONTENTID, contentId);
-            valuesMark.put(BaseRec.KEY_DOC_CONTENT_MARKID, contentId+"_"+idx);
-            valuesMark.put(BaseRec.KEY_POS_MARKSCANNED, invRecContentMark.getMarkScanned());
-            valuesMark.put(BaseRec.KEY_POS_MARKSCANNED_ASTYPE, invRecContentMark.getMarkScannedAsType());
-            valuesMark.put(BaseRec.KEY_POS_MARKSCANNEDREAL, invRecContentMark.getMarkScannedReal());
-            valuesMark.put(BaseRec.KEY_POS_MARKBOX, invRecContentMark.getBox());
-            long newContentMarkRowId = db.insert(KEY_INV+CONTENT_MARK, null, valuesMark);
-            idx++;
+            int idx = 1;
+            for (BaseRecContentMark baseRecContentMark : recContent.getBaseRecContentMarkList()) {
+                if (dbInvRecContentMarks == null || idx > dbInvRecContentMarks.size()) {
+                    InvRecContentMark invRecContentMark = (InvRecContentMark) baseRecContentMark;
+                    ContentValues valuesMark = new ContentValues();
+                    valuesMark.put(BaseRec.KEY_DOCID, invRec.getDocId());
+                    valuesMark.put(BaseRec.KEY_DOC_CONTENTID, contentId);
+                    valuesMark.put(BaseRec.KEY_DOC_CONTENT_MARKID, contentId + "_" + idx);
+                    valuesMark.put(BaseRec.KEY_POS_MARKSCANNED, invRecContentMark.getMarkScanned());
+                    valuesMark.put(BaseRec.KEY_POS_MARKSCANNED_ASTYPE, invRecContentMark.getMarkScannedAsType());
+                    valuesMark.put(BaseRec.KEY_POS_MARKSCANNEDREAL, invRecContentMark.getMarkScannedReal());
+                    valuesMark.put(BaseRec.KEY_POS_MARKBOX, invRecContentMark.getBox());
+                    long newContentMarkRowId = db.insert(KEY_INV + CONTENT_MARK, null, valuesMark);
+                }
+                idx++;
+            }
         }
 
         Log.v("DaoMem", "saveDbInvRecContent end");
