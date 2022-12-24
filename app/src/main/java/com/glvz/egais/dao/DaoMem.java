@@ -8,6 +8,7 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteStatement;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
@@ -999,22 +1000,35 @@ public class DaoMem {
             int deletedRowsMark = db.delete(KEY_INV + CONTENT_MARK, BaseRec.KEY_DOC_CONTENTID + " = ?", new String[]{contentId});
         } else {
             List<Map<String, Object>> dbInvRecContentMarks = readDbInvRecContentMarks(contentId);
-
+            String sql = "INSERT INTO " + KEY_INV+CONTENT_MARK + "("+BaseRec.KEY_DOCID+","
+                    +BaseRec.KEY_DOC_CONTENTID+","
+                    +BaseRec.KEY_DOC_CONTENT_MARKID+","
+                    +BaseRec.KEY_POS_MARKSCANNED+","
+                    +BaseRec.KEY_POS_MARKSCANNED_ASTYPE+","
+                    +BaseRec.KEY_POS_MARKSCANNEDREAL+","
+                    +BaseRec.KEY_POS_MARKBOX+") VALUES(?, ?, ?, ?, ?, ?, ?)";
+            SQLiteStatement statement = db.compileStatement(sql);
             int idx = 1;
-            for (BaseRecContentMark baseRecContentMark : recContent.getBaseRecContentMarkList()) {
-                if (dbInvRecContentMarks == null || idx > dbInvRecContentMarks.size()) {
-                    InvRecContentMark invRecContentMark = (InvRecContentMark) baseRecContentMark;
-                    ContentValues valuesMark = new ContentValues();
-                    valuesMark.put(BaseRec.KEY_DOCID, invRec.getDocId());
-                    valuesMark.put(BaseRec.KEY_DOC_CONTENTID, contentId);
-                    valuesMark.put(BaseRec.KEY_DOC_CONTENT_MARKID, contentId + "_" + idx);
-                    valuesMark.put(BaseRec.KEY_POS_MARKSCANNED, invRecContentMark.getMarkScanned());
-                    valuesMark.put(BaseRec.KEY_POS_MARKSCANNED_ASTYPE, invRecContentMark.getMarkScannedAsType());
-                    valuesMark.put(BaseRec.KEY_POS_MARKSCANNEDREAL, invRecContentMark.getMarkScannedReal());
-                    valuesMark.put(BaseRec.KEY_POS_MARKBOX, invRecContentMark.getBox());
-                    long newContentMarkRowId = db.insert(KEY_INV + CONTENT_MARK, null, valuesMark);
+            db.beginTransaction();
+            try {
+                for (BaseRecContentMark baseRecContentMark : recContent.getBaseRecContentMarkList()) {
+                    if (dbInvRecContentMarks == null || idx > dbInvRecContentMarks.size()) {
+                        InvRecContentMark invRecContentMark = (InvRecContentMark) baseRecContentMark;
+                        statement.clearBindings();
+                        statement.bindString(1, invRec.getDocId());
+                        statement.bindString(2, contentId);
+                        statement.bindString(3, contentId + "_" + idx);
+                        statement.bindString(4, invRecContentMark.getMarkScanned());
+                        statement.bindString(5, String.valueOf(invRecContentMark.getMarkScannedAsType()));
+                        statement.bindString(6, invRecContentMark.getMarkScannedReal());
+                        statement.bindString(7, invRecContentMark.getBox());
+                        statement.execute();
+                    }
+                    idx++;
                 }
-                idx++;
+                db.setTransactionSuccessful();
+            } finally {
+                db.endTransaction();
             }
         }
 

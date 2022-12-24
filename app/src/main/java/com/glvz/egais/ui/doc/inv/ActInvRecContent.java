@@ -35,7 +35,10 @@ import com.honeywell.aidc.BarcodeFailureEvent;
 import com.honeywell.aidc.BarcodeReadEvent;
 import com.honeywell.aidc.BarcodeReader;
 
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 import static com.glvz.egais.utils.BarcodeObject.BarCodeType.DATAMATRIX;
 import static com.glvz.egais.utils.BarcodeObject.BarCodeType.PDF417;
@@ -147,10 +150,17 @@ public class ActInvRecContent extends Activity implements BarcodeReader.BarcodeL
         //13) установить статус документа «в работе»
         resultRecContent.setStatus(BaseRecContentStatus.DONE);
         invRec.setStatus(BaseRecStatus.INPROGRESS);
-        DaoMem.getDaoMem().saveDbInvRecContent(invRec, resultRecContent);
+//        DaoMem.getDaoMem().saveDbInvRecContent(invRec, resultRecContent);
 
         return resultRecContent;
     }
+
+    public static void saveDbRecContents(InvRec invRec, List<InvRecContent> recContents) {
+        for (InvRecContent recContent: recContents) {
+            DaoMem.getDaoMem().saveDbInvRecContent(invRec, recContent);
+        }
+    }
+
 
     private void fillActWithNomenIdPosition(NomenIn nomenIn, Double mrc) {
         invRecContent = fillInvRecContent(invRec, nomenIn, mrc);
@@ -471,6 +481,7 @@ public class ActInvRecContent extends Activity implements BarcodeReader.BarcodeL
                 Integer position = null;
                 NomenIn foundNomenIn = null;
                 InvRecContent row = null;
+                List<InvRecContent> recContentsToSave = new ArrayList<>();
                 // для каждой найденной марки выполнить обработку
                 for (MarkIn mark : marksInBox) {
                     // Увеличить на 1 переменную «Числится марок в текущей коробке»
@@ -489,9 +500,22 @@ public class ActInvRecContent extends Activity implements BarcodeReader.BarcodeL
                     }
                     row = ActInvRecContent.findOrAddNomen(invRec, foundNomenIn, mark, barCode);
                     position = Integer.parseInt(row.getPosition());
+
+                    boolean foundRecContentToSave = false;
+                    for (int i=0; i<recContentsToSave.size(); i++) {
+                        if (recContentsToSave.get(i).getNomenIn().getId().equals(foundNomenIn.getId())) {
+                            foundRecContentToSave = true;
+                            break;
+                        }
+                    }
+                    if (!foundRecContentToSave) {
+                        recContentsToSave.add(row);
+                    }
                     // увеличить на 1 переменную «Количество, добавленное по текущей коробке»
                     qtyAddedCurrentBox++;
                 }
+                ActInvRecContent.saveDbRecContents(invRec, recContentsToSave);
+
                 this.currentState = STATE_SCAN_ANY;
                 this.scannedMarkIn = null;
                 if (position != null && foundNomenIn != null) {
