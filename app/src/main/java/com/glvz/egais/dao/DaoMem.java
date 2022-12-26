@@ -1018,10 +1018,26 @@ public class DaoMem {
                         statement.bindString(1, invRec.getDocId());
                         statement.bindString(2, contentId);
                         statement.bindString(3, contentId + "_" + idx);
-                        statement.bindString(4, invRecContentMark.getMarkScanned());
-                        statement.bindString(5, String.valueOf(invRecContentMark.getMarkScannedAsType()));
-                        statement.bindString(6, invRecContentMark.getMarkScannedReal());
-                        statement.bindString(7, invRecContentMark.getBox());
+                        if (invRecContentMark.getMarkScanned() == null) {
+                            statement.bindNull(4);
+                        } else {
+                            statement.bindString(4, invRecContentMark.getMarkScanned());
+                        }
+                        if (invRecContentMark.getMarkScannedAsType() == null) {
+                            statement.bindNull(5);
+                        } else {
+                            statement.bindString(5, String.valueOf(invRecContentMark.getMarkScannedAsType()));
+                        }
+                        if (invRecContentMark.getMarkScannedReal() == null) {
+                            statement.bindNull(6);
+                        } else {
+                            statement.bindString(6, invRecContentMark.getMarkScannedReal());
+                        }
+                        if (invRecContentMark.getBox() == null) {
+                            statement.bindNull(7);
+                        } else {
+                            statement.bindString(7, invRecContentMark.getBox());
+                        }
                         statement.execute();
                     }
                     idx++;
