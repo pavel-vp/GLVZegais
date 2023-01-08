@@ -15,7 +15,6 @@ import com.glvz.egais.model.BaseRecContent;
 import com.glvz.egais.model.BaseRecContentMark;
 import com.glvz.egais.model.BaseRecContentStatus;
 import com.glvz.egais.model.BaseRecStatus;
-import com.glvz.egais.model.income.IncomeRecContent;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -55,6 +54,7 @@ public class DaoDbDoc {
             result = new HashMap<>();
             result.put(BaseRec.KEY_STATUS, BaseRecStatus.valueOf( cursor.getString(cursor.getColumnIndexOrThrow(BaseRec.KEY_STATUS))));
             result.put(BaseRec.KEY_EXPORTED, Boolean.parseBoolean( cursor.getString(cursor.getColumnIndexOrThrow(BaseRec.KEY_EXPORTED))));
+            result.put(BaseRec.KEY_CNTDONE, Integer.parseInt( cursor.getString(cursor.getColumnIndexOrThrow(BaseRec.KEY_CNTDONE))));
         }
         cursor.close();
         return result;
@@ -122,10 +122,11 @@ public class DaoDbDoc {
 
     public void readDbDataDoc(BaseRec baseRec) {
         Log.v("DaoDbDoc", "readDbDataDoc start");
-        Map<String, Object> dbInvRec = readDbDocRec(baseRec.getDocId());
-        if (dbInvRec != null) {
-            baseRec.setStatus((BaseRecStatus) dbInvRec.get(BaseRec.KEY_STATUS));
-            baseRec.setExported((Boolean) dbInvRec.get(BaseRec.KEY_EXPORTED));
+        Map<String, Object> dbRec = readDbDocRec(baseRec.getDocId());
+        if (dbRec != null) {
+            baseRec.setStatus((BaseRecStatus) dbRec.get(BaseRec.KEY_STATUS));
+            baseRec.setExported((Boolean) dbRec.get(BaseRec.KEY_EXPORTED));
+            baseRec.setCntDone((Integer) dbRec.get(BaseRec.KEY_CNTDONE));
         }
 
         // пройтись по строкам и прочитать доп.данные
@@ -133,6 +134,7 @@ public class DaoDbDoc {
         // Сначала читаем по всем входным строкам и создать по ним обертки
         for (DocContentIn docContentIn : baseRec.getDocContentInList()) {
             BaseRecContent recContent = baseRec.buildRecContent(docContentIn);
+            recContent.setNomenIn(DaoMem.getDaoMem().findNomenInByNomenId(recContent.getId1c()), recContent.getBarcode());
             baseRec.getRecContentList().add(recContent);
         }
 
@@ -163,10 +165,10 @@ public class DaoDbDoc {
             int position = Integer.parseInt(cursor.getString(cursor.getColumnIndexOrThrow(BaseRec.KEY_POS_POSITION)));
 
             // Попробовать найти уже созданную строку
-            IncomeRecContent recContent = null;
+            BaseRecContent recContent = null;
             for (BaseRecContent brc : baseRec.getRecContentList()) {
 
-                IncomeRecContent ircTemp = (IncomeRecContent) brc;
+                BaseRecContent ircTemp = (BaseRecContent) brc;
                 if (ircTemp.getPosition() != null && Integer.parseInt(ircTemp.getPosition()) == position) {
                     recContent = ircTemp;
                 }
@@ -235,6 +237,7 @@ public class DaoDbDoc {
         values.put(BaseRec.KEY_EXPORTED, baseRec.isExported() ? "true" : "false");
         values.put(BaseRec.KEY_STATUS, baseRec.getStatus().toString());
         values.put(BaseRec.KEY_DOCID, baseRec.getDocId());
+        values.put(BaseRec.KEY_CNTDONE, baseRec.getCntDone());
         Map<String, Object> dbInvRec = readDbDocRec(baseRec.getDocId());
 
         SQLiteDatabase db = appDbHelper.getWritableDatabase();

@@ -56,9 +56,9 @@ public class MoveRecContentHolder extends DocRecContentHolder {
         }
         tvQty.setText(StringUtils.formatQty(moveRecContent.getContentIn().getQty()));
         if (recContent.getQtyAccepted() != null) {
-            tvQtyAccepted.setText(StringUtils.formatQty(moveRecContent.getQtyAccepted() + addMark ));
+            tvQtyAccepted.setText(StringUtils.formatQty(moveRecContent.getQtyAccepted() + addMark));
         } else {
-            tvQtyAccepted.setText(addMark ==0 ? "" : String.valueOf(addMark));
+            tvQtyAccepted.setText(addMark == 0 ? "" : String.valueOf(addMark));
         }
 
 /*        switch (recContent.getStatus()) {
@@ -86,21 +86,15 @@ public class MoveRecContentHolder extends DocRecContentHolder {
                 tvStatusRow.setTextColor(Color.RED);
             }
         }
-        if (recContent.getNomenIn() != null) {
-            tvNomenId.setText(recContent.getNomenIn().getId());
-            if (recContent.getNomenIn().getCapacity() != null) {
-                tvVolume.setText(StringUtils.formatQty(recContent.getNomenIn().getCapacity()));
-            } else {
-                tvVolume.setText("");
-            }
-            if (recContent.getNomenIn().getAlcVolume() != null) {
-                tvAlc.setText(StringUtils.formatQty(recContent.getNomenIn().getAlcVolume()));
-            } else {
-                tvAlc.setText("");
-            }
+        tvNomenId.setText(recContent.getNomenIn().getId());
+        if (recContent.getNomenIn().getCapacity() != null) {
+            tvVolume.setText(StringUtils.formatQty(recContent.getNomenIn().getCapacity()));
         } else {
-            tvNomenId.setText("");
             tvVolume.setText("");
+        }
+        if (recContent.getNomenIn().getAlcVolume() != null) {
+            tvAlc.setText(StringUtils.formatQty(recContent.getNomenIn().getAlcVolume()));
+        } else {
             tvAlc.setText("");
         }
     }
