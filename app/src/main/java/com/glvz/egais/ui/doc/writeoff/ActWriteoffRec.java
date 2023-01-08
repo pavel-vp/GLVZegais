@@ -12,6 +12,8 @@ import android.widget.ListView;
 import android.widget.TextView;
 import com.glvz.egais.R;
 import com.glvz.egais.dao.DaoMem;
+import com.glvz.egais.daodb.DaoDbInv;
+import com.glvz.egais.daodb.DaoDbWriteOff;
 import com.glvz.egais.integration.model.AlcCodeIn;
 import com.glvz.egais.integration.model.MarkIn;
 import com.glvz.egais.integration.model.NomenIn;
@@ -129,7 +131,7 @@ public class ActWriteoffRec extends ActBaseDocRec {
         if(requestCode == COMMENT_RETCODE ){
             if(resultCode==RESULT_OK){
                 writeoffRec.setComment(i.getData().toString());
-                DaoMem.getDaoMem().writeLocalWriteoffRec(writeoffRec);
+                DaoDbWriteOff.getDaoDbWriteOff().saveDbWriteoffRec(DaoMem.getDaoMem().getShopId(), writeoffRec);
             }
         }
     }
@@ -200,10 +202,9 @@ public class ActWriteoffRec extends ActBaseDocRec {
                         new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
-                                DaoMem.getDaoMem().writeLocalDataWriteoffRec_Clear(writeoffRec);
-                                writeoffRec.removeWriteoffRecContent(info.position+1);
+                                WriteoffRecContent recContent = writeoffRec.removeWriteoffRecContent(info.position+1);
 
-                                DaoMem.getDaoMem().writeLocalWriteoffRec(writeoffRec);
+                                DaoDbWriteOff.getDaoDbWriteOff().removeWriteoffRecContent(DaoMem.getDaoMem().getShopId(), writeoffRec, recContent);
                                 MessageUtils.showToastMessage("Строка документа удалена!");
                                 updateDataWithScroll(info.position >= writeoffRec.getWriteoffRecContentList().size() ? writeoffRec.getWriteoffRecContentList().size() - 1 : info.position);
                             }
@@ -472,7 +473,7 @@ public class ActWriteoffRec extends ActBaseDocRec {
         //13) установить статус документа «в работе»
         resultRecContent.setStatus(BaseRecContentStatus.IN_PROGRESS);
         writeoffRec.setStatus(BaseRecStatus.INPROGRESS);
-        DaoMem.getDaoMem().writeLocalWriteoffRec(writeoffRec);
+        DaoDbWriteOff.getDaoDbWriteOff().saveDbWriteoffRecContent(DaoMem.getDaoMem().getShopId(), writeoffRec, resultRecContent);
         this.currentState = STATE_SCAN_MARK;
         this.scannedMarkIn = null;
         return resultRecContent;
@@ -510,7 +511,7 @@ public class ActWriteoffRec extends ActBaseDocRec {
         //13) установить статус документа «в работе»
         writeoffRecContentLocal.setStatus(BaseRecContentStatus.IN_PROGRESS);
         writeoffRec.setStatus(BaseRecStatus.INPROGRESS);
-        DaoMem.getDaoMem().writeLocalWriteoffRec(writeoffRec);
+        DaoDbWriteOff.getDaoDbWriteOff().saveDbWriteoffRecContent(DaoMem.getDaoMem().getShopId(), writeoffRec, writeoffRecContentLocal);
         this.currentState = STATE_SCAN_MARK;
         this.scannedMarkIn = null;
         updateDataWithScroll(position);

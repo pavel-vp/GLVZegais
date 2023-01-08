@@ -14,6 +14,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 import com.glvz.egais.R;
 import com.glvz.egais.dao.DaoMem;
+import com.glvz.egais.daodb.DaoDbInv;
 import com.glvz.egais.integration.model.AlcCodeIn;
 import com.glvz.egais.integration.model.MarkIn;
 import com.glvz.egais.integration.model.NomenIn;
@@ -516,7 +517,7 @@ public class ActInvRec extends ActBaseDocRec implements PickMRCCallback{
             irc.setStatus(BaseRecContentStatus.DONE);
             irc.setManualMrc(mrc);
             invRec.getRecContentList().add(irc);
-            DaoMem.getDaoMem().saveDbInvRecContent(invRec, irc);
+            DaoDbInv.getDaoDbInv().saveDbInvRecContent(invRec, irc);
         }
         // переход к карточке этой строки
         pickRec(this, invRec.getDocId(), irc, 0, null, false, false);

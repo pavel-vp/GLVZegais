@@ -11,6 +11,7 @@ import android.widget.EditText;
 import android.widget.TextView;
 import com.glvz.egais.R;
 import com.glvz.egais.dao.DaoMem;
+import com.glvz.egais.daodb.DaoDbInv;
 import com.glvz.egais.integration.model.AlcCodeIn;
 import com.glvz.egais.integration.model.MarkIn;
 import com.glvz.egais.integration.model.NomenIn;
@@ -106,7 +107,7 @@ public class ActInvRecContent extends Activity implements BarcodeReader.BarcodeL
             invRecContent.setStatus(BaseRecContentStatus.DONE);
             invRecContent.setManualMrc(mrc);
             invRec.getRecContentList().add(invRecContent);
-            DaoMem.getDaoMem().saveDbInvRecContent(invRec, invRecContent);
+            DaoDbInv.getDaoDbInv().saveDbInvRecContent(invRec, invRecContent);
         } else {
             invRecContent = irc;
         }
@@ -157,7 +158,7 @@ public class ActInvRecContent extends Activity implements BarcodeReader.BarcodeL
 
     public static void saveDbRecContents(InvRec invRec, List<InvRecContent> recContents) {
         for (InvRecContent recContent: recContents) {
-            DaoMem.getDaoMem().saveDbInvRecContent(invRec, recContent);
+            DaoDbInv.getDaoDbInv().saveDbInvRecContent(invRec, recContent);
         }
     }
 
@@ -207,7 +208,7 @@ public class ActInvRecContent extends Activity implements BarcodeReader.BarcodeL
                             //2) у позиции установить статус «Обработана»
                             invRecContent.setStatus(BaseRecContentStatus.DONE);
                             invRec.setStatus(BaseRecStatus.INPROGRESS);
-                            DaoMem.getDaoMem().saveDbInvRecContent(invRec, invRecContent);
+                            DaoDbInv.getDaoDbInv().saveDbInvRecContent(invRec, invRecContent);
 
                             scannedMarkIn = null;
                             currentState = STATE_SCAN_ANY;
@@ -249,9 +250,8 @@ public class ActInvRecContent extends Activity implements BarcodeReader.BarcodeL
                 invRecContent.setQtyAccepted((double) 0);
                 //2) Установить статус позиции «Обработана»
                 invRecContent.setStatus(BaseRecContentStatus.DONE);
-                DaoMem.getDaoMem().writeLocalDataRecContent_ClearAllMarks(invRec.getDocId(), invRecContent);
                 invRecContent.getBaseRecContentMarkList().clear();
-                DaoMem.getDaoMem().saveDbInvRecContent(invRec, invRecContent);
+                DaoDbInv.getDaoDbInv().saveDbInvRecContent(invRec, invRecContent);
 
                 scannedMarkIn = null;
                 currentState = STATE_SCAN_ANY;
@@ -272,9 +272,8 @@ public class ActInvRecContent extends Activity implements BarcodeReader.BarcodeL
                                 //установить статус «Не обработана»
                                 invRecContent.setStatus(BaseRecContentStatus.NOT_ENTERED);
                                 //удалить все марки
-                                DaoMem.getDaoMem().writeLocalDataRecContent_ClearAllMarks(invRec.getDocId(), invRecContent);
                                 invRecContent.getBaseRecContentMarkList().clear();
-                                DaoMem.getDaoMem().saveDbInvRecContent(invRec, invRecContent);
+                                DaoDbInv.getDaoDbInv().saveDbInvRecContent(invRec, invRecContent);
                                 scannedMarkIn = null;
                                 currentState = STATE_SCAN_ANY;
                                 updateData();
@@ -562,7 +561,7 @@ public class ActInvRecContent extends Activity implements BarcodeReader.BarcodeL
             //13) установить статус документа «в работе»
             invRecContent.setStatus(BaseRecContentStatus.DONE);
             invRec.setStatus(BaseRecStatus.INPROGRESS);
-            DaoMem.getDaoMem().saveDbInvRecContent(invRec, invRecContent);
+            DaoDbInv.getDaoDbInv().saveDbInvRecContent(invRec, invRecContent);
             //12) проиграть файл «bottle_one.mp3» - проигрываем файл в самом конце после успешного сохранения записи
             MessageUtils.playSound(R.raw.bottle_one);
             soundPlayed = true;

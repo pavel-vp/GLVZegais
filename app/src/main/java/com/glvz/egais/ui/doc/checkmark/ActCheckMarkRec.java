@@ -13,6 +13,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 import com.glvz.egais.R;
 import com.glvz.egais.dao.DaoMem;
+import com.glvz.egais.daodb.DaoDbCheckMark;
 import com.glvz.egais.integration.model.MarkIn;
 import com.glvz.egais.integration.model.NomenIn;
 import com.glvz.egais.integration.model.doc.checkmark.CheckMarkContentIn;
@@ -258,7 +259,7 @@ public class ActCheckMarkRec extends ActBaseDocRec {
         // установить статус документа «в работе»
         recContent.setStatus(BaseRecContentStatus.IN_PROGRESS);
         checkMarkRec.setStatus(BaseRecStatus.INPROGRESS);
-        DaoMem.getDaoMem().writeLocalDataCheckMarkRec(checkMarkRec);
+        DaoDbCheckMark.getDaoDbCheckMark().saveDbCheckMarkRecContent(checkMarkRec, recContent);
         MessageUtils.playSound(R.raw.bottle_one);
         updateData();
     }
@@ -273,7 +274,7 @@ public class ActCheckMarkRec extends ActBaseDocRec {
 
         recContent.setStatus(BaseRecContentStatus.IN_PROGRESS);
         checkMarkRec.setStatus(BaseRecStatus.INPROGRESS);
-        DaoMem.getDaoMem().writeLocalDataCheckMarkRec(checkMarkRec);
+        DaoDbCheckMark.getDaoDbCheckMark().saveDbCheckMarkRecContent(checkMarkRec, recContent);
         updateData();
 
         MessageUtils.showModalMessage(this, "Внимание!", "Выявлена неучтенная марка. Отложите бутылку, продавать на кассе ее нельзя до особого указания. Продолжайте сканированием следующей марки.");

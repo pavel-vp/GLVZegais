@@ -12,6 +12,7 @@ import android.widget.CheckBox;
 import android.widget.ListView;
 import com.glvz.egais.R;
 import com.glvz.egais.dao.DaoMem;
+import com.glvz.egais.daodb.DaoDbDoc;
 import com.glvz.egais.integration.model.NomenIn;
 import com.glvz.egais.model.BaseRecContent;
 import com.glvz.egais.model.BaseRecContentMark;
@@ -175,7 +176,7 @@ public class ActIncomeCigaRec extends ActBaseDocRec {
 
                     // Статус данной ТТН перевести в состояние “Идет приемка”
                     incomeRec.setStatus(BaseRecStatus.INPROGRESS);
-                    DaoMem.getDaoMem().writeLocalDataBaseRec(incomeRec);
+                    DaoDbDoc.getDaoDbDoc().saveDbDocRecContent(incomeRec, incomeRecContent);
                     pickRec(this, incomeRec.getDocId(), incomeRecContent, 1, barcode, false, true);
 
                 } else {

@@ -86,15 +86,21 @@ public class MoveRecContentHolder extends DocRecContentHolder {
                 tvStatusRow.setTextColor(Color.RED);
             }
         }
-        tvNomenId.setText(recContent.getNomenIn().getId());
-        if (recContent.getNomenIn().getCapacity() != null) {
-            tvVolume.setText(StringUtils.formatQty(recContent.getNomenIn().getCapacity() ));
+        if (recContent.getNomenIn() != null) {
+            tvNomenId.setText(recContent.getNomenIn().getId());
+            if (recContent.getNomenIn().getCapacity() != null) {
+                tvVolume.setText(StringUtils.formatQty(recContent.getNomenIn().getCapacity()));
+            } else {
+                tvVolume.setText("");
+            }
+            if (recContent.getNomenIn().getAlcVolume() != null) {
+                tvAlc.setText(StringUtils.formatQty(recContent.getNomenIn().getAlcVolume()));
+            } else {
+                tvAlc.setText("");
+            }
         } else {
+            tvNomenId.setText("");
             tvVolume.setText("");
-        }
-        if (recContent.getNomenIn().getAlcVolume() != null) {
-            tvAlc.setText(StringUtils.formatQty(recContent.getNomenIn().getAlcVolume() ));
-        } else {
             tvAlc.setText("");
         }
     }

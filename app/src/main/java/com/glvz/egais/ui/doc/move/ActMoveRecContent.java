@@ -9,6 +9,7 @@ import android.widget.Button;
 import android.widget.TextView;
 import com.glvz.egais.R;
 import com.glvz.egais.dao.DaoMem;
+import com.glvz.egais.daodb.DaoDbDoc;
 import com.glvz.egais.integration.model.AlcCodeIn;
 import com.glvz.egais.integration.model.MarkIn;
 import com.glvz.egais.integration.model.NomenIn;
@@ -120,10 +121,10 @@ public class ActMoveRecContent extends Activity implements BarcodeReader.Barcode
                                 //  «Количество факт» = 0; в позиции удалить все марки; статус задания = «в работе».
                                 moveRecContent.setQtyAccepted((double) 0);
                                 moveRecContent.setStatus(BaseRecContentStatus.NOT_ENTERED);
-                                DaoMem.getDaoMem().writeLocalDataRecContent_ClearAllMarks(moveRec.getDocId(), moveRecContent);
+                                DaoDbDoc.getDaoDbDoc().writeLocalDataRecContent_ClearAllMarks(moveRec.getDocId(), moveRecContent);
                                 moveRecContent.getBaseRecContentMarkList().clear();
                                 moveRec.setStatus(BaseRecStatus.NEW);
-                                DaoMem.getDaoMem().writeLocalDataBaseRec(moveRec);
+                                DaoDbDoc.getDaoDbDoc().saveDbDocRecContent(moveRec, moveRecContent);
                                 scannedMarkIn = null;
                                 currentState = STATE_SCAN_MARK;
                                 updateData();
@@ -141,7 +142,7 @@ public class ActMoveRecContent extends Activity implements BarcodeReader.Barcode
         }
         //  Текущую позицию отметить как выполненную
         moveRecContent.setStatus(BaseRecContentStatus.DONE);
-        DaoMem.getDaoMem().writeLocalDataBaseRec(moveRec);
+        DaoDbDoc.getDaoDbDoc().saveDbDocRecContent(moveRec, moveRecContent);
         // искать следующую не выполненную товарную позицию задания
         MoveRecContent nextRecContent = (MoveRecContent) moveRec.tryGetNextRecContent();
         if (nextRecContent != null) {
@@ -153,7 +154,7 @@ public class ActMoveRecContent extends Activity implements BarcodeReader.Barcode
         } else {
             // если не найдена: статус задания = Выполнено, перейти к форме «Карточка задания на расход»
             moveRec.setStatus(BaseRecStatus.DONE);
-            DaoMem.getDaoMem().writeLocalDataBaseRec(moveRec);
+            DaoDbDoc.getDaoDbDoc().saveDbDocRec(moveRec);
             this.finish();
         }
     }
@@ -304,7 +305,7 @@ public class ActMoveRecContent extends Activity implements BarcodeReader.Barcode
         //13) установить статус документа «в работе»
         moveRecContent.setStatus(BaseRecContentStatus.IN_PROGRESS);
         moveRec.setStatus(BaseRecStatus.INPROGRESS);
-        DaoMem.getDaoMem().writeLocalDataBaseRec(moveRec);
+        DaoDbDoc.getDaoDbDoc().saveDbDocRecContent(moveRec, moveRecContent);
         this.currentState = STATE_SCAN_MARK;
         this.scannedMarkIn = null;
         updateData();

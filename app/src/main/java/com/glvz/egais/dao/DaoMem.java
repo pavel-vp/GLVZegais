@@ -1,65 +1,85 @@
 package com.glvz.egais.dao;
 
 import android.app.Activity;
-import android.content.ContentValues;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteStatement;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
-import android.provider.BaseColumns;
 import android.support.v4.content.FileProvider;
 import android.util.Log;
+
 import com.glvz.egais.BuildConfig;
 import com.glvz.egais.MainApp;
 import com.glvz.egais.R;
 import com.glvz.egais.daodb.AppDbHelper;
-import com.glvz.egais.integration.model.doc.DocContentIn;
+import com.glvz.egais.daodb.DaoDbCheckMark;
+import com.glvz.egais.daodb.DaoDbDoc;
+import com.glvz.egais.daodb.DaoDbFindMark;
+import com.glvz.egais.daodb.DaoDbInv;
+import com.glvz.egais.daodb.DaoDbWriteOff;
+import com.glvz.egais.integration.model.AlcCodeIn;
+import com.glvz.egais.integration.model.CommandIn;
+import com.glvz.egais.integration.model.MarkIn;
+import com.glvz.egais.integration.model.NomenIn;
+import com.glvz.egais.integration.model.PostIn;
+import com.glvz.egais.integration.model.SetupFtp;
+import com.glvz.egais.integration.model.ShopIn;
+import com.glvz.egais.integration.model.UserIn;
 import com.glvz.egais.integration.model.doc.checkmark.CheckMarkContentIn;
 import com.glvz.egais.integration.model.doc.checkmark.CheckMarkIn;
 import com.glvz.egais.integration.model.doc.checkmark.CheckMarkMark;
-import com.glvz.egais.integration.model.doc.findmark.FindMarkContentIn;
 import com.glvz.egais.integration.model.doc.findmark.FindMarkIn;
 import com.glvz.egais.integration.model.doc.income.IncomeContentBoxTreeIn;
 import com.glvz.egais.integration.model.doc.income.IncomeContentIn;
 import com.glvz.egais.integration.model.doc.income.IncomeContentMarkIn;
 import com.glvz.egais.integration.model.doc.income.IncomeIn;
-import com.glvz.egais.integration.model.doc.inv.InvContentIn;
 import com.glvz.egais.integration.model.doc.inv.InvIn;
 import com.glvz.egais.integration.model.doc.move.MoveIn;
 import com.glvz.egais.integration.sdcard.Integration;
 import com.glvz.egais.integration.sdcard.IntegrationSDCard;
-import com.glvz.egais.integration.model.*;
 import com.glvz.egais.integration.wifi.SyncWiFiFtp;
-import com.glvz.egais.model.*;
+import com.glvz.egais.model.BaseRec;
+import com.glvz.egais.model.BaseRecContent;
+import com.glvz.egais.model.BaseRecContentMark;
+import com.glvz.egais.model.BaseRecContentStatus;
 import com.glvz.egais.model.checkmark.CheckMarkRec;
 import com.glvz.egais.model.checkmark.CheckMarkRecContent;
 import com.glvz.egais.model.checkmark.CheckMarkRecContentMark;
 import com.glvz.egais.model.findmark.FindMarkRec;
 import com.glvz.egais.model.findmark.FindMarkRecContent;
-import com.glvz.egais.model.income.*;
+import com.glvz.egais.model.income.IncomeRec;
+import com.glvz.egais.model.income.IncomeRecContent;
 import com.glvz.egais.model.inv.InvRec;
 import com.glvz.egais.model.inv.InvRecContent;
-import com.glvz.egais.model.inv.InvRecContentMark;
 import com.glvz.egais.model.move.MoveRec;
 import com.glvz.egais.model.move.MoveRecContent;
 import com.glvz.egais.model.photo.PhotoRec;
 import com.glvz.egais.model.writeoff.WriteoffRec;
 import com.glvz.egais.model.writeoff.WriteoffRecContent;
-import com.glvz.egais.model.writeoff.WriteoffRecContentMark;
 import com.glvz.egais.service.CommandCall;
 import com.glvz.egais.service.CommandFinishCallback;
 import com.glvz.egais.utils.BarcodeObject;
 import com.glvz.egais.utils.MessageUtils;
 import com.glvz.egais.utils.StringUtils;
 
-import java.io.*;
-import java.util.*;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 public class DaoMem {
 
@@ -69,6 +89,7 @@ public class DaoMem {
     public static final String KEY_CHECKMARK = "checkmark";
     public static final String KEY_FINDMARK = "findmark";
     public static final String KEY_INV = "inv";
+    public static final String KEY_DOC = "doc";
     public static final String CONTENT = "_content";
     public static final String CONTENT_MARK = "_content_mark";
 
@@ -223,7 +244,7 @@ public class DaoMem {
         mapIncomeRec = readIncomeRec();
         mapMoveRec = readMoveRec();
         mapCheckMarkRec = readCheckMarkRec();
-        mapWriteoffRec = readWriteoffRec(shopId);
+        mapWriteoffRec = DaoDbWriteOff.getDaoDbWriteOff().readWriteoffRecList(shopId);
         mapPhotoRec = readPhotoRec(shopId);
         mapFindMarkRec = readFindMarkRec();
         mapInvRec = readInvRec();
@@ -238,7 +259,7 @@ public class DaoMem {
 
         for (MoveIn moveIn : listMoveIn) {
             MoveRec moveRec = new MoveRec(moveIn.getDocId(), moveIn);
-            readLocalData(moveRec);
+            DaoDbDoc.getDaoDbDoc().readDbDataDoc(moveRec);
             map.put(moveIn.getDocId(), moveRec);
         }
 
@@ -250,22 +271,8 @@ public class DaoMem {
 
         for (CheckMarkIn checkMarkIn : listCheckMarkIn) {
             CheckMarkRec rec = new CheckMarkRec(checkMarkIn.getDocId(), checkMarkIn);
-            readLocalDataCheckMark(rec);
+            DaoDbCheckMark.getDaoDbCheckMark().readDbDataCheckMark(rec);
             map.put(checkMarkIn.getDocId(), rec);
-        }
-
-        return map;
-    }
-
-    private Map<String,WriteoffRec> readWriteoffRec(String shopId) {
-        Map<String, WriteoffRec> map = new HashMap<>();
-
-        Set<String> docIds = sharedPreferences.getStringSet(KEY_WRITEOFF+"_"+shopId, Collections.<String>emptySet());
-
-        for (String docId : docIds ) {
-            WriteoffRec writeoffRec = new WriteoffRec(docId);
-            readLocalDataWriteoff(writeoffRec);
-            map.put(writeoffRec.getDocId(), writeoffRec);
         }
 
         return map;
@@ -328,7 +335,7 @@ public class DaoMem {
 
         for (FindMarkIn findMarkIn : listFindMarkIn) {
             FindMarkRec findMarkRec = new FindMarkRec(findMarkIn.getDocId(), findMarkIn);
-            readLocalDataFindMark(findMarkRec);
+            DaoDbFindMark.getDaoDbFindMark().readDbDataFindMark(findMarkRec);
             map.put(findMarkRec.getDocId(), findMarkRec);
         }
 
@@ -340,7 +347,7 @@ public class DaoMem {
 
         for (IncomeIn incomeIn : listIncomeIn) {
             IncomeRec incomeRec = new IncomeRec(incomeIn.getWbRegId(), incomeIn);
-            readLocalData(incomeRec);
+            DaoDbDoc.getDaoDbDoc().readDbDataDoc(incomeRec);
             map.put(incomeIn.getWbRegId(), incomeRec);
         }
 
@@ -351,320 +358,13 @@ public class DaoMem {
 
         for (InvIn invIn : listInvIn) {
             InvRec invRec = new InvRec(invIn.getDocId(), invIn);
-            readLocalDataInv(invRec);
+            DaoDbInv.getDaoDbInv().readDbDataInv(invRec);
             map.put(invIn.getDocId(), invRec);
         }
 
         return map;
     }
 
-    private void readLocalData(BaseRec baseRec) {
-        baseRec.setCntDone(sharedPreferences.getInt(BaseRec.KEY_CNTDONE + "_" + baseRec.getDocId() + "_", 0));
-        baseRec.setStatus(BaseRecStatus.valueOf(sharedPreferences.getString(BaseRec.KEY_STATUS + "_" + baseRec.getDocId() + "_", BaseRecStatus.NEW.toString())));
-        baseRec.setExported(sharedPreferences.getBoolean(BaseRec.KEY_EXPORTED + "_" + baseRec.getDocId() + "_", false));
-        // пройтись по строкам и прочитать доп.данные
-        baseRec.getRecContentList().clear();
-        for (DocContentIn docContentIn : baseRec.getDocContentInList()) {
-            BaseRecContent recContent = baseRec.buildRecContent(docContentIn);
-            // прочитать данные по строке локальные
-            recContent.setId1c(sharedPreferences.getString(BaseRec.KEY_POS_ID1C + "_" + baseRec.getDocId() + "_" + recContent.getPosition(), null));
-            String barcode = sharedPreferences.getString(BaseRec.KEY_POS_BARCODE + "_" + baseRec.getDocId() + "_" + recContent.getPosition(), null);
-            recContent.setNomenIn(dictionary.findNomenById(recContent.getId1c()), barcode);
-            recContent.setStatus(BaseRecContentStatus.valueOf(
-                    sharedPreferences.getString(BaseRec.KEY_POS_STATUS + "_" + baseRec.getDocId() + "_" + recContent.getPosition(), BaseRecContentStatus.NOT_ENTERED.toString())));
-            float qty = sharedPreferences.getFloat(BaseRec.KEY_POS_QTYACCEPTED + "_" + baseRec.getDocId() + "_" + recContent.getPosition(), 0);
-            if (qty != 0) {
-                recContent.setQtyAccepted(Double.valueOf(qty));
-            }
-            int cnt = sharedPreferences.getInt(BaseRec.KEY_POS_MARKSCANNED_CNT + "_" + baseRec.getDocId() + "_" + recContent.getPosition(), 0);
-            if (cnt > 0) {
-                for (int i = 1; i <= cnt; i++) {
-                    String mark = sharedPreferences.getString(BaseRec.KEY_POS_MARKSCANNED + "_" + baseRec.getDocId() + "_" + recContent.getPosition() + "_" + i, null);
-                    int typeAs = sharedPreferences.getInt(BaseRec.KEY_POS_MARKSCANNED_ASTYPE + "_" + baseRec.getDocId() + "_" + recContent.getPosition() + "_" + i, 0);
-                    String realMark = sharedPreferences.getString(BaseRec.KEY_POS_MARKSCANNEDREAL + "_" + baseRec.getDocId() + "_" + recContent.getPosition() + "_" + i, null);
-                    recContent.getBaseRecContentMarkList().add(new BaseRecContentMark(mark, typeAs, realMark));
-                }
-            }
-            baseRec.getRecContentList().add(recContent);
-        }
-    }
-
-    private void readLocalDataWriteoff(WriteoffRec writeoffRec) {
-        writeoffRec.setDocNum(sharedPreferences.getString(KEY_WRITEOFF + "_" + WriteoffRec.KEY_DOCNUM + "_" + writeoffRec.getDocId() + "_", ""));
-        writeoffRec.setDateStr(sharedPreferences.getString(KEY_WRITEOFF + "_" + WriteoffRec.KEY_DATE + "_" + writeoffRec.getDocId() + "_", ""));
-        writeoffRec.setTypeDoc(sharedPreferences.getString(KEY_WRITEOFF + "_" + WriteoffRec.KEY_TYPEDOC + "_" + writeoffRec.getDocId() + "_", ""));
-        writeoffRec.setSkladId(sharedPreferences.getString(KEY_WRITEOFF + "_" + WriteoffRec.KEY_SKLADID + "_" + writeoffRec.getDocId() + "_", ""));
-        writeoffRec.setSkladName(sharedPreferences.getString(KEY_WRITEOFF + "_" + WriteoffRec.KEY_SKLADNAME + "_" + writeoffRec.getDocId() + "_", ""));
-        writeoffRec.setComment(sharedPreferences.getString(KEY_WRITEOFF + "_" + WriteoffRec.KEY_COMMENT + "_" + writeoffRec.getDocId() + "_", ""));
-        int contentSize = sharedPreferences.getInt(KEY_WRITEOFF + "_" + WriteoffRec.KEY_CONTENT_SIZE + "_" + writeoffRec.getDocId() + "_", 0);
-        for (int i = 1; i<= contentSize; i++) {
-            WriteoffRecContent recContent = readLocalDataWriteoffContent(writeoffRec, i);
-            writeoffRec.getRecContentList().add(recContent);
-        }
-    }
-
-    private WriteoffRecContent readLocalDataWriteoffContent(WriteoffRec writeoffRec, int position) {
-
-        WriteoffRecContent recContent = new WriteoffRecContent(String.valueOf(position), null);
-
-        String id1c = sharedPreferences.getString(KEY_WRITEOFF + "_" + BaseRec.KEY_POS_ID1C+"_"+writeoffRec.getDocId()+"_"+position, "");
-        recContent.setId1c(id1c);
-        String barcode = sharedPreferences.getString(KEY_WRITEOFF + "_" + BaseRec.KEY_POS_BARCODE+"_"+writeoffRec.getDocId()+"_"+position, "");
-        recContent.setNomenIn(findNomenInByNomenId(id1c), barcode);
-
-        String posStatus = sharedPreferences.getString(KEY_WRITEOFF + "_" + BaseRec.KEY_POS_STATUS+"_"+writeoffRec.getDocId()+"_"+position, BaseRecContentStatus.IN_PROGRESS.toString());
-        recContent.setStatus(BaseRecContentStatus.valueOf(posStatus));
-
-        float qtyAccepted = sharedPreferences.getFloat(KEY_WRITEOFF + "_" + BaseRec.KEY_POS_QTYACCEPTED+"_"+writeoffRec.getDocId()+"_"+position, 0);
-        recContent.setQtyAccepted(Double.valueOf(qtyAccepted));
-
-        int markScannedSize = sharedPreferences.getInt(KEY_WRITEOFF + "_" + BaseRec.KEY_POS_MARKSCANNED_CNT + "_"+writeoffRec.getDocId()+"_"+position, 0);
-        for (int idx = 1; idx <= markScannedSize; idx++) {
-            WriteoffRecContentMark writeoffRecContentMark = new WriteoffRecContentMark(
-                sharedPreferences.getString(KEY_WRITEOFF + "_" + BaseRec.KEY_POS_MARKSCANNED + "_"+writeoffRec.getDocId()+"_"+position+"_"+idx, ""),
-                sharedPreferences.getInt(KEY_WRITEOFF + "_" + BaseRec.KEY_POS_MARKSCANNED_ASTYPE + "_"+writeoffRec.getDocId()+"_"+position+"_"+idx, 0),
-                sharedPreferences.getString(KEY_WRITEOFF + "_" + BaseRec.KEY_POS_MARKSCANNEDREAL + "_"+writeoffRec.getDocId()+"_"+position+"_"+idx, ""),
-                sharedPreferences.getString(KEY_WRITEOFF + "_" + BaseRec.KEY_POS_MARKBOX + "_"+writeoffRec.getDocId()+"_"+position+"_"+idx, "")
-            );
-            recContent.getBaseRecContentMarkList().add(writeoffRecContentMark);
-        }
-        return recContent;
-    }
-
-    private Map<String, Object> readDbInvRec(String docId) {
-        Map<String, Object> result = null;
-        SQLiteDatabase db = appDbHelper.getReadableDatabase();
-        Cursor cursor = db.query(
-                DaoMem.KEY_INV,   // The table to query
-                null,             // The array of columns to return (pass null to get all)
-                BaseRec.KEY_DOCID + " = ?",              // The columns for the WHERE clause
-                new String[] { docId },                              // The values for the WHERE clause
-                null,                   // don't group the rows
-                null,                   // don't filter by row groups
-                BaseColumns._ID + " ASC"               // The sort order
-        );
-        while(cursor.moveToNext()) {
-            result = new HashMap<>();
-            result.put(BaseRec.KEY_STATUS, BaseRecStatus.valueOf( cursor.getString(cursor.getColumnIndexOrThrow(BaseRec.KEY_STATUS))));
-            result.put(BaseRec.KEY_EXPORTED, Boolean.parseBoolean( cursor.getString(cursor.getColumnIndexOrThrow(BaseRec.KEY_EXPORTED))));
-        }
-        cursor.close();
-        return result;
-    }
-
-    private Map<String, Object> readDbInvRecContent(String contentId) {
-        Map<String, Object> result = null;
-        SQLiteDatabase db = appDbHelper.getReadableDatabase();
-        Cursor cursor = db.query(
-                DaoMem.KEY_INV+CONTENT,   // The table to query
-                null,             // The array of columns to return (pass null to get all)
-                BaseRec.KEY_DOC_CONTENTID + " = ?",              // The columns for the WHERE clause
-                new String[] { contentId },                              // The values for the WHERE clause
-                null,                   // don't group the rows
-                null,                   // don't filter by row groups
-                BaseColumns._ID + " ASC"               // The sort order
-        );
-        while(cursor.moveToNext()) {
-            result = new HashMap<>();
-            result.put(BaseRec.KEY_POS_ID1C, cursor.getString(cursor.getColumnIndexOrThrow(BaseRec.KEY_POS_ID1C)));
-            result.put(BaseRec.KEY_POS_BARCODE, cursor.getString(cursor.getColumnIndexOrThrow(BaseRec.KEY_POS_BARCODE)));
-            result.put(BaseRec.KEY_POS_STATUS, cursor.getString(cursor.getColumnIndexOrThrow(BaseRec.KEY_POS_STATUS)));
-            result.put(BaseRec.KEY_POS_QTYACCEPTED, Float.parseFloat(cursor.getString(cursor.getColumnIndexOrThrow(BaseRec.KEY_POS_QTYACCEPTED))));
-            result.put(BaseRec.KEY_POS_MANUAL_MRC, Float.parseFloat(cursor.getString(cursor.getColumnIndexOrThrow(BaseRec.KEY_POS_MANUAL_MRC))));
-            result.put(BaseRec.KEY_DOC_CONTENTID, cursor.getString(cursor.getColumnIndexOrThrow(BaseRec.KEY_DOC_CONTENTID)));
-        }
-        cursor.close();
-        return result;
-    }
-
-    private List<Map<String, Object>> readDbInvRecContentMarks(String contentId) {
-        List<Map<String, Object>> result = null;
-        SQLiteDatabase db = appDbHelper.getReadableDatabase();
-        Cursor cursor = db.query(
-                DaoMem.KEY_INV+CONTENT_MARK,   // The table to query
-                null,             // The array of columns to return (pass null to get all)
-                BaseRec.KEY_DOC_CONTENTID + " = ?",              // The columns for the WHERE clause
-                new String[] { contentId },                              // The values for the WHERE clause
-                null,                   // don't group the rows
-                null,                   // don't filter by row groups
-                BaseColumns._ID + " ASC"               // The sort order
-        );
-        while(cursor.moveToNext()) {
-            if (result == null) {
-                result = new ArrayList<>();
-            }
-            Map<String, Object> record = new HashMap<>();
-            record.put(BaseRec.KEY_DOCID, cursor.getString(cursor.getColumnIndexOrThrow(BaseRec.KEY_DOCID) ));
-            record.put(BaseRec.KEY_DOC_CONTENTID, cursor.getString(cursor.getColumnIndexOrThrow(BaseRec.KEY_DOC_CONTENTID)) );
-            record.put(BaseRec.KEY_DOC_CONTENT_MARKID, cursor.getString(cursor.getColumnIndexOrThrow(BaseRec.KEY_DOC_CONTENT_MARKID)) );
-            record.put(BaseRec.KEY_POS_MARKSCANNED, cursor.getString(cursor.getColumnIndexOrThrow(BaseRec.KEY_POS_MARKSCANNED) ));
-            record.put(BaseRec.KEY_POS_MARKSCANNED_ASTYPE, cursor.getString(cursor.getColumnIndexOrThrow(BaseRec.KEY_POS_MARKSCANNED_ASTYPE) ));
-            record.put(BaseRec.KEY_POS_MARKSCANNEDREAL, cursor.getString(cursor.getColumnIndexOrThrow(BaseRec.KEY_POS_MARKSCANNEDREAL)) );
-            record.put(BaseRec.KEY_POS_MARKBOX, cursor.getString(cursor.getColumnIndexOrThrow(BaseRec.KEY_POS_MARKBOX) ));
-            result.add(record);
-        }
-        cursor.close();
-        return result;
-    }
-
-    private void readLocalDataInv(InvRec invRec) {
-        Log.v("DaoMem", "readLocalDataInv start");
-        Map<String, Object> dbInvRec = readDbInvRec(invRec.getDocId());
-        if (dbInvRec != null) {
-            invRec.setStatus((BaseRecStatus) dbInvRec.get(BaseRec.KEY_STATUS));
-            invRec.setExported((Boolean) dbInvRec.get(BaseRec.KEY_EXPORTED));
-        }
-
-        // пройтись по строкам и прочитать доп.данные
-        invRec.getRecContentList().clear();
-        // Сначала читаем по всем входным строкам и создать по ним обертки
-        for (DocContentIn contentIn : invRec.getDocContentInList()) {
-            InvContentIn invContentIn = (InvContentIn)contentIn;
-            InvRecContent recContent = new InvRecContent(invContentIn.getPosition());
-            recContent.setContentIn(invContentIn);
-            recContent.setId1c(invContentIn.getNomenId());
-            recContent.setNomenIn(DaoMem.getDaoMem().findNomenInByNomenId(invContentIn.getNomenId()), null);
-            invRec.getRecContentList().add(recContent);
-        }
-
-        // Прочитать доп данные по входным строкам, плюс дополнительные данные по добаленным строкам
-        readLocalDataInvContentAndMerge(invRec);
-
-        Log.v("DaoMem", "readLocalDataInv end contentSize="+invRec.getRecContentList().size());
-    }
-
-    private void readLocalDataInvContentAndMerge(InvRec invRec) {
-        SQLiteDatabase db = appDbHelper.getReadableDatabase();
-        Cursor cursor = db.query(
-                DaoMem.KEY_INV+CONTENT,   // The table to query
-                null,             // The array of columns to return (pass null to get all)
-                BaseRec.KEY_DOCID + " = ?",              // The columns for the WHERE clause
-                new String[] { invRec.getDocId() },                              // The values for the WHERE clause
-                null,                   // don't group the rows
-                null,                   // don't filter by row groups
-                BaseColumns._ID + " ASC"               // The sort order
-        );
-
-        while(cursor.moveToNext()) {
-            String id1c = cursor.getString(cursor.getColumnIndexOrThrow(BaseRec.KEY_POS_ID1C));
-            String barcode = cursor.getString(cursor.getColumnIndexOrThrow(BaseRec.KEY_POS_BARCODE));
-            String posStatus = cursor.getString(cursor.getColumnIndexOrThrow(BaseRec.KEY_POS_STATUS));
-            float qtyAccepted = Float.parseFloat(cursor.getString(cursor.getColumnIndexOrThrow(BaseRec.KEY_POS_QTYACCEPTED)));
-            float manualMrcFload = Float.parseFloat(cursor.getString(cursor.getColumnIndexOrThrow(BaseRec.KEY_POS_MANUAL_MRC)));
-            String docContentId = cursor.getString(cursor.getColumnIndexOrThrow(BaseRec.KEY_DOC_CONTENTID));
-
-            Double manualMrc = manualMrcFload == 0 ? null : (double) manualMrcFload;
-
-            // Попробовать найти уже созданную строку
-            InvRecContent recContent = null;
-            int maxPos = 0;
-            for (BaseRecContent brc : invRec.getRecContentList()) {
-
-                InvRecContent ircTemp = (InvRecContent) brc;
-                if (ircTemp.getId1c() != null &&
-                        ircTemp.getId1c().equals(id1c) &&
-                        (manualMrc == null ||  // не указана ручная введенная МРЦ
-                                ircTemp.getContentIn() != null && ircTemp.getContentIn().getMrc() != null && ircTemp.getContentIn().getMrc().equals(manualMrc)  // или она равна искомой
-                        )
-                ) {
-                    recContent = ircTemp;
-                }
-                maxPos = Math.max(maxPos, Integer.parseInt(ircTemp.getPosition()));
-            }
-            // Если записи такой нет - то создать ее и добавить (вычислив новую позицию как максимум +1)
-            if (recContent == null) {
-                recContent = new InvRecContent(String.valueOf(maxPos + 1));
-                invRec.getRecContentList().add(recContent);
-            }
-            recContent.setId1c(id1c);
-            recContent.setNomenIn(findNomenInByNomenId(id1c), barcode);
-            recContent.setStatus(BaseRecContentStatus.valueOf(posStatus));
-            recContent.setQtyAccepted((double) qtyAccepted);
-            recContent.setManualMrc(manualMrc);
-
-            Cursor cursorMark = db.query(
-                    DaoMem.KEY_INV+CONTENT_MARK,   // The table to query
-                    null,             // The array of columns to return (pass null to get all)
-                    BaseRec.KEY_DOC_CONTENTID + " = ?",              // The columns for the WHERE clause
-                    new String[] { docContentId },                              // The values for the WHERE clause
-                    null,                   // don't group the rows
-                    null,                   // don't filter by row groups
-                    BaseColumns._ID + " ASC"               // The sort order
-            );
-
-            while(cursorMark.moveToNext()) {
-                InvRecContentMark baseRecContentMark = new InvRecContentMark(
-                        cursorMark.getString(cursorMark.getColumnIndexOrThrow(BaseRec.KEY_POS_MARKSCANNED)),
-                        Integer.parseInt(cursorMark.getString(cursorMark.getColumnIndexOrThrow(BaseRec.KEY_POS_MARKSCANNED_ASTYPE))),
-                        cursorMark.getString(cursorMark.getColumnIndexOrThrow(BaseRec.KEY_POS_MARKSCANNEDREAL)),
-                        cursorMark.getString(cursorMark.getColumnIndexOrThrow(BaseRec.KEY_POS_MARKBOX))
-                );
-                recContent.getBaseRecContentMarkList().add(baseRecContentMark);
-            }
-            cursorMark.close();
-        }
-        cursor.close();
-    }
-
-    private void readLocalDataCheckMark(CheckMarkRec rec) {
-        rec.setExported(sharedPreferences.getBoolean(KEY_CHECKMARK + "_" + BaseRec.KEY_EXPORTED + "_" + rec.getDocId() + "_", false));
-        rec.setStatus(BaseRecStatus.valueOf(sharedPreferences.getString(KEY_CHECKMARK + "_" + BaseRec.KEY_STATUS + "_" + rec.getDocId() + "_", BaseRecStatus.NEW.toString())));
-        // пройтись по строкам и прочитать доп.данные
-        rec.getRecContentList().clear();
-        for (DocContentIn docContentIn : rec.getDocContentInList()) {
-            CheckMarkRecContent recContent = (CheckMarkRecContent) rec.buildRecContent(docContentIn);
-            String nomenId = ((CheckMarkContentIn)docContentIn).getNomenId();
-            recContent.setNomenIn(findNomenInByNomenId(nomenId), null);
-
-            // прочитать данные по строке локальные
-            float qty = sharedPreferences.getFloat(KEY_CHECKMARK + "_" + BaseRec.KEY_POS_QTYACCEPTED + "_" + rec.getDocId() + "_" + recContent.getPosition(), 0);
-            if (qty != 0) {
-                recContent.setQtyAccepted(Double.valueOf(qty));
-            }
-            float qtyNew = sharedPreferences.getFloat(KEY_CHECKMARK + "_" + BaseRec.KEY_POS_QTYACCEPTED_NEW + "_" + rec.getDocId() + "_" + recContent.getPosition(), 0);
-            if (qtyNew != 0) {
-                recContent.setQtyAcceptedNew(Double.valueOf(qtyNew));
-            }
-            int cnt = sharedPreferences.getInt(KEY_CHECKMARK + "_" + BaseRec.KEY_POS_MARKSCANNED_CNT + "_" + rec.getDocId() + "_" + recContent.getPosition(), 0);
-            if (cnt > 0) {
-                for (int i = 1; i <= cnt; i++) {
-                    String mark = sharedPreferences.getString(KEY_CHECKMARK + "_" + BaseRec.KEY_POS_MARKSCANNED + "_" + rec.getDocId() + "_" + recContent.getPosition() + "_" + i, null);
-                    int state = sharedPreferences.getInt(KEY_CHECKMARK + "_" + BaseRec.KEY_POS_MARKSTATE + "_" + rec.getDocId() + "_" + recContent.getPosition() + "_" + i, 0);
-                    recContent.getBaseRecContentMarkList().add(new CheckMarkRecContentMark(mark, BaseRecContentMark.MARK_SCANNED_AS_MARK, mark, state));
-                }
-            }
-            rec.getRecContentList().add(recContent);
-        }
-
-    }
-
-    private void readLocalDataFindMark(FindMarkRec rec) {
-        try {
-            rec.setCntDone(sharedPreferences.getInt(KEY_FINDMARK + "_" + BaseRec.KEY_CNTDONE + "_" + rec.getDocId() + "_", 0));
-        } catch (Exception e) {}
-        rec.setStatus(BaseRecStatus.valueOf(sharedPreferences.getString(KEY_FINDMARK + "_" + BaseRec.KEY_STATUS + "_" + rec.getDocId() + "_", BaseRecStatus.NEW.toString())));
-        // пройтись по строкам и прочитать доп.данные
-        rec.getRecContentList().clear();
-        for (DocContentIn docContentIn : rec.getDocContentInList()) {
-            FindMarkRecContent recContent = (FindMarkRecContent) rec.buildRecContent(docContentIn);
-            String nomenId = ((FindMarkContentIn)docContentIn).getNomenId();
-            recContent.setNomenIn(findNomenInByNomenId(nomenId), null);
-
-            // прочитать данные по строке локальные
-            float qty = sharedPreferences.getFloat(KEY_FINDMARK + "_" + BaseRec.KEY_POS_QTYACCEPTED + "_" + rec.getDocId() + "_" + recContent.getPosition(), 0);
-            if (qty != 0) {
-                recContent.setQtyAccepted(Double.valueOf(qty));
-            }
-            int cnt = sharedPreferences.getInt(KEY_FINDMARK + "_" + BaseRec.KEY_POS_MARKSCANNED_CNT + "_" + rec.getDocId() + "_" + recContent.getPosition(), 0);
-            if (cnt > 0) {
-                for (int i = 1; i <= cnt; i++) {
-                    String mark = sharedPreferences.getString(KEY_FINDMARK + "_" + BaseRec.KEY_POS_MARKSCANNED + "_" + rec.getDocId() + "_" + recContent.getPosition() + "_" + i, null);
-                    recContent.getBaseRecContentMarkList().add(new BaseRecContentMark(mark, BaseRecContentMark.MARK_SCANNED_AS_MARK, mark));
-                }
-            }
-            rec.getRecContentList().add(recContent);
-        }
-    }
 
     private void clearStoredDataNotInList(List<String> docIdList) {
         Map<String, ?> allPrefs = sharedPreferences.getAll();
@@ -696,402 +396,8 @@ public class DaoMem {
 
     }
 
-    public void writeLocalDataBaseRec(BaseRec baseRec) {
-        // Синхронизируем общий статус накладной
-        // Посчитаем число реально принятых строк
-        int cntDone = 0;
-        int cntZero = 0;
-        for (BaseRecContent recContent : baseRec.getRecContentList()) {
-            if (recContent.getStatus() == BaseRecContentStatus.DONE){
-                cntDone++;
-            }
-            if (recContent.getQtyAccepted() != null &&  recContent.getQtyAccepted().equals(Double.valueOf(0))
-                    && recContent.getNomenIn() == null){
-                cntZero++;
-            }
-        }
-        // Если все записи =0, и связок с товарами нет и в статусе накл = отказ, оставим отказ
-        if (cntZero == baseRec.getRecContentList().size()
-                && baseRec.getStatus() == BaseRecStatus.REJECTED) {
-            // оставим отказ
-        } else {
-            if (baseRec.getDocContentInList().size() == cntDone) {
-                baseRec.setStatus(BaseRecStatus.DONE);
-            } else {
-                baseRec.setStatus(BaseRecStatus.INPROGRESS);
-            }
-        }
-        baseRec.setCntDone(cntDone);
-        SharedPreferences.Editor ed = sharedPreferences.edit();
-        ed.putBoolean(BaseRec.KEY_EXPORTED+"_"+baseRec.getDocId()+"_", baseRec.isExported());
-        ed.putInt(BaseRec.KEY_CNTDONE+"_"+baseRec.getDocId()+"_", baseRec.getCntDone());
-        ed.putString(BaseRec.KEY_STATUS+"_"+baseRec.getDocId()+"_", baseRec.getStatus().toString());
-        ed.apply();
-        // записать данные по строкам
-        for (BaseRecContent recContent : baseRec.getRecContentList()) {
-            writeLocalDataBaseRecContent(baseRec.getDocId(), recContent);
-        }
-    }
 
-    private void writeLocalDataBaseRecContent(String docId, BaseRecContent recContent) {
-        SharedPreferences.Editor ed = sharedPreferences.edit();
-        ed.putString(BaseRec.KEY_POS_ID1C+"_"+docId+"_"+recContent.getPosition(), recContent.getId1c());
-        ed.putString(BaseRec.KEY_POS_BARCODE+"_"+docId+"_"+recContent.getPosition(), recContent.getBarcode());
-        ed.putString(BaseRec.KEY_POS_STATUS+"_"+docId+"_"+recContent.getPosition(), recContent.getStatus().toString());
-        float qty = 0;
-        if (recContent.getQtyAccepted() != null) {
-            qty = recContent.getQtyAccepted().floatValue();
-        }
-        ed.putFloat(BaseRec.KEY_POS_QTYACCEPTED+"_"+docId+"_"+recContent.getPosition(), qty);
-        ed.putInt(BaseRec.KEY_POS_MARKSCANNED_CNT + "_"+docId+"_"+recContent.getPosition(), recContent.getBaseRecContentMarkList().size());
-        int idx = 1;
-        for (BaseRecContentMark baseRecContentMark : recContent.getBaseRecContentMarkList()) {
-            ed.putString(BaseRec.KEY_POS_MARKSCANNED + "_"+docId+"_"+recContent.getPosition()+"_"+idx, baseRecContentMark.getMarkScanned());
-            ed.putInt(BaseRec.KEY_POS_MARKSCANNED_ASTYPE + "_"+docId+"_"+recContent.getPosition()+"_"+idx, baseRecContentMark.getMarkScannedAsType());
-            ed.putString(BaseRec.KEY_POS_MARKSCANNEDREAL + "_"+docId+"_"+recContent.getPosition()+"_"+idx, baseRecContentMark.getMarkScannedReal());
-            idx++;
-        }
-        ed.apply();
-    }
 
-    public void writeLocalDataRec_ClearAllMarks(BaseRec baseRec) {
-        for (BaseRecContent recContent : baseRec.getRecContentList()) {
-            writeLocalDataRecContent_ClearAllMarks(baseRec.getDocId(), recContent);
-        }
-    }
-
-    public void writeLocalDataRecContent_ClearAllMarks(String docId, BaseRecContent recContent) {
-        SharedPreferences.Editor ed = sharedPreferences.edit();
-        int idx = 1;
-        for (BaseRecContentMark baseRecContentMark : recContent.getBaseRecContentMarkList()) {
-            ed.remove(BaseRec.KEY_POS_MARKSCANNED + "_" + docId + "_" + recContent.getPosition() + "_" + idx);
-            ed.remove(BaseRec.KEY_POS_MARKSCANNED_ASTYPE + "_" + docId + "_" + recContent.getPosition() + "_" + idx);
-            ed.remove(BaseRec.KEY_POS_MARKSCANNEDREAL + "_" + docId + "_" + recContent.getPosition() + "_" + idx);
-            ed.remove(BaseRec.KEY_POS_MARKBOX + "_" + docId + "_" + recContent.getPosition() + "_" + idx);
-            idx++;
-        }
-        ed.apply();
-    }
-
-    private void writeLocalDataWriteoffRec(WriteoffRec writeoffRec) {
-        SharedPreferences.Editor ed = sharedPreferences.edit();
-        ed.putString(KEY_WRITEOFF + "_" + WriteoffRec.KEY_DOCNUM + "_" + writeoffRec.getDocId() + "_", writeoffRec.getDocNum());
-        ed.putString(KEY_WRITEOFF + "_" + WriteoffRec.KEY_DATE + "_" + writeoffRec.getDocId() + "_", writeoffRec.getDateStr());
-        ed.putString(KEY_WRITEOFF + "_" + WriteoffRec.KEY_TYPEDOC + "_" + writeoffRec.getDocId() + "_", writeoffRec.getTypeDoc());
-        ed.putString(KEY_WRITEOFF + "_" + WriteoffRec.KEY_SKLADID + "_" + writeoffRec.getDocId() + "_", writeoffRec.getSkladId());
-        ed.putString(KEY_WRITEOFF + "_" + WriteoffRec.KEY_SKLADNAME + "_" + writeoffRec.getDocId() + "_", writeoffRec.getSkladName());
-        ed.putString(KEY_WRITEOFF + "_" + WriteoffRec.KEY_COMMENT + "_" + writeoffRec.getDocId() + "_", writeoffRec.getComment());
-        ed.putInt(KEY_WRITEOFF + "_" + WriteoffRec.KEY_CONTENT_SIZE + "_" + writeoffRec.getDocId() + "_", writeoffRec.getRecContentList().size());
-        ed.apply();
-        // записать данные по строкам
-        for (WriteoffRecContent recContent : writeoffRec.getWriteoffRecContentList()) {
-            writeLocalDataWriteoffRecContent(writeoffRec.getDocId(), recContent);
-        }
-    }
-
-    private void writeLocalDataWriteoffRecContent(String docId, WriteoffRecContent recContent) {
-        SharedPreferences.Editor ed = sharedPreferences.edit();
-        ed.putString(KEY_WRITEOFF + "_" + BaseRec.KEY_POS_ID1C+"_"+docId+"_"+recContent.getPosition(), recContent.getId1c());
-        ed.putString(KEY_WRITEOFF + "_" + BaseRec.KEY_POS_BARCODE+"_"+docId+"_"+recContent.getPosition(), recContent.getBarcode());
-        ed.putString(KEY_WRITEOFF + "_" + BaseRec.KEY_POS_STATUS+"_"+docId+"_"+recContent.getPosition(), recContent.getStatus().toString());
-        float qty = 0;
-        if (recContent.getQtyAccepted() != null) {
-            qty = recContent.getQtyAccepted().floatValue();
-        }
-        ed.putFloat(KEY_WRITEOFF + "_" + BaseRec.KEY_POS_QTYACCEPTED+"_"+docId+"_"+recContent.getPosition(), qty);
-        ed.putInt(KEY_WRITEOFF + "_" + BaseRec.KEY_POS_MARKSCANNED_CNT + "_"+docId+"_"+recContent.getPosition(), recContent.getBaseRecContentMarkList().size());
-        int idx = 1;
-        for (BaseRecContentMark baseRecContentMark : recContent.getBaseRecContentMarkList()) {
-            WriteoffRecContentMark writeoffRecContentMark = (WriteoffRecContentMark) baseRecContentMark;
-            ed.putString(KEY_WRITEOFF + "_" + BaseRec.KEY_POS_MARKSCANNED + "_"+docId+"_"+recContent.getPosition()+"_"+idx, writeoffRecContentMark.getMarkScanned());
-            ed.putInt(KEY_WRITEOFF + "_" + BaseRec.KEY_POS_MARKSCANNED_ASTYPE + "_"+docId+"_"+recContent.getPosition()+"_"+idx, writeoffRecContentMark.getMarkScannedAsType());
-            ed.putString(KEY_WRITEOFF + "_" + BaseRec.KEY_POS_MARKSCANNEDREAL + "_"+docId+"_"+recContent.getPosition()+"_"+idx, writeoffRecContentMark.getMarkScannedReal());
-            ed.putString(KEY_WRITEOFF + "_" + BaseRec.KEY_POS_MARKBOX + "_"+docId+"_"+recContent.getPosition()+"_"+idx, writeoffRecContentMark.getBox());
-            idx++;
-        }
-        ed.apply();
-    }
-
-    public void writeLocalDataWriteoffRec_Clear(WriteoffRec writeoffRec) {
-        SharedPreferences.Editor ed = sharedPreferences.edit();
-        ed.remove(KEY_WRITEOFF + "_" + WriteoffRec.KEY_DOCNUM + "_" + writeoffRec.getDocId() + "_");
-        ed.remove(KEY_WRITEOFF + "_" + WriteoffRec.KEY_DATE + "_" + writeoffRec.getDocId() + "_");
-        ed.remove(KEY_WRITEOFF + "_" + WriteoffRec.KEY_TYPEDOC + "_" + writeoffRec.getDocId() + "_");
-        ed.remove(KEY_WRITEOFF + "_" + WriteoffRec.KEY_SKLADID + "_" + writeoffRec.getDocId() + "_");
-        ed.remove(KEY_WRITEOFF + "_" + WriteoffRec.KEY_SKLADNAME + "_" + writeoffRec.getDocId() + "_");
-        ed.remove(KEY_WRITEOFF + "_" + WriteoffRec.KEY_COMMENT + "_" + writeoffRec.getDocId() + "_");
-        ed.remove(KEY_WRITEOFF + "_" + WriteoffRec.KEY_CONTENT_SIZE + "_" + writeoffRec.getDocId() + "_");
-        ed.apply();
-        // записать данные по строкам
-        for (WriteoffRecContent recContent : writeoffRec.getWriteoffRecContentList()) {
-            writeLocalDataWriteoffRecContent_Clear(writeoffRec.getDocId(), recContent);
-        }
-    }
-
-    private void writeLocalDataWriteoffRecContent_Clear(String docId, WriteoffRecContent recContent) {
-        SharedPreferences.Editor ed = sharedPreferences.edit();
-        ed.remove(KEY_WRITEOFF + "_" + BaseRec.KEY_POS_ID1C+"_"+docId+"_"+recContent.getPosition());
-        ed.remove(KEY_WRITEOFF + "_" + BaseRec.KEY_POS_BARCODE+"_"+docId+"_"+recContent.getPosition());
-        ed.remove(KEY_WRITEOFF + "_" + BaseRec.KEY_POS_STATUS+"_"+docId+"_"+recContent.getPosition());
-        ed.remove(KEY_WRITEOFF + "_" + BaseRec.KEY_POS_QTYACCEPTED+"_"+docId+"_"+recContent.getPosition());
-        ed.remove(KEY_WRITEOFF + "_" + BaseRec.KEY_POS_MARKSCANNED_CNT + "_"+docId+"_"+recContent.getPosition());
-        int idx = 1;
-        for (BaseRecContentMark baseRecContentMark : recContent.getBaseRecContentMarkList()) {
-            ed.remove(KEY_WRITEOFF + "_" + BaseRec.KEY_POS_MARKSCANNED + "_"+docId+"_"+recContent.getPosition()+"_"+idx);
-            ed.remove(KEY_WRITEOFF + "_" + BaseRec.KEY_POS_MARKSCANNED_ASTYPE + "_"+docId+"_"+recContent.getPosition()+"_"+idx);
-            ed.remove(KEY_WRITEOFF + "_" + BaseRec.KEY_POS_MARKSCANNEDREAL + "_"+docId+"_"+recContent.getPosition()+"_"+idx);
-            ed.remove(KEY_WRITEOFF + "_" + BaseRec.KEY_POS_MARKBOX + "_"+docId+"_"+recContent.getPosition()+"_"+idx);
-            idx++;
-        }
-        ed.apply();
-    }
-
-    public void writeLocalDataCheckMarkRec(CheckMarkRec checkMarkRec) {
-        SharedPreferences.Editor ed = sharedPreferences.edit();
-        ed.putBoolean(KEY_CHECKMARK + "_" + BaseRec.KEY_EXPORTED+"_"+checkMarkRec.getDocId()+"_", checkMarkRec.isExported());
-        ed.putString(KEY_CHECKMARK + "_" + BaseRec.KEY_STATUS+"_"+checkMarkRec.getDocId()+"_", checkMarkRec.getStatus().toString());
-        ed.apply();
-        // записать данные по строкам
-        for (CheckMarkRecContent recContent : checkMarkRec.getCheckMarkRecContentList()) {
-            writeLocalDataCheckMarkRecContent(checkMarkRec.getDocId(), recContent);
-        }
-    }
-
-    private void writeLocalDataCheckMarkRecContent(String docId, CheckMarkRecContent recContent) {
-        SharedPreferences.Editor ed = sharedPreferences.edit();
-        float qty = 0;
-        if (recContent.getQtyAccepted() != null) {
-            qty = recContent.getQtyAccepted().floatValue();
-        }
-        ed.putFloat(KEY_CHECKMARK + "_" + BaseRec.KEY_POS_QTYACCEPTED+"_"+docId+"_"+recContent.getPosition(), qty);
-        float qtyNew = 0;
-        if (recContent.getQtyAcceptedNew() != null) {
-            qtyNew = recContent.getQtyAcceptedNew().floatValue();
-        }
-        ed.putFloat(KEY_CHECKMARK + "_" + BaseRec.KEY_POS_QTYACCEPTED_NEW+"_"+docId+"_"+recContent.getPosition(), qtyNew);
-        ed.putInt(KEY_CHECKMARK + "_" + BaseRec.KEY_POS_MARKSCANNED_CNT + "_"+docId+"_"+recContent.getPosition(), recContent.getBaseRecContentMarkList().size());
-        int idx = 1;
-        for (CheckMarkRecContentMark contentMark : recContent.getCheckMarkRecContentMarkList()) {
-            ed.putString(KEY_CHECKMARK + "_" + BaseRec.KEY_POS_MARKSCANNED + "_"+docId+"_"+recContent.getPosition()+"_"+idx, contentMark.getMarkScanned());
-            ed.putInt(KEY_CHECKMARK + "_" + BaseRec.KEY_POS_MARKSTATE + "_"+docId+"_"+recContent.getPosition()+"_"+idx, contentMark.getState());
-            idx++;
-        }
-        ed.apply();
-    }
-
-    public void writeLocalDataFindMarkRec(FindMarkRec findMarkRec) {
-        SharedPreferences.Editor ed = sharedPreferences.edit();
-        int cntDone = 0;
-        for (FindMarkRecContent recContent : findMarkRec.getFindMarkRecContentList()) {
-            if (recContent.getBaseRecContentMarkList().size() >= recContent.getContentIn().getQty()) {
-                cntDone++;
-            }
-        }
-        findMarkRec.setCntDone(cntDone);
-        ed.putInt(KEY_FINDMARK + "_" + BaseRec.KEY_CNTDONE+"_"+findMarkRec.getDocId()+"_", findMarkRec.getCntDone());
-        ed.putString(KEY_FINDMARK + "_" + BaseRec.KEY_STATUS+"_"+findMarkRec.getDocId()+"_", findMarkRec.getStatus().toString());
-        // записать данные по строкам
-        for (FindMarkRecContent recContent : findMarkRec.getFindMarkRecContentList()) {
-            writeLocalDataFindMarkRecContent(ed, findMarkRec.getDocId(), recContent);
-        }
-        ed.apply();
-    }
-
-    private void writeLocalDataFindMarkRecContent(SharedPreferences.Editor ed, String docId, FindMarkRecContent recContent) {
-        float qty = 0;
-        if (recContent.getQtyAccepted() != null) {
-            qty = recContent.getQtyAccepted().floatValue();
-        }
-        ed.putFloat(KEY_FINDMARK + "_" + BaseRec.KEY_POS_QTYACCEPTED+"_"+docId+"_"+recContent.getPosition(), qty);
-        ed.putInt(KEY_FINDMARK + "_" + BaseRec.KEY_POS_MARKSCANNED_CNT + "_"+docId+"_"+recContent.getPosition(), recContent.getBaseRecContentMarkList().size());
-        int idx = 1;
-        for (BaseRecContentMark contentMark : recContent.getBaseRecContentMarkList()) {
-            ed.putString(KEY_FINDMARK + "_" + BaseRec.KEY_POS_MARKSCANNED + "_"+docId+"_"+recContent.getPosition()+"_"+idx, contentMark.getMarkScanned());
-            idx++;
-        }
-    }
-
-    public void writeLocalDataInvRec(InvRec invRec) {
-        Log.v("DaoMem", "writeLocalDataInvRec start");
-        SQLiteDatabase db = appDbHelper.getWritableDatabase();
-        int deletedRowsMark = db.delete(KEY_INV+CONTENT_MARK, BaseRec.KEY_DOCID + " = ?", new String[] { invRec.getDocId() });
-        int deletedRowsContent = db.delete(KEY_INV+CONTENT, BaseRec.KEY_DOCID + " = ?", new String[] { invRec.getDocId() });
-        int deletedRow = db.delete(KEY_INV, BaseRec.KEY_DOCID + " = ?", new String[] { invRec.getDocId() });
-
-        ContentValues values = new ContentValues();
-        values.put(BaseRec.KEY_EXPORTED, invRec.isExported() ? "true" : "false");
-        values.put(BaseRec.KEY_STATUS, invRec.getStatus().toString());
-        values.put(BaseRec.KEY_DOCID, invRec.getDocId());
-        long newDbDocId = db.insert(KEY_INV, null, values);
-
-        // записать данные по строкам
-        int position = 1;
-        for (InvRecContent recContent : invRec.getInvRecContentList()) {
-            writeLocalDataInvRecContent(invRec.getDocId(), recContent, position);
-            position++;
-        }
-        Log.v("DaoMem", "writeLocalDataInvRec end");
-    }
-
-    public void saveDbInvRec(InvRec invRec) {
-        Log.v("DaoMem", "saveDbInvRec start");
-        ContentValues values = new ContentValues();
-        values.put(BaseRec.KEY_EXPORTED, invRec.isExported() ? "true" : "false");
-        values.put(BaseRec.KEY_STATUS, invRec.getStatus().toString());
-        values.put(BaseRec.KEY_DOCID, invRec.getDocId());
-        Map<String, Object> dbInvRec = readDbInvRec(invRec.getDocId());
-
-        SQLiteDatabase db = appDbHelper.getWritableDatabase();
-        if (dbInvRec == null) {
-            db.insert(KEY_INV, null, values);
-        } else {
-            db.update(KEY_INV, values, BaseRec.KEY_DOCID + " = ?", new String[] { invRec.getDocId() });
-        }
-        Log.v("DaoMem", "saveDbInvRec end");
-    }
-
-    private void saveDbInvRecWithContentDeletion(InvRec invRec) {
-        saveDbInvRec(invRec);
-        SQLiteDatabase db = appDbHelper.getWritableDatabase();
-        int deletedRowsMark = db.delete(KEY_INV+CONTENT_MARK, BaseRec.KEY_DOCID + " = ?", new String[] { invRec.getDocId() });
-        int deletedRowsContent = db.delete(KEY_INV+CONTENT, BaseRec.KEY_DOCID + " = ?", new String[] { invRec.getDocId() });
-    }
-
-    public void saveDbInvRecContent(InvRec invRec, InvRecContent recContent) {
-        Log.v("DaoMem", "saveDbInvRecContent start");
-        saveDbInvRec(invRec);
-        ContentValues values = new ContentValues();
-        values.put(BaseRec.KEY_DOCID, invRec.getDocId());
-        values.put(BaseRec.KEY_POS_ID1C, recContent.getId1c());
-        values.put(BaseRec.KEY_POS_BARCODE, recContent.getBarcode());
-        values.put(BaseRec.KEY_POS_STATUS, recContent.getStatus().toString());
-        values.put(BaseRec.KEY_POS_POSITION, recContent.getPosition().toString());
-        values.put(BaseRec.KEY_POS_MARKSCANNED_CNT, recContent.getBaseRecContentMarkList().size());
-
-        float qty = 0;
-        if (recContent.getQtyAccepted() != null) {
-            qty = recContent.getQtyAccepted().floatValue();
-        }
-        float manualMrc = 0;
-        if (recContent.getManualMrc() != null) {
-            manualMrc = recContent.getManualMrc().floatValue();
-        } else {
-            if (recContent.getContentIn() != null && recContent.getContentIn().getMrc() != null) {
-                manualMrc = recContent.getContentIn().getMrc().floatValue();
-            }
-        }
-        values.put(BaseRec.KEY_POS_QTYACCEPTED, qty);
-        values.put(BaseRec.KEY_POS_MANUAL_MRC, manualMrc);
-        values.put(BaseRec.KEY_POS_MARKSCANNED_CNT, recContent.getBaseRecContentMarkList().size());
-
-        String mrcS = String.valueOf(manualMrc);
-        String contentId = invRec.getDocId()+"_"+recContent.getId1c()+"_"+mrcS;
-        values.put(BaseRec.KEY_DOC_CONTENTID, contentId);
-
-        Map<String, Object> dbInvRecContent = readDbInvRecContent(contentId);
-
-        SQLiteDatabase db = appDbHelper.getWritableDatabase();
-        if (dbInvRecContent == null) {
-            db.insert(KEY_INV+CONTENT, null, values);
-        } else {
-            db.update(KEY_INV+CONTENT, values, BaseRec.KEY_DOC_CONTENTID + " = ?", new String[] { contentId });
-        }
-        if (recContent.getBaseRecContentMarkList().isEmpty()) {
-            int deletedRowsMark = db.delete(KEY_INV + CONTENT_MARK, BaseRec.KEY_DOC_CONTENTID + " = ?", new String[]{contentId});
-        } else {
-            List<Map<String, Object>> dbInvRecContentMarks = readDbInvRecContentMarks(contentId);
-            String sql = "INSERT INTO " + KEY_INV+CONTENT_MARK + "("+BaseRec.KEY_DOCID+","
-                    +BaseRec.KEY_DOC_CONTENTID+","
-                    +BaseRec.KEY_DOC_CONTENT_MARKID+","
-                    +BaseRec.KEY_POS_MARKSCANNED+","
-                    +BaseRec.KEY_POS_MARKSCANNED_ASTYPE+","
-                    +BaseRec.KEY_POS_MARKSCANNEDREAL+","
-                    +BaseRec.KEY_POS_MARKBOX+") VALUES(?, ?, ?, ?, ?, ?, ?)";
-            SQLiteStatement statement = db.compileStatement(sql);
-            int idx = 1;
-            db.beginTransaction();
-            try {
-                for (BaseRecContentMark baseRecContentMark : recContent.getBaseRecContentMarkList()) {
-                    if (dbInvRecContentMarks == null || idx > dbInvRecContentMarks.size()) {
-                        InvRecContentMark invRecContentMark = (InvRecContentMark) baseRecContentMark;
-                        statement.clearBindings();
-                        statement.bindString(1, invRec.getDocId());
-                        statement.bindString(2, contentId);
-                        statement.bindString(3, contentId + "_" + idx);
-                        if (invRecContentMark.getMarkScanned() == null) {
-                            statement.bindNull(4);
-                        } else {
-                            statement.bindString(4, invRecContentMark.getMarkScanned());
-                        }
-                        if (invRecContentMark.getMarkScannedAsType() == null) {
-                            statement.bindNull(5);
-                        } else {
-                            statement.bindString(5, String.valueOf(invRecContentMark.getMarkScannedAsType()));
-                        }
-                        if (invRecContentMark.getMarkScannedReal() == null) {
-                            statement.bindNull(6);
-                        } else {
-                            statement.bindString(6, invRecContentMark.getMarkScannedReal());
-                        }
-                        if (invRecContentMark.getBox() == null) {
-                            statement.bindNull(7);
-                        } else {
-                            statement.bindString(7, invRecContentMark.getBox());
-                        }
-                        statement.execute();
-                    }
-                    idx++;
-                }
-                db.setTransactionSuccessful();
-            } finally {
-                db.endTransaction();
-            }
-        }
-
-        Log.v("DaoMem", "saveDbInvRecContent end");
-    }
-
-    private void writeLocalDataInvRecContent(String docId, InvRecContent recContent, int position) {
-        SQLiteDatabase db = appDbHelper.getWritableDatabase();
-        ContentValues values = new ContentValues();
-        values.put(BaseRec.KEY_DOCID, docId);
-        values.put(BaseRec.KEY_DOC_CONTENTID, docId+"_"+position);
-        values.put(BaseRec.KEY_POS_ID1C, recContent.getId1c());
-        values.put(BaseRec.KEY_POS_BARCODE, recContent.getBarcode());
-        values.put(BaseRec.KEY_POS_STATUS, recContent.getStatus().toString());
-        values.put(BaseRec.KEY_POS_POSITION, recContent.getPosition().toString());
-
-        float qty = 0;
-        if (recContent.getQtyAccepted() != null) {
-            qty = recContent.getQtyAccepted().floatValue();
-        }
-        float manualMrc = 0;
-        if (recContent.getManualMrc() != null) {
-            manualMrc = recContent.getManualMrc().floatValue();
-        } else {
-            if (recContent.getContentIn() != null && recContent.getContentIn().getMrc() != null) {
-                manualMrc = recContent.getContentIn().getMrc().floatValue();
-            }
-        }
-        values.put(BaseRec.KEY_POS_QTYACCEPTED, qty);
-        values.put(BaseRec.KEY_POS_MANUAL_MRC, manualMrc);
-        values.put(BaseRec.KEY_POS_MARKSCANNED_CNT, recContent.getBaseRecContentMarkList().size());
-        long newContentRowId = db.insert(KEY_INV+CONTENT, null, values);
-        int idx = 1;
-        for (BaseRecContentMark baseRecContentMark : recContent.getBaseRecContentMarkList()) {
-            InvRecContentMark invRecContentMark = (InvRecContentMark)baseRecContentMark;
-            ContentValues valuesMark = new ContentValues();
-            valuesMark.put(BaseRec.KEY_DOCID, docId);
-            valuesMark.put(BaseRec.KEY_DOC_CONTENTID, docId+"_"+position);
-            valuesMark.put(BaseRec.KEY_DOC_CONTENT_MARKID, docId+"_"+position+"_"+idx);
-            valuesMark.put(BaseRec.KEY_POS_MARKSCANNED, invRecContentMark.getMarkScanned());
-            valuesMark.put(BaseRec.KEY_POS_MARKSCANNED_ASTYPE, invRecContentMark.getMarkScannedAsType());
-            valuesMark.put(BaseRec.KEY_POS_MARKSCANNEDREAL, invRecContentMark.getMarkScannedReal());
-            valuesMark.put(BaseRec.KEY_POS_MARKBOX, invRecContentMark.getBox());
-            long newContentMarkRowId = db.insert(KEY_INV+CONTENT_MARK, null, valuesMark);
-            idx++;
-        }
-    }
 
 
     Comparator docRecDateComparator = new Comparator<BaseRec>() {
@@ -1262,19 +568,8 @@ public class DaoMem {
     public WriteoffRec addNewWriteoffRec(String shopId, String shopInName, String type) {
         WriteoffRec newRec = new WriteoffRec(shopId, shopInName, type);
         mapWriteoffRec.put(newRec.getDocId(),newRec);
-        writeLocalWriteoffRec(newRec);
+        DaoDbWriteOff.getDaoDbWriteOff().saveDbWriteoffRec(shopId, newRec);
         return newRec;
-    }
-
-    public void writeLocalWriteoffRec(WriteoffRec newRec) {
-        SharedPreferences.Editor ed = sharedPreferences.edit();
-        Set<String> docIds = new HashSet<>();
-        for (WriteoffRec writeoffRec : mapWriteoffRec.values()) {
-            docIds.add(writeoffRec.getDocId());
-        }
-        ed.putStringSet(KEY_WRITEOFF+"_"+shopId, docIds);
-        ed.apply();
-        writeLocalDataWriteoffRec(newRec);
     }
 
     public String getDeviceId() {
@@ -1292,15 +587,8 @@ public class DaoMem {
     public void deleteData(WriteoffRec writeoffRec) {
         // удалять документ из списка и его out-файл (если есть).
         mapWriteoffRec.remove(writeoffRec.getDocId());
-        SharedPreferences.Editor ed = sharedPreferences.edit();
-        Set<String> docIds = new HashSet<>();
-        for (WriteoffRec rec : mapWriteoffRec.values()) {
-            docIds.add(rec.getDocId());
-        }
-        ed.putStringSet(KEY_WRITEOFF+"_"+shopId, docIds);
-        ed.apply();
         rejectData(writeoffRec);
-        writeLocalDataWriteoffRec(writeoffRec);
+        DaoDbWriteOff.getDaoDbWriteOff().saveDbWriteoffRecDeletion(shopId, writeoffRec);
         // Удалить сам файл
         integrationFile.deleteFileRec(writeoffRec, shopId);
     }
@@ -1392,40 +680,6 @@ public class DaoMem {
         return null; // ничего не нашли - не сканирован и нет во входном документе
     }
 
-    public static class CheckMarkScannedResultForFindMark {
-        public boolean scanned;
-        public FindMarkRecContent recContent;
-
-        public CheckMarkScannedResultForFindMark(FindMarkRecContent recContent, boolean scanned) {
-            this.recContent = recContent;
-            this.scanned = scanned;
-        }
-    }
-    public CheckMarkScannedResultForFindMark checkMarkScannedForFindMark(FindMarkRec rec, String barCode) {
-        // сначала проверим, сканиовали ли эту марку уже
-        for (FindMarkRecContent recContent : rec.getFindMarkRecContentList()) {
-            // в каждой позиции пройтись по сканированным маркам
-            for (BaseRecContentMark findMarkRecContentMark : recContent.getBaseRecContentMarkList()) {
-                if (findMarkRecContentMark.getMarkScanned().equals(barCode)) {
-                    return new CheckMarkScannedResultForFindMark(recContent, true);
-                }
-            }
-        }
-        // Если не нашли
-        // поищем в начальном документе
-        for (FindMarkRecContent recContent : rec.getFindMarkRecContentList()) {
-            // в каждой позиции пройтись по маркам во входном документе
-            FindMarkContentIn findMarkContentIn = (FindMarkContentIn) recContent.getContentIn();
-
-            for (String mark :  findMarkContentIn.getMark()) {
-                if (mark.equals(barCode)) {
-                    return new CheckMarkScannedResultForFindMark(recContent, false);
-                }
-            }
-        }
-        return null; // ничего не нашли - не сканирован и нет во входном документе
-
-    }
 
     // Найти непринятные позиции по алкокоду (может быть несколько)
     public List<IncomeRecContent> findIncomeRecContentListByAlcocodeNotDone(IncomeRec incomeRec, String alcocode, boolean checkCompletedToo) {
@@ -1523,7 +777,7 @@ public class DaoMem {
             }
         }
         incomeRec.setExported(true);
-        writeLocalDataBaseRec(incomeRec);
+        DaoDbDoc.getDaoDbDoc().saveDbDocRec(incomeRec);
         integrationFile.writeBaseRec(shopId, incomeRec);
         return true;
     }
@@ -1535,14 +789,14 @@ public class DaoMem {
 
     public boolean exportData(InvRec invRec) {
         invRec.setExported(true);
-        saveDbInvRec(invRec);
+        DaoDbInv.getDaoDbInv().saveDbInvRec(invRec);
         integrationFile.writeBaseRec(shopId, invRec);
         return true;
     }
 
     public boolean exportData(WriteoffRec writeoffRec) {
         writeoffRec.setExported(true);
-        writeLocalDataWriteoffRec(writeoffRec);
+        DaoDbWriteOff.getDaoDbWriteOff().saveDbWriteoffRec(shopId, writeoffRec);
         integrationFile.writeBaseRec(shopId, writeoffRec);
         return true;
     }
@@ -1554,14 +808,14 @@ public class DaoMem {
 
     public boolean exportData(CheckMarkRec rec) {
         rec.setExported(true);
-        writeLocalDataCheckMarkRec(rec);
+        DaoDbCheckMark.getDaoDbCheckMark().saveDbCheckMarkRec(rec);
         integrationFile.writeBaseRec(shopId, rec);
         return true;
     }
 
     private void exportDataBaseRec(BaseRec rec) {
         rec.setExported(true);
-        writeLocalDataBaseRec(rec);
+        DaoDbDoc.getDaoDbDoc().saveDbDocRec(rec);
         integrationFile.writeBaseRec(shopId, rec);
     }
 
@@ -1588,41 +842,41 @@ public class DaoMem {
     }
 
     public void clearData(IncomeRec rec) {
-        writeLocalDataRec_ClearAllMarks(rec);
+        DaoDbDoc.getDaoDbDoc().writeLocalDataRec_ClearAllMarks(rec);
         rec.clearData();
-        writeLocalDataBaseRec(rec);
+        DaoDbDoc.getDaoDbDoc().saveDbDocRec(rec);
         exportDataBaseRec(rec);
     }
 
     public void rejectData(BaseRec rec) {
-        writeLocalDataRec_ClearAllMarks(rec);
+        DaoDbDoc.getDaoDbDoc().writeLocalDataRec_ClearAllMarks(rec);
         rec.rejectData();
-        writeLocalDataBaseRec(rec);
+        DaoDbDoc.getDaoDbDoc().saveDbDocRec(rec);
         exportDataBaseRec(rec);
     }
 
     public void rejectData(MoveRec rec) {
-        writeLocalDataRec_ClearAllMarks(rec);
+        DaoDbDoc.getDaoDbDoc().writeLocalDataRec_ClearAllMarks(rec);
         rec.rejectData();
-        writeLocalDataBaseRec(rec);
+        DaoDbDoc.getDaoDbDoc().saveDbDocRec(rec);
     }
 
     public void rejectData(WriteoffRec rec) {
-        writeLocalDataRec_ClearAllMarks(rec);
+        DaoDbDoc.getDaoDbDoc().writeLocalDataRec_ClearAllMarks(rec);
         rec.rejectData();
-        writeLocalWriteoffRec(rec);
+        DaoDbWriteOff.getDaoDbWriteOff().saveDbWriteoffRecWithOnlyContentDeletion(shopId, rec);
     }
 
     public void rejectData(CheckMarkRec rec) {
-        writeLocalDataRec_ClearAllMarks(rec);
+        DaoDbDoc.getDaoDbDoc().writeLocalDataRec_ClearAllMarks(rec);
         rec.rejectData();
-        writeLocalDataCheckMarkRec(rec);
+        DaoDbCheckMark.getDaoDbCheckMark().saveDbCheckMarkRec(rec);
     }
 
     public void rejectData(InvRec rec) {
-        writeLocalDataRec_ClearAllMarks(rec);
+        DaoDbDoc.getDaoDbDoc().writeLocalDataRec_ClearAllMarks(rec);
         rec.rejectData();
-        saveDbInvRecWithContentDeletion(rec);
+        DaoDbInv.getDaoDbInv().saveDbInvRecWithContentDeletion(rec);
     }
 
     public int calculateQtyToAdd(IncomeRec incomeRec, IncomeRecContent incomeRecContent, String barcode) {

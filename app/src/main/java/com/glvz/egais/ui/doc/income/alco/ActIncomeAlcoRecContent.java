@@ -13,6 +13,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import com.glvz.egais.R;
 import com.glvz.egais.dao.DaoMem;
+import com.glvz.egais.daodb.DaoDbDoc;
 import com.glvz.egais.integration.model.doc.income.IncomeContentBoxTreeIn;
 import com.glvz.egais.integration.model.NomenIn;
 import com.glvz.egais.model.BaseRecContentMark;
@@ -165,7 +166,7 @@ public class ActIncomeAlcoRecContent extends Activity implements BarcodeReader.B
                 }
             }
         }
-        DaoMem.getDaoMem().writeLocalDataBaseRec(incomeRec);
+        DaoDbDoc.getDaoDbDoc().saveDbDocRecContent(incomeRec, incomeRecContent);
         if (addQty == 1) {
             MessageUtils.playSound(R.raw.bottle_one);
         }
@@ -227,7 +228,7 @@ public class ActIncomeAlcoRecContent extends Activity implements BarcodeReader.B
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
                                 incomeRecContent.setQtyAccepted(null);
-                                DaoMem.getDaoMem().writeLocalDataRecContent_ClearAllMarks(incomeRec.getDocId(), incomeRecContent);
+                                DaoDbDoc.getDaoDbDoc().writeLocalDataRecContent_ClearAllMarks(incomeRec.getDocId(), incomeRecContent);
                                 incomeRecContent.getBaseRecContentMarkList().clear();
                                 lastMark = null;
                                 isBoxScanned = false;
@@ -533,7 +534,7 @@ public class ActIncomeAlcoRecContent extends Activity implements BarcodeReader.B
                 String newBarCode = (String) data.getExtras().get(NEWBARCODE);
                 final NomenIn nomenIn = DaoMem.getDaoMem().getDictionary().findNomenByBarcodeAlco(newBarCode);
                 incomeRecContent.setNomenIn(nomenIn, newBarCode);
-                DaoMem.getDaoMem().writeLocalDataBaseRec(incomeRec);
+                DaoDbDoc.getDaoDbDoc().saveDbDocRecContent(incomeRec, incomeRecContent);
                 updateDisplayData();
             }
         }

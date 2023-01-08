@@ -10,6 +10,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 import com.glvz.egais.R;
 import com.glvz.egais.dao.DaoMem;
+import com.glvz.egais.daodb.DaoDbFindMark;
 import com.glvz.egais.integration.model.doc.findmark.FindMarkContentIn;
 import com.glvz.egais.model.BaseRecContent;
 import com.glvz.egais.model.BaseRecContentMark;
@@ -21,6 +22,7 @@ import com.glvz.egais.service.findmark.FindMarkRecHolder;
 import com.glvz.egais.ui.doc.ActBaseDocRec;
 import com.glvz.egais.utils.BarcodeObject;
 import com.glvz.egais.utils.MessageUtils;
+import com.glvz.egais.utils.SearchUtil;
 import com.honeywell.aidc.BarcodeReadEvent;
 
 import java.util.Collection;
@@ -72,12 +74,11 @@ public class ActFindMarkRec extends ActBaseDocRec {
                         new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
-                                DaoMem.getDaoMem().writeLocalDataRec_ClearAllMarks(findMarkRec);
                                 for (FindMarkRecContent rc : findMarkRec.getFindMarkRecContentList()) {
                                     rc.getBaseRecContentMarkList().clear();
+                                    DaoDbFindMark.getDaoDbFindMark().saveDbFindMarkRecContent(findMarkRec, rc);
                                 }
                                 MessageUtils.showToastMessage("Марки очищены!");
-                                DaoMem.getDaoMem().writeLocalDataFindMarkRec(findMarkRec);
                                 updateData();
                             }
                         });
@@ -134,7 +135,7 @@ public class ActFindMarkRec extends ActBaseDocRec {
                     return;
                 }
                 // проверить марку на соответствие маркам в задании
-                DaoMem.CheckMarkScannedResultForFindMark markScanned = DaoMem.getDaoMem().checkMarkScannedForFindMark(findMarkRec, barCode);
+                SearchUtil.CheckMarkScannedResultForFindMark markScanned = SearchUtil.checkMarkScannedForFindMark(findMarkRec, barCode);
                 if (markScanned == null) {
                     MessageUtils.showToastMessage("Это не искомая марка, попробуйте со следующей бутылки");
                     return;
@@ -144,6 +145,7 @@ public class ActFindMarkRec extends ActBaseDocRec {
                 if (!markScanned.scanned) {
                     // у марки в документе установить признак «найдена»
                     markScanned.recContent.getBaseRecContentMarkList().add(new BaseRecContentMark(barCode,BaseRecContentMark.MARK_SCANNED_AS_MARK, barCode));
+                    DaoDbFindMark.getDaoDbFindMark().saveDbFindMarkRecContent(findMarkRec, markScanned.recContent);
                 }
                 // пересчитать «Количество найдено» по количеству найденных марок
                 int cntAll = 0;
@@ -165,7 +167,6 @@ public class ActFindMarkRec extends ActBaseDocRec {
                 if (cntAll > cntScanned) {
                     MessageUtils.showModalMessage(this, "Внимание!", "Эту марку требовалось найти! Отложите бутылку отдельно и продолжайте поиск других марок");
                 }
-                DaoMem.getDaoMem().writeLocalDataFindMarkRec(findMarkRec);
                 updateData();
                 break;
             default:
