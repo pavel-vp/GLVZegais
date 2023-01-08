@@ -64,14 +64,14 @@ public class DaoDbFindMark {
                 if (qty != 0) {
                     findMarkRecContent.setQtyAccepted(Double.valueOf(qty));
                 }
-                int cnt = (Integer) dbFindRecContent.get(BaseRec.KEY_POS_MARKSCANNED);
-                if (cnt > 0) {
+//                int cnt = (Integer) dbFindRecContent.get(BaseRec.KEY_POS_MARKSCANNED);
+//                if (cnt > 0) {
                     List<Map<String, Object>> dbFindRecContentMarks = readDbFindMarkRecContentMarks(contentId);
                     for (Map<String, Object> markRec: dbFindRecContentMarks) {
                         String mark = (String) markRec.get(BaseRec.KEY_POS_MARKSCANNED);
                         findMarkRecContent.getBaseRecContentMarkList().add(new BaseRecContentMark(mark, BaseRecContentMark.MARK_SCANNED_AS_MARK, mark));
                     }
-                }
+//                }
             }
             findMarkRec.getRecContentList().add(findMarkRecContent);
         }
@@ -157,6 +157,13 @@ public class DaoDbFindMark {
 
     public void saveDbFindMarkRec(FindMarkRec findMarkRec) {
         Log.v("DaoMem", "saveDbFindMarkRec start");
+        int cntDone = 0;
+        for (FindMarkRecContent recContent : findMarkRec.getFindMarkRecContentList()) {
+            if (recContent.getBaseRecContentMarkList().size() >= recContent.getContentIn().getQty()) {
+                cntDone++;
+            }
+        }
+        findMarkRec.setCntDone(cntDone);
         ContentValues values = new ContentValues();
         values.put(BaseRec.KEY_EXPORTED, findMarkRec.isExported() ? "true" : "false");
         values.put(BaseRec.KEY_CNTDONE, String.valueOf(findMarkRec.getCntDone()));
