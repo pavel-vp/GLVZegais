@@ -340,6 +340,7 @@ public class DaoDbDoc {
     public void writeLocalDataRec_ClearAllMarks(BaseRec baseRec) {
         for (BaseRecContent recContent : baseRec.getRecContentList()) {
             writeLocalDataRecContent_ClearAllMarks(baseRec.getDocId(), recContent);
+            saveDbDocRecContent(baseRec, recContent);
         }
     }
 

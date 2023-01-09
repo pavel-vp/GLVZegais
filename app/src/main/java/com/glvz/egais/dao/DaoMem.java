@@ -842,40 +842,40 @@ public class DaoMem {
     }
 
     public void clearData(IncomeRec rec) {
-        DaoDbDoc.getDaoDbDoc().writeLocalDataRec_ClearAllMarks(rec);
         rec.clearData();
+        DaoDbDoc.getDaoDbDoc().writeLocalDataRec_ClearAllMarks(rec);
         DaoDbDoc.getDaoDbDoc().saveDbDocRec(rec);
         exportDataBaseRec(rec);
     }
 
     public void rejectData(BaseRec rec) {
-        DaoDbDoc.getDaoDbDoc().writeLocalDataRec_ClearAllMarks(rec);
         rec.rejectData();
+        DaoDbDoc.getDaoDbDoc().writeLocalDataRec_ClearAllMarks(rec);
         DaoDbDoc.getDaoDbDoc().saveDbDocRec(rec);
         exportDataBaseRec(rec);
     }
 
     public void rejectData(MoveRec rec) {
-        DaoDbDoc.getDaoDbDoc().writeLocalDataRec_ClearAllMarks(rec);
         rec.rejectData();
+        DaoDbDoc.getDaoDbDoc().writeLocalDataRec_ClearAllMarks(rec);
         DaoDbDoc.getDaoDbDoc().saveDbDocRec(rec);
     }
 
     public void rejectData(WriteoffRec rec) {
-        DaoDbDoc.getDaoDbDoc().writeLocalDataRec_ClearAllMarks(rec);
         rec.rejectData();
+        DaoDbDoc.getDaoDbDoc().writeLocalDataRec_ClearAllMarks(rec);
         DaoDbWriteOff.getDaoDbWriteOff().saveDbWriteoffRecWithOnlyContentDeletion(shopId, rec);
     }
 
     public void rejectData(CheckMarkRec rec) {
-        DaoDbDoc.getDaoDbDoc().writeLocalDataRec_ClearAllMarks(rec);
         rec.rejectData();
+        DaoDbDoc.getDaoDbDoc().writeLocalDataRec_ClearAllMarks(rec);
         DaoDbCheckMark.getDaoDbCheckMark().saveDbCheckMarkRec(rec);
     }
 
     public void rejectData(InvRec rec) {
-        DaoDbDoc.getDaoDbDoc().writeLocalDataRec_ClearAllMarks(rec);
         rec.rejectData();
+        DaoDbDoc.getDaoDbDoc().writeLocalDataRec_ClearAllMarks(rec);
         DaoDbInv.getDaoDbInv().saveDbInvRecWithContentDeletion(rec);
     }
 
