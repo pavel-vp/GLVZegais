@@ -274,8 +274,7 @@ public class DaoDbDoc {
         values.put(BaseRec.KEY_POS_QTYACCEPTED, qty);
         values.put(BaseRec.KEY_POS_MARKSCANNED_CNT, recContent.getBaseRecContentMarkList().size());
 
-        String mrcS = String.valueOf(0);
-        String contentId = baseRec.getDocId()+"_"+recContent.getId1c()+"_"+mrcS;
+        String contentId = baseRec.getDocId()+"_"+recContent.getPosition();
         values.put(BaseRec.KEY_DOC_CONTENTID, contentId);
 
         Map<String, Object> dbInvRecContent = readDbDocRecContent(contentId);
@@ -345,8 +344,7 @@ public class DaoDbDoc {
     }
 
     public void writeLocalDataRecContent_ClearAllMarks(String docId, BaseRecContent recContent) {
-        String mrcS = String.valueOf(0);
-        String contentId = docId+"_"+recContent.getId1c()+"_"+mrcS;
+        String contentId = docId+"_"+recContent.getPosition();
         SQLiteDatabase db = appDbHelper.getWritableDatabase();
         int deletedRowsMark = db.delete(DaoMem.KEY_DOC+DaoMem.CONTENT_MARK, BaseRec.KEY_DOC_CONTENTID + " = ?", new String[] { contentId });
     }

@@ -55,8 +55,7 @@ public class DaoDbFindMark {
             String nomenId = ((FindMarkContentIn)contentIn).getNomenId();
             findMarkRecContent.setNomenIn(DaoMem.getDaoMem().findNomenInByNomenId(nomenId), null);
 
-            String mrcS = String.valueOf(0);
-            String contentId = findMarkRec.getDocId()+"_"+findMarkRecContent.getId1c()+"_"+mrcS;
+            String contentId = findMarkRec.getDocId()+"_"+findMarkRecContent.getPosition();
 
             Map<String, Object> dbFindRecContent = readDbFindMarkRecContent(contentId);
             if (dbFindRecContent != null) {
@@ -194,8 +193,7 @@ public class DaoDbFindMark {
         }
         values.put(BaseRec.KEY_POS_QTYACCEPTED, qty);
 
-        String mrcS = String.valueOf(0);
-        String contentId = findMarkRec.getDocId()+"_"+findMarkRecContent.getId1c()+"_"+mrcS;
+        String contentId = findMarkRec.getDocId()+"_"+findMarkRecContent.getPosition();
         values.put(BaseRec.KEY_DOC_CONTENTID, contentId);
 
         Map<String, Object> dbFindRecContent = readDbFindMarkRecContent(contentId);

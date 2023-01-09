@@ -56,8 +56,7 @@ public class DaoDbCheckMark {
             String nomenId = ((CheckMarkContentIn)contentIn).getNomenId();
             checkMarkRecContent.setNomenIn(DaoMem.getDaoMem().findNomenInByNomenId(nomenId), null);
 
-            String mrcS = String.valueOf(0);
-            String contentId = checkMarkRec.getDocId()+"_"+checkMarkRecContent.getId1c()+"_"+mrcS;
+            String contentId = checkMarkRec.getDocId()+"_"+checkMarkRecContent.getPosition();
 
             Map<String, Object> dbCheckRecContent = readDbCheckMarkRecContent(contentId);
             if (dbCheckRecContent != null) {
@@ -193,14 +192,13 @@ public class DaoDbCheckMark {
         }
 //        values.put(BaseRec.KEY_POS_QTYACCEPTED_NEW, qtyNew);
 
-        String mrcS = String.valueOf(0);
-        String contentId = checkMarkRec.getDocId()+"_"+checkMarkRecContent.getId1c()+"_"+mrcS;
+        String contentId = checkMarkRec.getDocId()+"_"+checkMarkRecContent.getPosition();
         values.put(BaseRec.KEY_DOC_CONTENTID, contentId);
 
         Map<String, Object> dbCheckRecContent = readDbCheckMarkRecContent(contentId);
 
         SQLiteDatabase db = appDbHelper.getWritableDatabase();
-        if (checkMarkRecContent == null) {
+        if (dbCheckRecContent == null) {
             db.insert(DaoMem.KEY_CHECKMARK+DaoMem.CONTENT, null, values);
         } else {
             db.update(DaoMem.KEY_CHECKMARK+DaoMem.CONTENT, values, BaseRec.KEY_DOC_CONTENTID + " = ?", new String[] { contentId });
