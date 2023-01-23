@@ -21,6 +21,7 @@ import com.glvz.egais.ui.doc.income.ActIncomeList;
 import com.glvz.egais.ui.doc.inv.ActInvList;
 import com.glvz.egais.ui.doc.move.ActMoveList;
 import com.glvz.egais.ui.doc.photo.ActPhotoList;
+import com.glvz.egais.ui.doc.price.ActPriceList;
 import com.glvz.egais.ui.doc.writeoff.ActWriteoffList;
 import com.glvz.egais.utils.MessageUtils;
 
@@ -90,13 +91,13 @@ public class ActMainMenu extends Activity {
             }
         });
 
-        Button buttonCheckMark = (Button) findViewById(R.id.buttonCheckMark);
-        buttonCheckMark.setOnClickListener(new View.OnClickListener() {
+        Button buttonPrice = (Button) findViewById(R.id.buttonPrice);
+        buttonPrice.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (checkIfLoaded()) {
                     Intent intent = new Intent();
-                    intent.setClass(ActMainMenu.this, ActCheckMarkList.class);
+                    intent.setClass(ActMainMenu.this, ActPriceList.class);
                     startActivity(intent);
                 }
             }

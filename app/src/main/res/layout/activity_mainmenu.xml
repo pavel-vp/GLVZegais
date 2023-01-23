@@ -39,10 +39,10 @@
                   android:layout_width="match_parent"
                   android:layout_height="wrap_content">
         <Button
-                android:text="Проверка марок"
+                android:text="Печать ценников"
                 android:layout_weight="1"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent" android:id="@+id/buttonCheckMark"/>
+                android:layout_height="match_parent" android:id="@+id/buttonPrice"/>
         <Button
                 android:text="Поиск марок"
                 android:layout_weight="1"

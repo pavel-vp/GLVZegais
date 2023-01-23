@@ -7,6 +7,7 @@ import android.provider.BaseColumns;
 
 import com.glvz.egais.dao.DaoMem;
 import com.glvz.egais.model.BaseRec;
+import com.glvz.egais.model.price.PriceRec;
 import com.glvz.egais.model.writeoff.WriteoffRec;
 
 public class AppDbHelper extends SQLiteOpenHelper {
@@ -285,6 +286,65 @@ public class AppDbHelper extends SQLiteOpenHelper {
     private static final String SQL_DELETE_DOC_CONTENT = "DROP TABLE IF EXISTS " + DaoMem.KEY_DOC+DaoMem.CONTENT;
     private static final String SQL_DELETE_DOC_CONTENT_MARK = "DROP TABLE IF EXISTS " + DaoMem.KEY_DOC+DaoMem.CONTENT_MARK;
 
+    //
+    // PRICE
+    //
+    private static final String SQL_CREATE_PRICE =
+            "CREATE TABLE " + DaoMem.KEY_PRICE + " (" +
+                    BaseColumns._ID + " INTEGER PRIMARY KEY," +
+                    BaseRec.KEY_DOCID + " TEXT," +
+                    BaseRec.KEY_SHOPID + " TEXT," +
+                    BaseRec.KEY_STATUS + " TEXT," +
+                    BaseRec.KEY_EXPORTED + " TEXT," +
+                    PriceRec.KEY_DOCNUM + " TEXT," +
+                    PriceRec.KEY_DATE + " TEXT," +
+                    PriceRec.KEY_TYPEDOC + " TEXT," +
+                    PriceRec.KEY_SKLADID + " TEXT," +
+                    PriceRec.KEY_SKLADNAME + " TEXT," +
+                    PriceRec.KEY_COMMENT + " TEXT," +
+                    BaseRec.KEY_CNTDONE + " TEXT)";
+    private static final String SQL_CREATE_PRICE_INDEX =
+            "CREATE INDEX "+DaoMem.KEY_PRICE+"_index ON " + DaoMem.KEY_PRICE + " ("+BaseRec.KEY_DOCID+")";
+
+    private static final String SQL_CREATE_PRICE_CONTENT =
+            "CREATE TABLE " + DaoMem.KEY_PRICE + DaoMem.CONTENT + " (" +
+                    BaseColumns._ID + " INTEGER PRIMARY KEY," +
+                    BaseRec.KEY_DOCID + " TEXT," +
+                    BaseRec.KEY_DOC_CONTENTID + " TEXT," +
+                    BaseRec.KEY_POS_ID1C + " TEXT," +
+                    BaseRec.KEY_POS_BARCODE + " TEXT," +
+                    BaseRec.KEY_POS_STATUS + " TEXT," +
+                    BaseRec.KEY_POS_QTYACCEPTED + " TEXT," +
+                    BaseRec.KEY_POS_MANUAL_MRC + " TEXT," +
+                    BaseRec.KEY_POS_POSITION + " TEXT," +
+                    BaseRec.KEY_POS_MARKSCANNED_CNT + " TEXT)";
+    private static final String SQL_CREATE_PRICE_CONTENT_INDEX_1 =
+            "CREATE INDEX "+DaoMem.KEY_PRICE+DaoMem.CONTENT+"_index_1 ON " + DaoMem.KEY_PRICE + DaoMem.CONTENT + " ("+BaseRec.KEY_DOCID+")";
+    private static final String SQL_CREATE_PRICE_CONTENT_INDEX_2 =
+            "CREATE INDEX "+DaoMem.KEY_PRICE+DaoMem.CONTENT+"_index_2 ON " + DaoMem.KEY_PRICE + DaoMem.CONTENT + " ("+BaseRec.KEY_DOC_CONTENTID+")";
+
+    private static final String SQL_CREATE_PRICE_CONTENT_MARK =
+            "CREATE TABLE " + DaoMem.KEY_PRICE + DaoMem.CONTENT_MARK +" (" +
+                    BaseColumns._ID + " INTEGER PRIMARY KEY," +
+                    BaseRec.KEY_DOCID + " TEXT," +
+                    BaseRec.KEY_DOC_CONTENTID + " TEXT," +
+                    BaseRec.KEY_DOC_CONTENT_MARKID + " TEXT," +
+                    BaseRec.KEY_POS_MARKSCANNED + " TEXT," +
+                    BaseRec.KEY_POS_MARKSCANNED_ASTYPE + " TEXT," +
+                    BaseRec.KEY_POS_MARKSCANNEDREAL + " TEXT," +
+                    BaseRec.KEY_POS_MARKBOX + " TEXT," +
+                    BaseRec.KEY_POS_MARKSTATE + " TEXT)";
+    private static final String SQL_CREATE_PRICE_CONTENT_MARK_INDEX_1 =
+            "CREATE INDEX "+DaoMem.KEY_PRICE+DaoMem.CONTENT_MARK+"_index_1 ON " + DaoMem.KEY_PRICE + DaoMem.CONTENT_MARK + " ("+BaseRec.KEY_DOCID+")";
+    private static final String SQL_CREATE_PRICE_CONTENT_MARK_INDEX_2 =
+            "CREATE INDEX "+DaoMem.KEY_PRICE+DaoMem.CONTENT_MARK+"_index_2 ON " + DaoMem.KEY_PRICE + DaoMem.CONTENT_MARK + " ("+BaseRec.KEY_DOC_CONTENTID+")";
+    private static final String SQL_CREATE_PRICE_CONTENT_MARK_INDEX_3 =
+            "CREATE INDEX "+DaoMem.KEY_PRICE+DaoMem.CONTENT_MARK+"_index_3 ON " + DaoMem.KEY_PRICE + DaoMem.CONTENT_MARK + " ("+BaseRec.KEY_DOC_CONTENT_MARKID+")";
+
+    private static final String SQL_DELETE_PRICE = "DROP TABLE IF EXISTS " + DaoMem.KEY_PRICE;
+    private static final String SQL_DELETE_PRICE_CONTENT = "DROP TABLE IF EXISTS " + DaoMem.KEY_PRICE+DaoMem.CONTENT;
+    private static final String SQL_DELETE_PRICE_CONTENT_MARK = "DROP TABLE IF EXISTS " + DaoMem.KEY_PRICE+DaoMem.CONTENT_MARK;
+
 
     public AppDbHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -360,6 +420,20 @@ public class AppDbHelper extends SQLiteOpenHelper {
         db.execSQL(SQL_CREATE_DOC_CONTENT_MARK_INDEX_1);
         db.execSQL(SQL_CREATE_DOC_CONTENT_MARK_INDEX_2);
         db.execSQL(SQL_CREATE_DOC_CONTENT_MARK_INDEX_3);
+        //
+        // PRICE
+        //
+        db.execSQL(SQL_CREATE_PRICE);
+        db.execSQL(SQL_CREATE_PRICE_INDEX);
+
+        db.execSQL(SQL_CREATE_PRICE_CONTENT);
+        db.execSQL(SQL_CREATE_PRICE_CONTENT_INDEX_1);
+        db.execSQL(SQL_CREATE_PRICE_CONTENT_INDEX_2);
+
+        db.execSQL(SQL_CREATE_PRICE_CONTENT_MARK);
+        db.execSQL(SQL_CREATE_PRICE_CONTENT_MARK_INDEX_1);
+        db.execSQL(SQL_CREATE_PRICE_CONTENT_MARK_INDEX_2);
+        db.execSQL(SQL_CREATE_PRICE_CONTENT_MARK_INDEX_3);
     }
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         // INV
@@ -382,6 +456,10 @@ public class AppDbHelper extends SQLiteOpenHelper {
         db.execSQL(SQL_DELETE_DOC_CONTENT_MARK);
         db.execSQL(SQL_DELETE_DOC_CONTENT);
         db.execSQL(SQL_DELETE_DOC);
+        // PRICE
+        db.execSQL(SQL_DELETE_PRICE_CONTENT_MARK);
+        db.execSQL(SQL_DELETE_PRICE_CONTENT);
+        db.execSQL(SQL_DELETE_PRICE);
 
         onCreate(db);
     }

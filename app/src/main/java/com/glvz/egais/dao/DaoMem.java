@@ -19,6 +19,7 @@ import com.glvz.egais.daodb.DaoDbCheckMark;
 import com.glvz.egais.daodb.DaoDbDoc;
 import com.glvz.egais.daodb.DaoDbFindMark;
 import com.glvz.egais.daodb.DaoDbInv;
+import com.glvz.egais.daodb.DaoDbPrice;
 import com.glvz.egais.daodb.DaoDbWriteOff;
 import com.glvz.egais.integration.model.AlcCodeIn;
 import com.glvz.egais.integration.model.CommandIn;
@@ -57,6 +58,8 @@ import com.glvz.egais.model.inv.InvRecContent;
 import com.glvz.egais.model.move.MoveRec;
 import com.glvz.egais.model.move.MoveRecContent;
 import com.glvz.egais.model.photo.PhotoRec;
+import com.glvz.egais.model.price.PriceRec;
+import com.glvz.egais.model.price.PriceRecContent;
 import com.glvz.egais.model.writeoff.WriteoffRec;
 import com.glvz.egais.model.writeoff.WriteoffRecContent;
 import com.glvz.egais.service.CommandCall;
@@ -90,6 +93,7 @@ public class DaoMem {
     public static final String KEY_FINDMARK = "findmark";
     public static final String KEY_INV = "inv";
     public static final String KEY_DOC = "doc";
+    public static final String KEY_PRICE = "price";
     public static final String CONTENT = "_content";
     public static final String CONTENT_MARK = "_content_mark";
 
@@ -136,6 +140,7 @@ public class DaoMem {
     Map<String, IncomeRec> mapIncomeRec;
     Map<String, MoveRec> mapMoveRec;
     Map<String, WriteoffRec> mapWriteoffRec;
+    Map<String, PriceRec> mapPriceRec;
     Map<String, CheckMarkRec> mapCheckMarkRec;
     Map<String, FindMarkRec> mapFindMarkRec;
     Map<String, InvRec> mapInvRec;
@@ -245,6 +250,7 @@ public class DaoMem {
         mapMoveRec = readMoveRec();
         mapCheckMarkRec = readCheckMarkRec();
         mapWriteoffRec = DaoDbWriteOff.getDaoDbWriteOff().readWriteoffRecList(shopId);
+        mapPriceRec = DaoDbPrice.getDaoDbPrice().readPriceRecList(shopId);
         mapPhotoRec = readPhotoRec(shopId);
         mapFindMarkRec = readFindMarkRec();
         mapInvRec = readInvRec();
@@ -436,6 +442,14 @@ public class DaoMem {
         return list;
     }
 
+    public Collection<PriceRec> getPriceRecListOrdered() {
+        List<PriceRec> list = new ArrayList<>();
+        list.addAll(mapPriceRec.values());
+
+        Collections.sort(list, docRecDateComparator);
+        return list;
+    }
+
     public Collection<CheckMarkRec> getCheckMarkRecListOrdered() {
         List<CheckMarkRec> list = new ArrayList<>();
         list.addAll(mapCheckMarkRec.values());
@@ -466,6 +480,10 @@ public class DaoMem {
         return mapWriteoffRec;
     }
 
+    public Map<String, PriceRec> getMapPriceRec() {
+        return mapPriceRec;
+    }
+
     public Map<String, CheckMarkRec> getMapCheckMarkRec() {
         return mapCheckMarkRec;
     }
@@ -480,6 +498,10 @@ public class DaoMem {
 
     public Collection<WriteoffRecContent> getWriteoffRecContentList(String docId) {
         return mapWriteoffRec.get(docId).getWriteoffRecContentList();
+    }
+
+    public Collection<PriceRecContent> getPriceRecContentList(String docId) {
+        return mapPriceRec.get(docId).getPriceRecContentList();
     }
 
     public Collection<CheckMarkRecContent> getCheckMarkRecContentList(String docId) {
@@ -572,6 +594,13 @@ public class DaoMem {
         return newRec;
     }
 
+    public PriceRec addNewPriceRec(String shopId, String shopInName) {
+        PriceRec newRec = new PriceRec(shopId, shopInName);
+        mapPriceRec.put(newRec.getDocId(),newRec);
+        DaoDbPrice.getDaoDbPrice().saveDbPriceRec(shopId, newRec);
+        return newRec;
+    }
+
     public String getDeviceId() {
         return deviceId;
     }
@@ -591,6 +620,15 @@ public class DaoMem {
         DaoDbWriteOff.getDaoDbWriteOff().saveDbWriteoffRecDeletion(shopId, writeoffRec);
         // Удалить сам файл
         integrationFile.deleteFileRec(writeoffRec, shopId);
+    }
+
+    public void deleteData(PriceRec pricefRec) {
+        // удалять документ из списка и его out-файл (если есть).
+        mapWriteoffRec.remove(pricefRec.getDocId());
+        rejectData(pricefRec);
+        DaoDbPrice.getDaoDbPrice().saveDbPriceRecDeletion(shopId, pricefRec);
+        // Удалить сам файл
+        integrationFile.deleteFileRec(pricefRec, shopId);
     }
 
     public PhotoRec addPhotoRec(String shopId, String shopInName, byte[] byteArray, byte[] byteArrayMini) {
@@ -801,6 +839,13 @@ public class DaoMem {
         return true;
     }
 
+    public boolean exportData(PriceRec priceRec) {
+        priceRec.setExported(true);
+        DaoDbPrice.getDaoDbPrice().saveDbPriceRec(shopId, priceRec);
+        integrationFile.writeBaseRec(shopId, priceRec);
+        return true;
+    }
+
     public boolean exportData(PhotoRec photoRec) {
         integrationFile.writeBaseRec(shopId, photoRec);
         return true;
@@ -865,6 +910,11 @@ public class DaoMem {
         rec.rejectData();
         DaoDbDoc.getDaoDbDoc().writeLocalDataRec_ClearAllMarks(rec);
         DaoDbWriteOff.getDaoDbWriteOff().saveDbWriteoffRecWithOnlyContentDeletion(shopId, rec);
+    }
+
+    public void rejectData(PriceRec rec) {
+        rec.rejectData();
+        DaoDbPrice.getDaoDbPrice().saveDbPriceRecWithOnlyContentDeletion(shopId, rec);
     }
 
     public void rejectData(CheckMarkRec rec) {
