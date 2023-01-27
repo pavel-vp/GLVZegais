@@ -126,7 +126,7 @@ public class BarcodeObject implements BarcodeReader.BarcodeListener {
             properties.put(BarcodeReader.PROPERTY_EAN_13_CHECK_DIGIT_TRANSMIT_ENABLED, true);
             properties.put(BarcodeReader.PROPERTY_AZTEC_ENABLED, false);
             properties.put(BarcodeReader.PROPERTY_CODABAR_ENABLED, false);
-            properties.put(BarcodeReader.PROPERTY_INTERLEAVED_25_ENABLED, false);
+            properties.put(BarcodeReader.PROPERTY_INTERLEAVED_25_ENABLED, true);
             properties.put(BarcodeReader.PROPERTY_PDF_417_ENABLED, true);
             // Set Max Code 39 barcode length
             properties.put(BarcodeReader.PROPERTY_CODE_39_MAXIMUM_LENGTH, 10);
@@ -189,7 +189,7 @@ public class BarcodeObject implements BarcodeReader.BarcodeListener {
         // FIXME: пока непонятно как по-другому
         if (barcodeReadEvent.getCodeId().equals("D") || barcodeReadEvent.getCodeId().equals("E") )
             return BarCodeType.EAN8;
-        if (barcodeReadEvent.getCodeId().equals("d") || barcodeReadEvent.getCodeId().equals("c") )
+        if (barcodeReadEvent.getCodeId().equals("d") || barcodeReadEvent.getCodeId().equals("c") || barcodeReadEvent.getCodeId().equals("e") )
             return BarCodeType.EAN13;
         if (barcodeReadEvent.getCodeId().equals("r"))
             return BarCodeType.PDF417;
