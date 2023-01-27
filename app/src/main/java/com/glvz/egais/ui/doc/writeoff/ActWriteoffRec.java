@@ -366,6 +366,47 @@ public class ActWriteoffRec extends ActBaseDocRec {
                 NomenIn nomenIn = DaoMem.getDaoMem().findNomenInAlcoByNomenId(markIn.getNomenId());
                 proceedOneBottle(nomenIn, 1);
                 break;
+            case GS1_DATAMATRIX_CIGA:
+                // маркированная вода: вырезуть из марки EAN, по нему определить номенклатуру, добавить в документ (пока без проверки марки)
+                if (barCode.length() == 38) {
+                    markScanned = DaoMem.getDaoMem().checkMarkScanned(writeoffRec, barCode);
+                    if (markScanned != null && (markScanned.markScannedAsType == BaseRecContentMark.MARK_SCANNED_AS_MARK || markScanned.markScannedAsType == BaseRecContentMark.MARK_SCANNED_AS_BOX)) {
+                        // Если марка найдена — модальное сообщение «», прервать обработку события
+                        MessageUtils.showModalMessage(this, "Внимание!", "Эта марка ранее уже была отсканирована в этом задании в позиции " + markScanned.recContent.getPosition() + " товара " + markScanned.recContent.getNomenIn().getName());
+                        return;
+                    }
+                    final String EANbarCode = barCode.substring(3, 16);
+                    nomenIn = DaoMem.getDaoMem().findNomenInByBarCode(EANbarCode);
+                    if (nomenIn == null) {
+                        MessageUtils.showModalMessage(this, "Внимание!", "Товар по штрихкоду " + EANbarCode + ", не найден.");
+                        return;
+                    }
+                    markIn = new MarkIn();
+                    markIn.setMark(barCode);
+                    this.scannedMarkIn = markIn;
+                    proceedOneBottle(nomenIn, 1);
+                    break;
+                }
+                // маркированная молочная продукция поштучная: : вырезуть из марки EAN, по нему определить номенклатуру, добавить в документ (пока без проверки марки)
+                if (barCode.length() == 31) {
+                    markScanned = DaoMem.getDaoMem().checkMarkScanned(writeoffRec, barCode);
+                    if (markScanned != null && (markScanned.markScannedAsType == BaseRecContentMark.MARK_SCANNED_AS_MARK || markScanned.markScannedAsType == BaseRecContentMark.MARK_SCANNED_AS_BOX)) {
+                        // Если марка найдена — модальное сообщение «», прервать обработку события
+                        MessageUtils.showModalMessage(this, "Внимание!", "Эта марка ранее уже была отсканирована в этом задании в позиции " + markScanned.recContent.getPosition() + " товара " + markScanned.recContent.getNomenIn().getName());
+                        return;
+                    }
+                    final String EANbarCode = barCode.substring(3, 16);
+                    nomenIn = DaoMem.getDaoMem().findNomenInByBarCode(EANbarCode);
+                    if (nomenIn == null) {
+                        MessageUtils.showModalMessage(this, "Внимание!", "Товар по штрихкоду " + EANbarCode + ", не найден.");
+                        return;
+                    }
+                    markIn = new MarkIn();
+                    markIn.setMark(barCode);
+                    this.scannedMarkIn = markIn;
+                    proceedOneBottle(nomenIn, 1);
+                    break;
+                }
             case CODE128:
                 if (currentState == STATE_SCAN_EAN) {
                     MessageUtils.showModalMessage(this, "Внимание!", "Сканируйте штрихкод, с той же бутылки с которой только что сканировали марку");
