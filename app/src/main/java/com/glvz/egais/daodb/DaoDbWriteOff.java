@@ -151,11 +151,13 @@ public class DaoDbWriteOff {
     private List<WriteoffRecContentMark> readDbDataWriteoffContentMarkList(WriteoffRec writeoffRec, WriteoffRecContent recContent) {
         List<WriteoffRecContentMark> result = new ArrayList<>();
         SQLiteDatabase db = appDbHelper.getReadableDatabase();
+        String mrcS = String.valueOf(0);
+        String contentId = writeoffRec.getDocId()+"_"+recContent.getId1c()+"_"+mrcS;
         Cursor cursor = db.query(
                 DaoMem.KEY_WRITEOFF+DaoMem.CONTENT_MARK,   // The table to query
                 null,             // The array of columns to return (pass null to get all)
                 BaseRec.KEY_DOC_CONTENTID + " = ?",              // The columns for the WHERE clause
-                new String[] { writeoffRec.getDocId()+"_"+recContent.getPosition() },                              // The values for the WHERE clause
+                new String[] { contentId },                              // The values for the WHERE clause
                 null,                   // don't group the rows
                 null,                   // don't filter by row groups
                 BaseColumns._ID + " ASC"               // The sort order
