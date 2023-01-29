@@ -18,6 +18,7 @@ import com.glvz.egais.model.writeoff.WriteoffRecContent;
 import com.glvz.egais.model.writeoff.WriteoffRecContentMark;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -240,11 +241,11 @@ public class DaoDbWriteOff {
     }
 
 
-    public void saveDbWriteoffRecDeletion(String shopId, WriteoffRec writeoffRec) {
+    public void saveDbWriteoffRecDeletion(String docId) {
         SQLiteDatabase db = appDbHelper.getWritableDatabase();
-        int deletedRows = db.delete(DaoMem.KEY_WRITEOFF+DaoMem.CONTENT_MARK, BaseRec.KEY_DOCID + " = ?", new String[] { writeoffRec.getDocId() });
-        int deletedRowsContent = db.delete(DaoMem.KEY_WRITEOFF+DaoMem.CONTENT, BaseRec.KEY_DOCID + " = ?", new String[] { writeoffRec.getDocId() });
-        int deletedRow = db.delete(DaoMem.KEY_WRITEOFF, BaseRec.KEY_DOCID + " = ?", new String[] { writeoffRec.getDocId() });
+        int deletedRows = db.delete(DaoMem.KEY_WRITEOFF+DaoMem.CONTENT_MARK, BaseRec.KEY_DOCID + " = ?", new String[] { docId });
+        int deletedRowsContent = db.delete(DaoMem.KEY_WRITEOFF+DaoMem.CONTENT, BaseRec.KEY_DOCID + " = ?", new String[] { docId });
+        int deletedRow = db.delete(DaoMem.KEY_WRITEOFF, BaseRec.KEY_DOCID + " = ?", new String[] { docId });
     }
 
     public void removeWriteoffRecContent(String shopId, WriteoffRec writeoffRec, WriteoffRecContent writeoffRecContent) {
@@ -339,4 +340,21 @@ public class DaoDbWriteOff {
         }
     }
 
+    public void deleteWriteoffByDate(String date) {
+        SQLiteDatabase db = appDbHelper.getWritableDatabase();
+        Cursor cursor = db.query(
+                DaoMem.KEY_WRITEOFF,   // The table to query
+                null,             // The array of columns to return (pass null to get all)
+                "substr("+WriteoffRec.KEY_DATE+",7)||substr("+WriteoffRec.KEY_DATE+",4,2)||substr("+WriteoffRec.KEY_DATE+",1,2) < ?",              // The columns for the WHERE clause
+                new String[] { date},                              // The values for the WHERE clause
+                null,                   // don't group the rows
+                null,                   // don't filter by row groups
+                BaseColumns._ID + " ASC"               // The sort order
+        );
+        while(cursor.moveToNext()) {
+            String docId = cursor.getString(cursor.getColumnIndexOrThrow(BaseRec.KEY_DOCID));
+            saveDbWriteoffRecDeletion(docId);
+        }
+        cursor.close();
+    }
 }

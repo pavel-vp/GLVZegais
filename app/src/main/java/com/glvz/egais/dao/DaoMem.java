@@ -73,6 +73,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
@@ -83,6 +84,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class DaoMem {
 
@@ -158,8 +160,9 @@ public class DaoMem {
     public void initDictionary() {
         File path = new File(Environment.getExternalStorageDirectory(), MainApp.getContext().getResources().getString(R.string.path_exchange));
         integrationFile = new IntegrationSDCard(path.getAbsolutePath());
-        List<String> allRemainRecs = integrationFile.clearOldData(Integer.valueOf(MainApp.getContext().getResources().getString(R.string.num_days_old)));
-        clearStoredDataNotInList(allRemainRecs);
+        Set<String> allRemainRecs = integrationFile.clearOldData(Integer.valueOf(MainApp.getContext().getResources().getString(R.string.num_days_old)));
+        clearStoredDataNotInList(allRemainRecs, Integer.valueOf(MainApp.getContext().getResources().getString(R.string.num_days_old)));
+
         listU = integrationFile.loadUsers();
         listS = integrationFile.loadShops();
         listP = integrationFile.loadPosts();
@@ -178,6 +181,23 @@ public class DaoMem {
         syncWiFiFtp = new SyncWiFiFtp();
         syncWiFiFtp.init(MainApp.getContext(), path.getAbsolutePath(),
                 setupFtp);
+    }
+
+    private void clearStoredDataNotInList(Set<String> allRemainRecs, int numDaysOld) {
+        // удалить документы из Списания по дате
+        Calendar calendar = Calendar.getInstance();
+        calendar.add(Calendar.DAY_OF_YEAR, -numDaysOld);
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
+
+        DaoDbWriteOff.getDaoDbWriteOff().deleteWriteoffByDate(sdf.format(calendar.getTime()));
+
+        // По остальным документам удалим все документы которых нет в списке
+        DaoDbCheckMark.getDaoDbCheckMark().deleteCheckMarkNotInList(allRemainRecs);
+        DaoDbDoc.getDaoDbDoc().deleteDocNotInList(allRemainRecs);
+        DaoDbFindMark.getDaoDbFindMark().deleteFindMarkNotInList(allRemainRecs);
+        DaoDbInv.getDaoDbInv().deleteInvNotInList(allRemainRecs);
+        DaoDbPrice.getDaoDbPrice().deletePriceNotInList(allRemainRecs);
+
     }
 
     public void setShopId(String shopId) {
@@ -370,38 +390,6 @@ public class DaoMem {
 
         return map;
     }
-
-
-    private void clearStoredDataNotInList(List<String> docIdList) {
-        Map<String, ?> allPrefs = sharedPreferences.getAll();
-        for (String docId : docIdList) {
-            Iterator<? extends Map.Entry<String, ?>> iter = allPrefs.entrySet().iterator();
-            while(iter.hasNext()) {
-                Map.Entry<String,?> entry  = iter.next();
-                if (entry.getKey().contains("_" + docId + "_")) {
-                    // Удалить
-                    iter.remove();
-                }
-            }
-        }
-
-        // Оставшиеся удаляем
-        SharedPreferences.Editor ed = sharedPreferences.edit();
-        for (Map.Entry<String,?> entry : allPrefs.entrySet()) {
-            // НЕ связанные с документами
-            if (!entry.getKey().equals(BaseRec.KEY_SHOPID) &&
-                    !entry.getKey().equals(KEY_LAST_DOCID) &&
-                    !entry.getKey().startsWith(KEY_WRITEOFF) /*&&
-                    !entry.getKey().startsWith(KEY_INV) &&
-                    !entry.getKey().startsWith(KEY_CHECKMARK) &&
-                    !entry.getKey().startsWith(KEY_FINDMARK)*/) {
-                ed.putString(entry.getKey(), null);
-            }
-        }
-        ed.apply();
-
-    }
-
 
 
 
@@ -617,7 +605,7 @@ public class DaoMem {
         // удалять документ из списка и его out-файл (если есть).
         mapWriteoffRec.remove(writeoffRec.getDocId());
         rejectData(writeoffRec);
-        DaoDbWriteOff.getDaoDbWriteOff().saveDbWriteoffRecDeletion(shopId, writeoffRec);
+        DaoDbWriteOff.getDaoDbWriteOff().saveDbWriteoffRecDeletion(writeoffRec.getDocId());
         // Удалить сам файл
         integrationFile.deleteFileRec(writeoffRec, shopId);
     }

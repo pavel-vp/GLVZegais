@@ -13,6 +13,7 @@ import com.glvz.egais.model.writeoff.WriteoffRec;
 
 import java.io.File;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Created by pasha on 07.06.18.
@@ -42,7 +43,7 @@ public interface Integration {
 
     File loadNewApk();
 
-    List<String> clearOldData(int numDaysOld);
+    Set<String> clearOldData(int numDaysOld);
 
     List<AlcCodeIn> loadAlcCode();
 
