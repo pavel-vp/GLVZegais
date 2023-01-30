@@ -639,9 +639,9 @@ public class DaoMem {
         return integrationFile.getPhotoFileName(shopId, "IMG-"+req.getDocIdForExport()+".jpeg");
     }
 
-    public void callToWS(CommandIn commandIn, String barcode, CommandFinishCallback commandFinishCallback) {
+    public void callToWS(CommandIn commandIn, String barcode, String nomen, CommandFinishCallback commandFinishCallback) {
         // вызываем сервис
-        CommandCall commandCall = new CommandCall(commandIn, barcode, shopId, userIn.getId());
+        CommandCall commandCall = new CommandCall(commandIn, barcode, shopId, userIn.getId(), nomen);
         commandCall.call(commandFinishCallback);
     }
 

@@ -53,7 +53,7 @@ public class ActCommandExec extends Activity implements BarcodeReader.BarcodeLis
     private void callService(String barcode) {
         pg.show();
         // Запустить запрос к сервису
-        DaoMem.getDaoMem().callToWS(commandByID, barcode, new CommandFinishCallback() {
+        DaoMem.getDaoMem().callToWS(commandByID, barcode, null, new CommandFinishCallback() {
             @Override
             public void finishCommand(final String result) {
                 runOnUiThread(new Runnable() {

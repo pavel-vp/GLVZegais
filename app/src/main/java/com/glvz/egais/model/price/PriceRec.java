@@ -15,6 +15,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class PriceRec  extends BaseRec {
     public static final String TYEDOC_PRICE = "PRICE";
@@ -130,4 +131,8 @@ public class PriceRec  extends BaseRec {
     }
 
 
+    public String buildNomenList() {
+        List<String> nomens = recContentList.stream().map(el -> el.getNomenIn().getId()).collect(Collectors.toList());
+        return String.join(";", nomens);
+    }
 }

@@ -3,6 +3,7 @@ package com.glvz.egais.ui.doc.price;
 import static com.glvz.egais.utils.BarcodeObject.BarCodeType.DATAMATRIX;
 import static com.glvz.egais.utils.BarcodeObject.BarCodeType.PDF417;
 
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -21,6 +22,7 @@ import com.glvz.egais.R;
 import com.glvz.egais.dao.DaoMem;
 import com.glvz.egais.daodb.DaoDbPrice;
 import com.glvz.egais.integration.model.AlcCodeIn;
+import com.glvz.egais.integration.model.CommandIn;
 import com.glvz.egais.integration.model.MarkIn;
 import com.glvz.egais.integration.model.NomenIn;
 import com.glvz.egais.model.BaseRecContent;
@@ -28,6 +30,7 @@ import com.glvz.egais.model.BaseRecContentStatus;
 import com.glvz.egais.model.BaseRecStatus;
 import com.glvz.egais.model.price.PriceRec;
 import com.glvz.egais.model.price.PriceRecContent;
+import com.glvz.egais.service.CommandFinishCallback;
 import com.glvz.egais.service.price.PriceContentArrayAdapter;
 import com.glvz.egais.service.price.PriceRecHolder;
 import com.glvz.egais.service.writeoff.WriteoffRecHolder;
@@ -56,12 +59,15 @@ public class ActPriceRec extends ActBaseDocRec {
     private PriceRec priceRec;
     Button btnChangeComment;
     TextView tvCaption;
+    private ProgressDialog pg;
+    private CommandIn commandByID;
 
     @Override
     protected void initRec() {
         Bundle extras = getIntent().getExtras();
         String key = extras.getString(ActBaseDocRec.REC_DOCID);
         this.priceRec = DaoMem.getDaoMem().getMapPriceRec().get(key);
+        commandByID = DaoMem.getDaoMem().getCommandByID("PriceLabel");
     }
 
     @Override
@@ -95,7 +101,10 @@ public class ActPriceRec extends ActBaseDocRec {
         adapter = new PriceContentArrayAdapter(this, R.layout.rec_price_position, list);
         lvContent.setAdapter(adapter);
         tvCaption = (TextView)findViewById(R.id.tvCaption);
-
+        pg = new ProgressDialog(this);
+        pg.setMessage("Выполняется запрос...");
+        pg.setCancelable(false);
+        pg.setCanceledOnTouchOutside(false);
     }
 
     @Override
@@ -150,6 +159,9 @@ public class ActPriceRec extends ActBaseDocRec {
 
         // Операции для выбранного пункта меню
         switch (id) {
+            case R.id.action_print:
+                print();
+                return true;
             case R.id.action_export:
                 exportDoc();
                 return true;
@@ -184,6 +196,27 @@ public class ActPriceRec extends ActBaseDocRec {
                 return super.onOptionsItemSelected(item);
         }
     }
+
+    private void print() {
+        if (commandByID != null && commandByID.getUrl() != null) {
+            pg.show();
+            String nomens = priceRec.buildNomenList();
+            // Запустить запрос к сервису
+            DaoMem.getDaoMem().callToWS(commandByID, null, nomens, new CommandFinishCallback() {
+                @Override
+                public void finishCommand(final String result) {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            pg.dismiss();
+                            MessageUtils.showModalMessage(ActPriceRec.this, "Внимание!", result);
+                        }
+                    });
+                }
+            });
+        }
+    }
+
 
     @Override
     public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
