@@ -192,7 +192,7 @@ public class WriteoffRec extends BaseRec {
         this.typeDoc = typeDoc;
     }
     public String getComment() {
-        return comment;
+        return comment == null ? "" : comment;
     }
 
     public void setComment(String comment) {
