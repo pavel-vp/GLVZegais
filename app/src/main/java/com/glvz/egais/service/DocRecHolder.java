@@ -38,21 +38,23 @@ public abstract class DocRecHolder {
         } else {
             tvExported.setVisibility(View.INVISIBLE);
         }
-        switch (rec.getStatus()) {
-            case NEW:
-                tvStatus.setTextColor(Color.BLACK);
-                break;
-            case INPROGRESS:
-                tvStatus.setTextColor(Color.BLUE);
-                break;
-            case REJECTED:
-                tvStatus.setTextColor(Color.RED);
-                break;
-            case DONE:
-                tvStatus.setTextColor(Color.rgb(0, 200, 0));
-                break;
+        if (tvStatus != null) {
+            switch (rec.getStatus()) {
+                case NEW:
+                    tvStatus.setTextColor(Color.BLACK);
+                    break;
+                case INPROGRESS:
+                    tvStatus.setTextColor(Color.BLUE);
+                    break;
+                case REJECTED:
+                    tvStatus.setTextColor(Color.RED);
+                    break;
+                case DONE:
+                    tvStatus.setTextColor(Color.rgb(0, 200, 0));
+                    break;
+            }
+            this.tvStatus.setText("Статус: " + rec.getStatusDesc());
         }
-        this.tvStatus.setText("Статус: " + rec.getStatusDesc());
     }
 
 }

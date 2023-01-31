@@ -59,13 +59,6 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:textAppearance="?android:attr/textAppearanceMedium"
-                    android:text="Статус:В работе"
-                    android:maxLines="1"
-                    android:id="@+id/tvStatus"/>
-            <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textAppearance="?android:attr/textAppearanceMedium"
                     android:text="Эксп"
                     android:id="@+id/tvExported" />
 

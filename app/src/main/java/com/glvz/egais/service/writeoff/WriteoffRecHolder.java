@@ -24,7 +24,8 @@ public class WriteoffRecHolder extends DocRecHolder {
     public void setItem(BaseRec rec) {
         super.setItem(rec);
         WriteoffRec writeoffRec = (WriteoffRec)rec;
-        this.tvComment.setText(writeoffRec.getComment());
+        String comment = writeoffRec.getComment();
+        this.tvComment.setText(comment == null ? "" : comment);
         double qty = 0;
         for (BaseRecContent recContent : rec.getRecContentList()) {
             qty = qty + recContent.getQtyAccepted();
