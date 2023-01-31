@@ -8,11 +8,6 @@
             android:title="Печать"
             app:showAsAction="never"/>
     <item
-            android:id="@+id/action_export"
-            android:orderInCategory="100"
-            android:title="Выгрузить"
-            app:showAsAction="never"/>
-    <item
             android:id="@+id/action_clear"
             android:orderInCategory="100"
             android:title="Очистить"

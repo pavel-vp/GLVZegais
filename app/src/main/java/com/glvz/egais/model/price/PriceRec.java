@@ -8,6 +8,7 @@ import com.glvz.egais.model.BaseRec;
 import com.glvz.egais.model.BaseRecContent;
 import com.glvz.egais.utils.StringUtils;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
@@ -93,8 +94,13 @@ public class PriceRec  extends BaseRec {
     }
 
     @Override
+    public void rejectData() {
+        recContentList.clear();
+    }
+
+    @Override
     public String getStatusDesc() {
-        return null;
+        return "";
     }
 
     public Collection<PriceRecContent> getPriceRecContentList() {
@@ -132,7 +138,7 @@ public class PriceRec  extends BaseRec {
 
 
     public String buildNomenList() {
-        List<String> nomens = recContentList.stream().map(el -> el.getNomenIn().getId()).collect(Collectors.toList());
+        List<String> nomens = recContentList.stream().map(el -> Long.valueOf(el.getNomenIn().getId().trim()).toString()).collect(Collectors.toList());
         return String.join(";", nomens);
     }
 }

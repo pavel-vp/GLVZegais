@@ -19,7 +19,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 public class DaoDbPrice {
     private static DaoDbPrice daoDbPrice = null;
@@ -216,23 +215,22 @@ public class DaoDbPrice {
         int deletedRow = db.delete(DaoMem.KEY_PRICE, BaseRec.KEY_DOCID + " = ?", new String[] { docId });
     }
 
-    public void deletePriceNotInList(Set<String> allRemainRecs) {
-        SQLiteDatabase db = appDbHelper.getReadableDatabase();
+    public void deletePriceByDate(String date) {
+        SQLiteDatabase db = appDbHelper.getWritableDatabase();
         Cursor cursor = db.query(
                 DaoMem.KEY_PRICE,   // The table to query
                 null,             // The array of columns to return (pass null to get all)
-                null,              // The columns for the WHERE clause
-                null,                              // The values for the WHERE clause
+                "substr("+ PriceRec.KEY_DATE+",7)||substr("+PriceRec.KEY_DATE+",4,2)||substr("+PriceRec.KEY_DATE+",1,2) < ?",              // The columns for the WHERE clause
+                new String[] { date},                              // The values for the WHERE clause
                 null,                   // don't group the rows
                 null,                   // don't filter by row groups
                 BaseColumns._ID + " ASC"               // The sort order
         );
         while(cursor.moveToNext()) {
             String docId = cursor.getString(cursor.getColumnIndexOrThrow(BaseRec.KEY_DOCID));
-            if (!allRemainRecs.contains(docId)) {
-                deleteRecByDocId(docId);
-            }
+            deleteRecByDocId(docId);
         }
-    }
+        cursor.close();
 
+    }
 }

@@ -190,13 +190,13 @@ public class DaoMem {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
 
         DaoDbWriteOff.getDaoDbWriteOff().deleteWriteoffByDate(sdf.format(calendar.getTime()));
+        DaoDbPrice.getDaoDbPrice().deletePriceByDate(sdf.format(calendar.getTime()));
 
         // По остальным документам удалим все документы которых нет в списке
         DaoDbCheckMark.getDaoDbCheckMark().deleteCheckMarkNotInList(allRemainRecs);
         DaoDbDoc.getDaoDbDoc().deleteDocNotInList(allRemainRecs);
         DaoDbFindMark.getDaoDbFindMark().deleteFindMarkNotInList(allRemainRecs);
         DaoDbInv.getDaoDbInv().deleteInvNotInList(allRemainRecs);
-        DaoDbPrice.getDaoDbPrice().deletePriceNotInList(allRemainRecs);
 
     }
 
@@ -612,9 +612,9 @@ public class DaoMem {
 
     public void deleteData(PriceRec pricefRec) {
         // удалять документ из списка и его out-файл (если есть).
-        mapWriteoffRec.remove(pricefRec.getDocId());
+        mapPriceRec.remove(pricefRec.getDocId());
         rejectData(pricefRec);
-        DaoDbPrice.getDaoDbPrice().saveDbPriceRecDeletion(shopId, pricefRec);
+        DaoDbPrice.getDaoDbPrice().deleteRecByDocId(pricefRec.getDocId());
         // Удалить сам файл
         integrationFile.deleteFileRec(pricefRec, shopId);
     }

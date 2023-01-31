@@ -57,7 +57,7 @@ public class ActPriceRec extends ActBaseDocRec {
     private PriceRecContent priceRecContentLocal;
 
     private PriceRec priceRec;
-    Button btnChangeComment;
+    Button btnPrint;
     TextView tvCaption;
     private ProgressDialog pg;
     private CommandIn commandByID;
@@ -79,14 +79,11 @@ public class ActPriceRec extends ActBaseDocRec {
 
         lvContent = (ListView) findViewById(R.id.lvContent);
 
-        btnChangeComment = (Button)findViewById(R.id.btnChangeComment);
-        btnChangeComment.setOnClickListener(new View.OnClickListener() {
+        btnPrint = (Button)findViewById(R.id.btnPrint);
+        btnPrint.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // Открыть форму с редактироанием комментария
-                Intent i = new Intent(ActPriceRec.this, ActCommentEdit.class);
-                i.putExtra(ActCommentEdit.COMMENT_VALUE, priceRec.getComment());
-                startActivityForResult(i, COMMENT_RETCODE);
+                print();
             }
         });
 
@@ -161,9 +158,6 @@ public class ActPriceRec extends ActBaseDocRec {
         switch (id) {
             case R.id.action_print:
                 print();
-                return true;
-            case R.id.action_export:
-                exportDoc();
                 return true;
             case R.id.action_clear:
                 // - запрос на подтверждение очистки «Подтвердите очистку. Информация о собранном количестве и марках будет удалена по всему документу» Да/Нет

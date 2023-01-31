@@ -26,9 +26,9 @@
                  android:id="@+id/inclRecPrice"
         />
         <Button
-                android:text="Изменить комментарий"
+                android:text="Печать"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content" android:id="@+id/btnChangeComment"/>
+                android:layout_height="wrap_content" android:id="@+id/btnPrint"/>
     </LinearLayout>
     <ListView
             android:layout_width="match_parent"

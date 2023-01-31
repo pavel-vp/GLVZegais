@@ -12,12 +12,10 @@ import com.glvz.egais.utils.StringUtils;
 
 public class PriceRecHolder extends DocRecHolder {
 
-    TextView tvComment;
     TextView tvCntRows;
 
     public PriceRecHolder(View v) {
         super(v);
-        this.tvComment = (TextView) v.findViewById(R.id.tvComment);
         this.tvCntRows = (TextView) v.findViewById(R.id.tvCntRows);
     }
 
@@ -25,7 +23,6 @@ public class PriceRecHolder extends DocRecHolder {
     public void setItem(BaseRec rec) {
         super.setItem(rec);
         PriceRec priceRec = (PriceRec)rec;
-        this.tvComment.setText(priceRec.getComment());
         double qty = 0;
         for (BaseRecContent recContent : rec.getRecContentList()) {
             qty = qty + 1;
