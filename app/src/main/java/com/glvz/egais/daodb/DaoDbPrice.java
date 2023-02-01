@@ -77,6 +77,7 @@ public class DaoDbPrice {
             priceRec.setStatus(BaseRecStatus.valueOf(String.valueOf( cursor.getString(cursor.getColumnIndexOrThrow(BaseRec.KEY_STATUS)))));
             priceRec.setComment(String.valueOf( cursor.getString(cursor.getColumnIndexOrThrow(PriceRec.KEY_COMMENT))));
             priceRec.setDate(String.valueOf( cursor.getString(cursor.getColumnIndexOrThrow(PriceRec.KEY_DATE))));
+            priceRec.setDocNum(String.valueOf( cursor.getString(cursor.getColumnIndexOrThrow(PriceRec.KEY_DOCNUM))));
         }
         cursor.close();
         if (priceRec != null) {
@@ -147,6 +148,7 @@ public class DaoDbPrice {
         values.put(BaseRec.KEY_SHOPID, shopId);
 
         values.put(PriceRec.KEY_DATE, StringUtils.formatDateDisplay(priceRec.getDate()));
+        values.put(PriceRec.KEY_DOCNUM, priceRec.getDocNum());
         values.put(PriceRec.KEY_COMMENT, priceRec.getComment());
 
         PriceRec dbPriceRec = readDbDataPrice(priceRec.getDocId());
