@@ -409,6 +409,7 @@ public class DaoMem {
                 if (res != 0) return res;
             }
 
+            if (lhs.getDocNum() == null || rhs.getDocNum() == null) return 0;
             return lhs.getDocNum().compareTo(rhs.getDocNum());
         }
     };
