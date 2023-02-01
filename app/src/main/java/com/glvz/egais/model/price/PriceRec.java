@@ -70,7 +70,7 @@ public class PriceRec  extends BaseRec {
 
     @Override
     public String getDocNum() {
-        return docNum;
+        return docId;
     }
 
     @Override

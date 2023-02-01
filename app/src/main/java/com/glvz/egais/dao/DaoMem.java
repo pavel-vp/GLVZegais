@@ -410,7 +410,7 @@ public class DaoMem {
             }
 
             if (lhs.getDocNum() == null || rhs.getDocNum() == null) return 0;
-            return lhs.getDocNum().compareTo(rhs.getDocNum());
+            return rhs.getDocNum().compareTo(lhs.getDocNum());
         }
     };
 
