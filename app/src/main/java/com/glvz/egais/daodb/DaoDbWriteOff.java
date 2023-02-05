@@ -115,6 +115,8 @@ public class DaoDbWriteOff {
 
             float qtyAccepted = Float.parseFloat( cursor.getString(cursor.getColumnIndexOrThrow(BaseRec.KEY_POS_QTYACCEPTED)));
             recContent.setQtyAccepted(Double.valueOf(qtyAccepted));
+            float mrc = Float.parseFloat( cursor.getString(cursor.getColumnIndexOrThrow(BaseRec.KEY_POS_MRC)));;
+            recContent.setMrc(Double.valueOf(mrc));
 
             recContent.getBaseRecContentMarkList().addAll(readDbDataWriteoffContentMarkList(writeoffRec, recContent));
 
@@ -143,6 +145,7 @@ public class DaoDbWriteOff {
             result.put(BaseRec.KEY_POS_BARCODE, cursor.getString(cursor.getColumnIndexOrThrow(BaseRec.KEY_POS_BARCODE)));
             result.put(BaseRec.KEY_POS_STATUS, cursor.getString(cursor.getColumnIndexOrThrow(BaseRec.KEY_POS_STATUS)));
             result.put(BaseRec.KEY_POS_QTYACCEPTED, Float.parseFloat(cursor.getString(cursor.getColumnIndexOrThrow(BaseRec.KEY_POS_QTYACCEPTED))));
+            result.put(BaseRec.KEY_POS_MRC, Float.parseFloat(cursor.getString(cursor.getColumnIndexOrThrow(BaseRec.KEY_POS_MRC))));
             result.put(BaseRec.KEY_DOC_CONTENTID, cursor.getString(cursor.getColumnIndexOrThrow(BaseRec.KEY_DOC_CONTENTID)));
         }
         cursor.close();
@@ -272,6 +275,11 @@ public class DaoDbWriteOff {
             qty = writeoffRecContent.getQtyAccepted().floatValue();
         }
         values.put(BaseRec.KEY_POS_QTYACCEPTED, qty);
+        float mrc = 0;
+        if (writeoffRecContent.getMrc() != null) {
+            mrc = writeoffRecContent.getMrc().floatValue();
+        }
+        values.put(BaseRec.KEY_POS_MRC, mrc);
         values.put(BaseRec.KEY_POS_MARKSCANNED_CNT, writeoffRecContent.getBaseRecContentMarkList().size());
 
         String mrcS = String.valueOf(0);

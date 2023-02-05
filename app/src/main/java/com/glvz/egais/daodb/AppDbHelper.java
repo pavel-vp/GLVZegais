@@ -38,6 +38,7 @@ public class AppDbHelper extends SQLiteOpenHelper {
                     BaseRec.KEY_POS_BARCODE + " TEXT," +
                     BaseRec.KEY_POS_STATUS + " TEXT," +
                     BaseRec.KEY_POS_QTYACCEPTED + " TEXT," +
+                    BaseRec.KEY_POS_MRC + " TEXT," +
                     BaseRec.KEY_POS_MANUAL_MRC + " TEXT," +
                     BaseRec.KEY_POS_POSITION + " TEXT," +
                     BaseRec.KEY_POS_MARKSCANNED_CNT + " TEXT)";
@@ -91,6 +92,7 @@ public class AppDbHelper extends SQLiteOpenHelper {
                     BaseRec.KEY_POS_BARCODE + " TEXT," +
                     BaseRec.KEY_POS_STATUS + " TEXT," +
                     BaseRec.KEY_POS_QTYACCEPTED + " TEXT," +
+                    BaseRec.KEY_POS_MRC + " TEXT," +
                     BaseRec.KEY_POS_MANUAL_MRC + " TEXT," +
                     BaseRec.KEY_POS_POSITION + " TEXT," +
                     BaseRec.KEY_POS_MARKSCANNED_CNT + " TEXT)";
@@ -144,6 +146,7 @@ public class AppDbHelper extends SQLiteOpenHelper {
                     BaseRec.KEY_POS_BARCODE + " TEXT," +
                     BaseRec.KEY_POS_STATUS + " TEXT," +
                     BaseRec.KEY_POS_QTYACCEPTED + " TEXT," +
+                    BaseRec.KEY_POS_MRC + " TEXT," +
                     BaseRec.KEY_POS_MANUAL_MRC + " TEXT," +
                     BaseRec.KEY_POS_POSITION + " TEXT," +
                     BaseRec.KEY_POS_MARKSCANNED_CNT + " TEXT)";
@@ -203,6 +206,7 @@ public class AppDbHelper extends SQLiteOpenHelper {
                     BaseRec.KEY_POS_BARCODE + " TEXT," +
                     BaseRec.KEY_POS_STATUS + " TEXT," +
                     BaseRec.KEY_POS_QTYACCEPTED + " TEXT," +
+                    BaseRec.KEY_POS_MRC + " TEXT," +
                     BaseRec.KEY_POS_MANUAL_MRC + " TEXT," +
                     BaseRec.KEY_POS_POSITION + " TEXT," +
                     BaseRec.KEY_POS_MARKSCANNED_CNT + " TEXT)";
@@ -256,6 +260,7 @@ public class AppDbHelper extends SQLiteOpenHelper {
                     BaseRec.KEY_POS_BARCODE + " TEXT," +
                     BaseRec.KEY_POS_STATUS + " TEXT," +
                     BaseRec.KEY_POS_QTYACCEPTED + " TEXT," +
+                    BaseRec.KEY_POS_MRC + " TEXT," +
                     BaseRec.KEY_POS_MANUAL_MRC + " TEXT," +
                     BaseRec.KEY_POS_POSITION + " TEXT," +
                     BaseRec.KEY_POS_MARKSCANNED_CNT + " TEXT)";
@@ -315,6 +320,7 @@ public class AppDbHelper extends SQLiteOpenHelper {
                     BaseRec.KEY_POS_BARCODE + " TEXT," +
                     BaseRec.KEY_POS_STATUS + " TEXT," +
                     BaseRec.KEY_POS_QTYACCEPTED + " TEXT," +
+                    BaseRec.KEY_POS_MRC + " TEXT," +
                     BaseRec.KEY_POS_MANUAL_MRC + " TEXT," +
                     BaseRec.KEY_POS_POSITION + " TEXT," +
                     BaseRec.KEY_POS_MARKSCANNED_CNT + " TEXT)";

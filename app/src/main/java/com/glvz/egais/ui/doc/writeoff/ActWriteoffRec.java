@@ -484,7 +484,7 @@ public class ActWriteoffRec extends ActBaseDocRec {
                     MessageUtils.showModalMessage(this, "Внимание!", "Неверная длина сканированного ШК, повторите сканирование марки, фактичесая длина марки " + barCode.length());
                 }
                 break;
-            case GS1_DATAMATRIX_CIGA:
+/*            case GS1_DATAMATRIX_CIGA:
                 // маркированная вода: вырезуть из марки EAN, по нему определить номенклатуру, добавить в документ (пока без проверки марки)
                 if (barCode.length() == 38) {
                     markScanned = DaoMem.getDaoMem().checkMarkScanned(writeoffRec, barCode);
@@ -524,7 +524,7 @@ public class ActWriteoffRec extends ActBaseDocRec {
                     this.scannedMarkIn = markIn;
                     proceedOneBottle(nomenIn, 1);
                     break;
-                }
+                }*/
             case CODE128:
                 if (currentState == STATE_SCAN_EAN) {
                     MessageUtils.showModalMessage(this, "Внимание!", "Сканируйте штрихкод, с того же товара с которого только что сканировали марку");
