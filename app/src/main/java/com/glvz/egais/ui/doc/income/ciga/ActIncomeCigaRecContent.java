@@ -12,6 +12,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import com.glvz.egais.R;
 import com.glvz.egais.dao.DaoMem;
+import com.glvz.egais.daodb.DaoDbDoc;
 import com.glvz.egais.integration.model.NomenIn;
 import com.glvz.egais.integration.model.doc.income.IncomeContentBoxTreeIn;
 import com.glvz.egais.integration.model.doc.income.IncomeContentMarkIn;
@@ -139,7 +140,7 @@ public class ActIncomeCigaRecContent extends Activity implements BarcodeReader.B
                 }
             }
         }
-        DaoMem.getDaoMem().writeLocalDataBaseRec(incomeRec);
+        DaoDbDoc.getDaoDbDoc().saveDbDocRecContent(incomeRec, incomeRecContent);
         if (addQty == 1) {
             MessageUtils.playSound(R.raw.bottle_one);
         }
@@ -175,7 +176,7 @@ public class ActIncomeCigaRecContent extends Activity implements BarcodeReader.B
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
                                 incomeRecContent.setQtyAccepted(null);
-                                DaoMem.getDaoMem().writeLocalDataRecContent_ClearAllMarks(incomeRec.getDocId(), incomeRecContent);
+                                DaoDbDoc.getDaoDbDoc().writeLocalDataRecContent_ClearAllMarks(incomeRec.getDocId(), incomeRecContent);
                                 incomeRecContent.getBaseRecContentMarkList().clear();
                                 lastMark = null;
                                 isBoxScanned = false;
@@ -282,7 +283,7 @@ public class ActIncomeCigaRecContent extends Activity implements BarcodeReader.B
 
                     // Статус данной ТТН перевести в состояние “Идет приемка”
                     incomeRec.setStatus(BaseRecStatus.INPROGRESS);
-                    DaoMem.getDaoMem().writeLocalDataBaseRec(incomeRec);
+                    DaoDbDoc.getDaoDbDoc().saveDbDocRecContent(incomeRec, irc);
                     pickRec(this, incomeRec.getDocId(), irc, 1, barcode, false, true);
 
                 } else {

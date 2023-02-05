@@ -14,6 +14,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 import com.glvz.egais.R;
 import com.glvz.egais.dao.DaoMem;
+import com.glvz.egais.daodb.DaoDbInv;
 import com.glvz.egais.integration.model.AlcCodeIn;
 import com.glvz.egais.integration.model.MarkIn;
 import com.glvz.egais.integration.model.NomenIn;
@@ -371,6 +372,7 @@ public class ActInvRec extends ActBaseDocRec implements PickMRCCallback{
                 Integer position = null;
                 NomenIn foundNomenIn = null;
                 InvRecContent row = null;
+                List<InvRecContent> recContentsToSave = new ArrayList<>();
                 // для каждой найденной марки выполнить обработку
                 for (MarkIn mark : marksInBox) {
                     // Увеличить на 1 переменную «Числится марок в текущей коробке»
@@ -389,9 +391,21 @@ public class ActInvRec extends ActBaseDocRec implements PickMRCCallback{
                     }
                     row = ActInvRecContent.findOrAddNomen(invRec, foundNomenIn, mark, barCode);
                     position = Integer.parseInt(row.getPosition());
+
+                    boolean foundRecContentToSave = false;
+                    for (int i=0; i<recContentsToSave.size(); i++) {
+                        if (recContentsToSave.get(i).getNomenIn().getId().equals(foundNomenIn.getId())) {
+                            foundRecContentToSave = true;
+                            break;
+                        }
+                    }
+                    if (!foundRecContentToSave) {
+                        recContentsToSave.add(row);
+                    }
                     // увеличить на 1 переменную «Количество, добавленное по текущей коробке»
                     qtyAddedCurrentBox++;
                 }
+                ActInvRecContent.saveDbRecContents(invRec, recContentsToSave);
                 this.currentState = STATE_SCAN_ANY;
                 this.scannedMarkIn = null;
                 if (position != null && foundNomenIn != null) {
@@ -503,7 +517,7 @@ public class ActInvRec extends ActBaseDocRec implements PickMRCCallback{
             irc.setStatus(BaseRecContentStatus.DONE);
             irc.setManualMrc(mrc);
             invRec.getRecContentList().add(irc);
-            DaoMem.getDaoMem().writeLocalDataInvRec(invRec);
+            DaoDbInv.getDaoDbInv().saveDbInvRecContent(invRec, irc);
         }
         // переход к карточке этой строки
         pickRec(this, invRec.getDocId(), irc, 0, null, false, false);

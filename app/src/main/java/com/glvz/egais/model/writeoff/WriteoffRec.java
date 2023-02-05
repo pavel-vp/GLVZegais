@@ -146,11 +146,13 @@ public class WriteoffRec extends BaseRec {
         return list;
     }
 
-    public void removeWriteoffRecContent(int position) {
+    public WriteoffRecContent removeWriteoffRecContent(int position) {
+        WriteoffRecContent result = null;
         Iterator<BaseRecContent> iterator = recContentList.iterator();
         while (iterator.hasNext()) {
             BaseRecContent wrc = iterator.next();
             if (wrc.getPosition().equals(String.valueOf(position))) {
+                result = (WriteoffRecContent) wrc;
                 iterator.remove();
             }
         }
@@ -159,6 +161,7 @@ public class WriteoffRec extends BaseRec {
             wrc.setPosition(String.valueOf(pos));
             pos++;
         }
+        return result;
     }
 
     public void setDateStr(String date) {
@@ -189,7 +192,7 @@ public class WriteoffRec extends BaseRec {
         this.typeDoc = typeDoc;
     }
     public String getComment() {
-        return comment;
+        return comment == null ? "" : comment;
     }
 
     public void setComment(String comment) {

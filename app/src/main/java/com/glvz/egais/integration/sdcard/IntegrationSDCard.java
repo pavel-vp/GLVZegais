@@ -32,7 +32,9 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Created by pasha on 07.06.18.
@@ -366,8 +368,8 @@ public class IntegrationSDCard implements Integration {
     }
 
     @Override
-    public List<String> clearOldData(int numDaysOld) {
-        List<String> res = new ArrayList<>();
+    public Set<String> clearOldData(int numDaysOld) {
+        Set<String> res = new HashSet<>();
         Calendar calendar = Calendar.getInstance();
         calendar.add(Calendar.DAY_OF_MONTH, - numDaysOld);
         // Взять все файлы из директории

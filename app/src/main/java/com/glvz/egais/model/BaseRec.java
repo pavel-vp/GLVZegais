@@ -29,6 +29,9 @@ public abstract class BaseRec {
     public static final String KEY_POS_POSITION = "pos_position";
     public static final String KEY_POS_MANUAL_MRC = "pos_manual_mrc";
     public static final String KEY_POS_MRC = "pos_mrc";
+    public static final String KEY_DOCID = "docid";
+    public static final String KEY_DOC_CONTENTID = "doc_contentid";
+    public static final String KEY_DOC_CONTENT_MARKID = "doc_content_markid";
 
 
     // данные заполненные локально на терминале

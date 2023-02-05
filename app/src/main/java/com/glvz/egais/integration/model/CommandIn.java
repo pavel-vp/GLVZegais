@@ -8,6 +8,7 @@ public class CommandIn {
     public final static String PARAM_SHOPID = "ShopID";
     public final static String PARAM_BARCODE = "Barcode";
     public final static String PARAM_USERID = "IDUser";
+    public final static String PARAM_NOMEN = "Nomen";
 
     @JsonProperty(value="ID")
     private String id;

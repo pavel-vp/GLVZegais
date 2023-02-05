@@ -26,7 +26,7 @@ public class CommandCall {
     private final String serviceName;
     private final Integer timeOut;
 
-    public CommandCall(CommandIn commandIn, String barcode, String shopId, String userId) {
+    public CommandCall(CommandIn commandIn, String barcode, String shopId, String userId, String nomen) {
         this.URL = commandIn.getUrl();
         this.user = commandIn.getUser();
         this.password = commandIn.getPass();
@@ -47,6 +47,10 @@ public class CommandCall {
             if (CommandIn.PARAM_SHOPID.equals(param)) {
                 propertyInfo.setName(param);
                 propertyInfo.setValue(shopId);
+            }
+            if (CommandIn.PARAM_NOMEN.equals(param)) {
+                propertyInfo.setName(param);
+                propertyInfo.setValue(nomen);
             }
             propertyInfoList.add(propertyInfo);
         }

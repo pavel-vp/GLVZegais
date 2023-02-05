@@ -13,6 +13,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 import com.glvz.egais.R;
 import com.glvz.egais.dao.DaoMem;
+import com.glvz.egais.daodb.DaoDbDoc;
 import com.glvz.egais.model.BaseRecContent;
 import com.glvz.egais.model.BaseRecStatus;
 import com.glvz.egais.model.move.MoveRec;
@@ -157,7 +158,7 @@ public class ActMoveRec extends ActBaseDocRec {
       // переход к форме «Товарная позиция задания на перемещение», активируется первая невыполненная строка задания.
         if (nextRecContent != null) {
             moveRec.setStatus(BaseRecStatus.INPROGRESS);
-            DaoMem.getDaoMem().writeLocalDataBaseRec(moveRec);
+            DaoDbDoc.getDaoDbDoc().saveDbDocRec(moveRec);
             pickRec(this, moveRec.getDocId(), nextRecContent, 0, null, false, false);
         }
     }

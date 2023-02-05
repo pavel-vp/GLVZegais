@@ -1,0 +1,20 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+      xmlns:app="http://schemas.android.com/apk/res-auto"
+      xmlns:tools="http://schemas.android.com/tools"
+      tools:context=".MainActivity">
+    <item
+            android:id="@+id/action_print"
+            android:orderInCategory="100"
+            android:title="Печать"
+            app:showAsAction="never"/>
+    <item
+            android:id="@+id/action_clear"
+            android:orderInCategory="100"
+            android:title="Очистить"
+            app:showAsAction="never"/>
+    <item
+            android:id="@+id/action_remove"
+            android:orderInCategory="100"
+            android:title="Удалить"
+            app:showAsAction="never"/>
+</menu>

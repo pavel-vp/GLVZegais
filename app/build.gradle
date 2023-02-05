@@ -7,10 +7,11 @@ android {
     task wrapper(type: Wrapper){
         gradleVersion = '7.2'
     }
+
     defaultConfig {
         applicationId "com.glvz.egais"
         minSdkVersion 25
-        targetSdkVersion 32
+        targetSdkVersion 28
         versionCode 35
         versionName "35.0"
     }

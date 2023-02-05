@@ -15,6 +15,7 @@ import android.widget.ListView;
 import com.glvz.egais.MainApp;
 import com.glvz.egais.R;
 import com.glvz.egais.dao.DaoMem;
+import com.glvz.egais.daodb.DaoDbDoc;
 import com.glvz.egais.integration.model.PostIn;
 import com.glvz.egais.model.BaseRecContent;
 import com.glvz.egais.model.BaseRecContentMark;
@@ -251,7 +252,7 @@ public class ActIncomeAlcoRec extends ActBaseDocRec implements PickBottliingDate
         // определить позицию в ТТН ЕГАИС и наличие по ней ранее отсканированного ШК номенклатуры
         // Статус данной ТТН перевести в состояние “Идет приемка”
         incomeRec.setStatus(BaseRecStatus.INPROGRESS);
-        DaoMem.getDaoMem().writeLocalDataBaseRec(incomeRec);
+        DaoDbDoc.getDaoDbDoc().saveDbDocRec(incomeRec);
         return irc;
     }
 
@@ -326,7 +327,7 @@ public class ActIncomeAlcoRec extends ActBaseDocRec implements PickBottliingDate
             baseRecContentMark.setMarkScannedAsType(BaseRecContentMark.MARK_SCANNED_AS_MARK);
             baseRecContentMark.setMarkScannedReal(barcode);
             // возвращать управление - переходим в карточку позиции
-            DaoMem.getDaoMem().writeLocalDataBaseRec(incomeRec);
+            DaoDbDoc.getDaoDbDoc().saveDbDocRec(incomeRec);
             IncomeRecContent irc = DaoMem.getDaoMem().findIncomeRecContentByMarkScanned(incomeRec, barcode);
             return new ActionOnScanPDF417Wrapper(Collections.singletonList(irc), 0); // Просто возвращаем
         }
@@ -393,7 +394,7 @@ public class ActIncomeAlcoRec extends ActBaseDocRec implements PickBottliingDate
 
         // Статус данной ТТН перевести в состояние “Идет приемка”
         incomeRec.setStatus(BaseRecStatus.INPROGRESS);
-        DaoMem.getDaoMem().writeLocalDataBaseRec(incomeRec);
+        DaoDbDoc.getDaoDbDoc().saveDbDocRecContent(incomeRec,incomeRecContent);
         return new ActionOnScanPDF417Wrapper(Collections.singletonList(incomeRecContent), 1);
 
     }
@@ -464,7 +465,7 @@ public class ActIncomeAlcoRec extends ActBaseDocRec implements PickBottliingDate
             baseRecContentMark.setMarkScannedAsType(BaseRecContentMark.MARK_SCANNED_AS_MARK);
             baseRecContentMark.setMarkScannedReal(barcode);
             // переходим в карточку
-            DaoMem.getDaoMem().writeLocalDataBaseRec(incomeRec);
+            DaoDbDoc.getDaoDbDoc().saveDbDocRec(incomeRec);
             IncomeRecContent irc = DaoMem.getDaoMem().findIncomeRecContentByMarkScanned(incomeRec, barcode);
             return new ActionOnScanDataMatrixWrapper(irc,0);
         }
@@ -479,7 +480,7 @@ public class ActIncomeAlcoRec extends ActBaseDocRec implements PickBottliingDate
         }
         // Статус данной ТТН перевести в состояние “Идет приемка”
         incomeRec.setStatus(BaseRecStatus.INPROGRESS);
-        DaoMem.getDaoMem().writeLocalDataBaseRec(incomeRec);
+        DaoDbDoc.getDaoDbDoc().saveDbDocRecContent(incomeRec, incomeRecContent);
         return new ActionOnScanDataMatrixWrapper(incomeRecContent, 1);
     }
 

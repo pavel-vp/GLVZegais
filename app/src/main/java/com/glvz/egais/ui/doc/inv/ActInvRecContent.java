@@ -11,6 +11,7 @@ import android.widget.EditText;
 import android.widget.TextView;
 import com.glvz.egais.R;
 import com.glvz.egais.dao.DaoMem;
+import com.glvz.egais.daodb.DaoDbInv;
 import com.glvz.egais.integration.model.AlcCodeIn;
 import com.glvz.egais.integration.model.MarkIn;
 import com.glvz.egais.integration.model.NomenIn;
@@ -35,7 +36,10 @@ import com.honeywell.aidc.BarcodeFailureEvent;
 import com.honeywell.aidc.BarcodeReadEvent;
 import com.honeywell.aidc.BarcodeReader;
 
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 import static com.glvz.egais.utils.BarcodeObject.BarCodeType.DATAMATRIX;
 import static com.glvz.egais.utils.BarcodeObject.BarCodeType.PDF417;
@@ -103,7 +107,7 @@ public class ActInvRecContent extends Activity implements BarcodeReader.BarcodeL
             invRecContent.setStatus(BaseRecContentStatus.DONE);
             invRecContent.setManualMrc(mrc);
             invRec.getRecContentList().add(invRecContent);
-            DaoMem.getDaoMem().writeLocalDataInvRec(invRec);
+            DaoDbInv.getDaoDbInv().saveDbInvRecContent(invRec, invRecContent);
         } else {
             invRecContent = irc;
         }
@@ -147,9 +151,17 @@ public class ActInvRecContent extends Activity implements BarcodeReader.BarcodeL
         //13) установить статус документа «в работе»
         resultRecContent.setStatus(BaseRecContentStatus.DONE);
         invRec.setStatus(BaseRecStatus.INPROGRESS);
-        DaoMem.getDaoMem().writeLocalDataInvRec(invRec);
+//        DaoMem.getDaoMem().saveDbInvRecContent(invRec, resultRecContent);
+
         return resultRecContent;
     }
+
+    public static void saveDbRecContents(InvRec invRec, List<InvRecContent> recContents) {
+        for (InvRecContent recContent: recContents) {
+            DaoDbInv.getDaoDbInv().saveDbInvRecContent(invRec, recContent);
+        }
+    }
+
 
     private void fillActWithNomenIdPosition(NomenIn nomenIn, Double mrc) {
         invRecContent = fillInvRecContent(invRec, nomenIn, mrc);
@@ -196,7 +208,8 @@ public class ActInvRecContent extends Activity implements BarcodeReader.BarcodeL
                             //2) у позиции установить статус «Обработана»
                             invRecContent.setStatus(BaseRecContentStatus.DONE);
                             invRec.setStatus(BaseRecStatus.INPROGRESS);
-                            DaoMem.getDaoMem().writeLocalDataInvRec(invRec);
+                            DaoDbInv.getDaoDbInv().saveDbInvRecContent(invRec, invRecContent);
+
                             scannedMarkIn = null;
                             currentState = STATE_SCAN_ANY;
                             edQtyAdd.setText("");
@@ -237,9 +250,9 @@ public class ActInvRecContent extends Activity implements BarcodeReader.BarcodeL
                 invRecContent.setQtyAccepted((double) 0);
                 //2) Установить статус позиции «Обработана»
                 invRecContent.setStatus(BaseRecContentStatus.DONE);
-                DaoMem.getDaoMem().writeLocalDataRecContent_ClearAllMarks(invRec.getDocId(), invRecContent);
                 invRecContent.getBaseRecContentMarkList().clear();
-                DaoMem.getDaoMem().writeLocalDataInvRec(invRec);
+                DaoDbInv.getDaoDbInv().saveDbInvRecContent(invRec, invRecContent);
+
                 scannedMarkIn = null;
                 currentState = STATE_SCAN_ANY;
                 updateData();
@@ -259,9 +272,8 @@ public class ActInvRecContent extends Activity implements BarcodeReader.BarcodeL
                                 //установить статус «Не обработана»
                                 invRecContent.setStatus(BaseRecContentStatus.NOT_ENTERED);
                                 //удалить все марки
-                                DaoMem.getDaoMem().writeLocalDataRecContent_ClearAllMarks(invRec.getDocId(), invRecContent);
                                 invRecContent.getBaseRecContentMarkList().clear();
-                                DaoMem.getDaoMem().writeLocalDataInvRec(invRec);
+                                DaoDbInv.getDaoDbInv().saveDbInvRecContent(invRec, invRecContent);
                                 scannedMarkIn = null;
                                 currentState = STATE_SCAN_ANY;
                                 updateData();
@@ -468,6 +480,7 @@ public class ActInvRecContent extends Activity implements BarcodeReader.BarcodeL
                 Integer position = null;
                 NomenIn foundNomenIn = null;
                 InvRecContent row = null;
+                List<InvRecContent> recContentsToSave = new ArrayList<>();
                 // для каждой найденной марки выполнить обработку
                 for (MarkIn mark : marksInBox) {
                     // Увеличить на 1 переменную «Числится марок в текущей коробке»
@@ -486,9 +499,22 @@ public class ActInvRecContent extends Activity implements BarcodeReader.BarcodeL
                     }
                     row = ActInvRecContent.findOrAddNomen(invRec, foundNomenIn, mark, barCode);
                     position = Integer.parseInt(row.getPosition());
+
+                    boolean foundRecContentToSave = false;
+                    for (int i=0; i<recContentsToSave.size(); i++) {
+                        if (recContentsToSave.get(i).getNomenIn().getId().equals(foundNomenIn.getId())) {
+                            foundRecContentToSave = true;
+                            break;
+                        }
+                    }
+                    if (!foundRecContentToSave) {
+                        recContentsToSave.add(row);
+                    }
                     // увеличить на 1 переменную «Количество, добавленное по текущей коробке»
                     qtyAddedCurrentBox++;
                 }
+                ActInvRecContent.saveDbRecContents(invRec, recContentsToSave);
+
                 this.currentState = STATE_SCAN_ANY;
                 this.scannedMarkIn = null;
                 if (position != null && foundNomenIn != null) {
@@ -535,7 +561,7 @@ public class ActInvRecContent extends Activity implements BarcodeReader.BarcodeL
             //13) установить статус документа «в работе»
             invRecContent.setStatus(BaseRecContentStatus.DONE);
             invRec.setStatus(BaseRecStatus.INPROGRESS);
-            DaoMem.getDaoMem().writeLocalDataInvRec(invRec);
+            DaoDbInv.getDaoDbInv().saveDbInvRecContent(invRec, invRecContent);
             //12) проиграть файл «bottle_one.mp3» - проигрываем файл в самом конце после успешного сохранения записи
             MessageUtils.playSound(R.raw.bottle_one);
             soundPlayed = true;

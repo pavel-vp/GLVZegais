@@ -65,6 +65,9 @@
         <activity android:name=".ui.doc.findmark.ActFindMarkList" android:screenOrientation="portrait"/>
         <activity android:name=".ui.doc.findmark.ActFindMarkRec" android:screenOrientation="portrait"/>
 
+        <activity android:name=".ui.doc.price.ActPriceList" android:screenOrientation="portrait"/>
+        <activity android:name=".ui.doc.price.ActPriceRec" android:screenOrientation="portrait"/>
+
         <activity android:name=".ui.doc.inv.ActInvList" android:screenOrientation="portrait"/>
         <activity android:name=".ui.doc.inv.ActInvRec" android:screenOrientation="portrait"/>
         <activity android:name=".ui.doc.inv.ActInvRecContent" android:screenOrientation="portrait"/>
