@@ -12,6 +12,7 @@ import com.glvz.egais.dao.DaoMem;
 import com.glvz.egais.model.BaseRec;
 import com.glvz.egais.model.BaseRecContentMark;
 import com.glvz.egais.model.BaseRecContentStatus;
+import com.glvz.egais.model.BaseRecStatus;
 import com.glvz.egais.model.inv.InvRecContentMark;
 import com.glvz.egais.model.writeoff.WriteoffRec;
 import com.glvz.egais.model.writeoff.WriteoffRecContent;
@@ -76,6 +77,8 @@ public class DaoDbWriteOff {
         );
         while(cursor.moveToNext()) {
             writeoffRec = new WriteoffRec(docId);
+            writeoffRec.setStatus(BaseRecStatus.valueOf( cursor.getString(cursor.getColumnIndexOrThrow(BaseRec.KEY_STATUS))));
+            writeoffRec.setExported(Boolean.parseBoolean( cursor.getString(cursor.getColumnIndexOrThrow(BaseRec.KEY_EXPORTED))));
             writeoffRec.setDocNum(String.valueOf( cursor.getString(cursor.getColumnIndexOrThrow(WriteoffRec.KEY_DOCNUM))));
             writeoffRec.setDateStr(String.valueOf( cursor.getString(cursor.getColumnIndexOrThrow(WriteoffRec.KEY_DATE))));
             writeoffRec.setTypeDoc(String.valueOf( cursor.getString(cursor.getColumnIndexOrThrow(WriteoffRec.KEY_TYPEDOC))));
@@ -155,7 +158,7 @@ public class DaoDbWriteOff {
     private List<WriteoffRecContentMark> readDbDataWriteoffContentMarkList(WriteoffRec writeoffRec, WriteoffRecContent recContent) {
         List<WriteoffRecContentMark> result = new ArrayList<>();
         SQLiteDatabase db = appDbHelper.getReadableDatabase();
-        String mrcS = String.valueOf(0);
+        String mrcS = String.valueOf(recContent.getMrc());
         String contentId = writeoffRec.getDocId()+"_"+recContent.getId1c()+"_"+mrcS;
         Cursor cursor = db.query(
                 DaoMem.KEY_WRITEOFF+DaoMem.CONTENT_MARK,   // The table to query
@@ -217,7 +220,6 @@ public class DaoDbWriteOff {
         values.put(BaseRec.KEY_DOCID, writeoffRec.getDocId());
         values.put(BaseRec.KEY_SHOPID, shopId);
 
-        values.put(WriteoffRec.KEY_DOCNUM, writeoffRec.getDocNum());
         values.put(WriteoffRec.KEY_DATE, writeoffRec.getDateStr());
         values.put(WriteoffRec.KEY_TYPEDOC, writeoffRec.getTypeDoc());
         values.put(WriteoffRec.KEY_SKLADID, writeoffRec.getSkladId());
@@ -282,7 +284,7 @@ public class DaoDbWriteOff {
         values.put(BaseRec.KEY_POS_MRC, mrc);
         values.put(BaseRec.KEY_POS_MARKSCANNED_CNT, writeoffRecContent.getBaseRecContentMarkList().size());
 
-        String mrcS = String.valueOf(0);
+        String mrcS = String.valueOf(mrc);
         String contentId = writeoffRec.getDocId()+"_"+writeoffRecContent.getId1c()+"_"+mrcS;
         values.put(BaseRec.KEY_DOC_CONTENTID, contentId);
 
