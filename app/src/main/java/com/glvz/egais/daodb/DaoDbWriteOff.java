@@ -256,9 +256,10 @@ public class DaoDbWriteOff {
     public void removeWriteoffRecContent(String shopId, WriteoffRec writeoffRec, WriteoffRecContent writeoffRecContent) {
         saveDbWriteoffRec(shopId, writeoffRec);
         SQLiteDatabase db = appDbHelper.getWritableDatabase();
-        String id = writeoffRec.getDocId() + "_" + writeoffRecContent.getId1c() + "_0";
-        int deletedRowsMark = db.delete(DaoMem.KEY_WRITEOFF+DaoMem.CONTENT_MARK, BaseRec.KEY_DOC_CONTENTID + " = ?", new String[] { id });
-        int deletedRowsContent = db.delete(DaoMem.KEY_WRITEOFF+DaoMem.CONTENT, BaseRec.KEY_DOC_CONTENTID + " = ?", new String[] { id });
+        String mrcS = String.valueOf(writeoffRecContent.getMrc());
+        String contentId = writeoffRec.getDocId()+"_"+writeoffRecContent.getId1c()+"_"+mrcS;
+        int deletedRowsMark = db.delete(DaoMem.KEY_WRITEOFF+DaoMem.CONTENT_MARK, BaseRec.KEY_DOC_CONTENTID + " = ?", new String[] { contentId });
+        int deletedRowsContent = db.delete(DaoMem.KEY_WRITEOFF+DaoMem.CONTENT, BaseRec.KEY_DOC_CONTENTID + " = ?", new String[] { contentId });
     }
 
     public void saveDbWriteoffRecContent(String shopId, WriteoffRec writeoffRec, WriteoffRecContent writeoffRecContent) {
