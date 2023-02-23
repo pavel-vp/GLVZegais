@@ -9,7 +9,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
 import com.glvz.egais.R;
@@ -20,14 +19,9 @@ import com.glvz.egais.integration.model.MarkIn;
 import com.glvz.egais.integration.model.NomenIn;
 import com.glvz.egais.integration.model.doc.inv.InvIn;
 import com.glvz.egais.model.BaseRecContent;
-import com.glvz.egais.model.BaseRecContentMark;
 import com.glvz.egais.model.BaseRecContentStatus;
-import com.glvz.egais.model.BaseRecStatus;
 import com.glvz.egais.model.inv.InvRec;
 import com.glvz.egais.model.inv.InvRecContent;
-import com.glvz.egais.model.inv.InvRecContentMark;
-import com.glvz.egais.model.writeoff.WriteoffRecContent;
-import com.glvz.egais.model.writeoff.WriteoffRecContentMark;
 import com.glvz.egais.service.PickMRCCallback;
 import com.glvz.egais.service.inv.InvContentArrayAdapter;
 import com.glvz.egais.service.inv.InvRecHolder;
@@ -37,12 +31,9 @@ import com.glvz.egais.utils.BarcodeObject;
 import com.glvz.egais.utils.MessageUtils;
 import com.glvz.egais.utils.StringUtils;
 import com.honeywell.aidc.BarcodeReadEvent;
-
 import java.util.*;
-
 import static com.glvz.egais.ui.doc.inv.ActInvRecContent.STATE_SCAN_ANY;
 import static com.glvz.egais.ui.doc.inv.ActInvRecContent.STATE_SCAN_EAN;
-import static com.glvz.egais.utils.BarcodeObject.BarCodeType.DATAMATRIX;
 import static com.glvz.egais.utils.BarcodeObject.BarCodeType.PDF417;
 
 public class ActInvRec extends ActBaseDocRec implements PickMRCCallback{
@@ -212,7 +203,7 @@ public class ActInvRec extends ActBaseDocRec implements PickMRCCallback{
         message = null;
         // Определить тип ШК
         final BarcodeObject.BarCodeType barCodeType = BarcodeObject.getBarCodeType(barcodeReadEvent);
-        final String barCode = barcodeReadEvent.getBarcodeData();
+        String barCode = barcodeReadEvent.getBarcodeData();
         switch (barCodeType) {
             case EAN8:
             case EAN13:
@@ -266,6 +257,7 @@ public class ActInvRec extends ActBaseDocRec implements PickMRCCallback{
                 break;
             case PDF417:
             case DATAMATRIX:
+            case GS1_DATAMATRIX_CIGA:
                 if (currentState == STATE_SCAN_EAN) {
                     MessageUtils.showModalMessage(this, "Внимание!", "Сканируйте штрихкод");
                     return;
@@ -274,81 +266,201 @@ public class ActInvRec extends ActBaseDocRec implements PickMRCCallback{
                     MessageUtils.playSound(R.raw.scan_ean_inv);
                     return;
                 }
-
+                barCode = BarcodeObject.tryToTransformMark(barCodeType, barCode);
                 // выполнить проверку корректности ШК по длине:  PDF-417 должна быть 68 символов,  DataMatrix – 150
                 if (barCodeType == PDF417 && barCode.length() != 68) {
                     MessageUtils.showModalMessage(this, "Внимание!", "Неверная длина сканированного ШК, повторите сканирование марки (должна быть 68, фактически " + barCode.length());
-                    return;
-                }
-                if (barCodeType == DATAMATRIX && barCode.length() != 150) {
-                    MessageUtils.showModalMessage(this, "Внимание!", "Неверная длина сканированного ШК, повторите сканирование марки (должна быть 150, фактически " + barCode.length());
                     return;
                 }
                 // искать марку среди ранее сканированных во всех позициях документа
                 DaoMem.CheckMarkScannedResult markScanned = DaoMem.getDaoMem().checkMarkScanned(invRec, barCode);
                 if (markScanned != null) {
                     // Если марка найдена — открыть товарную позицию
-                    InvRecContent irc = ActInvRecContent.fillInvRecContent(invRec, markScanned.recContent.getNomenIn(), null);
+                    InvRecContent irc = (InvRecContent)markScanned.recContent;
                     message = "Эта марка ранее уже была отсканирована в этом задании в позиции " + markScanned.recContent.getPosition() + " товара " + markScanned.recContent.getNomenIn().getName();
                     pickRec(this, invRec.getDocId(), irc, 0, null, false, false);
                     return;
                 }
-                // выполнить проверку допустимости добавления этой марки, типы проверяемых марок зависят от состояния CheckMark в справочнике магазинов shops.json:
-                //- «DataMatrix» - проверяются только марки DataMatrix (проверка PDF417 - пропускается)
-                //- «DataMatrixPDF417» - проверяются марки DataMatrix и PDF417
                 MarkIn markIn = null;
-                if (DaoMem.getDaoMem().isNeedToCheckMark(invRec.getInvIn().getCheckMark(), barCodeType)) {
-                    //
-                    // алгоритм допустимости добавления марки
-                    //
-                    // искать марку в справочнике «marks.json»
-                    markIn = DaoMem.getDaoMem().findMarkByBarcode(barCode);
-                    if (markIn == null) {
-                        // если не найдена: модальное сообщение
-                        MessageUtils.showModalMessage(this, "Внимание!", "Марка не состоит на учете в магазине. Отложите эту бутылку для постановки на баланс. Бутылка будет учтена в фактическом наличии, но выставлять ее на продажу нельзя.\n\nТеперь сканируйте штрихкод с этой же бутылки для сопоставления с номенклатурой.");
+                if (barCode.length() == 150) { // для марок длиной 150 символов (алкоголь)
+                    // - для Всех типов док - выполнить проверку допустимости добавления этой марки, типы проверяемых марок зависят от состояния CheckMark в справочнике магазинов shops.json:
+                    //   - «DataMatrix» - проверяются только марки DataMatrix (проверка PDF417 - пропускается)
+                    //   - «DataMatrixPDF417» - проверяются марки DataMatrix и PDF417
+                    if (DaoMem.getDaoMem().isNeedToCheckMark(invRec.getInvIn().getCheckMark(), barCodeType)) {
+                        //
+                        // алгоритм допустимости добавления марки
+                        //
+                        // искать марку в справочнике «marks.json»
+                        markIn = DaoMem.getDaoMem().findMarkByBarcode(barCode);
+                        if (markIn == null) {
+                            // если не найдена: модальное сообщение
+                            MessageUtils.showModalMessage(this, "Внимание!", "Марка не состоит на учете в магазине. Отложите эту бутылку для постановки на баланс. Бутылка будет учтена в фактическом наличии, но выставлять ее на продажу нельзя.\n\nТеперь сканируйте штрихкод с этой же бутылки для сопоставления с номенклатурой.");
+                            // создаем фейковую марку
+                            markIn = new MarkIn();
+                            markIn.setMark(barCode);
+                        }
+                    } else {
                         // создаем фейковую марку
                         markIn = new MarkIn();
                         markIn.setMark(barCode);
                     }
-                } else {
-                    // создаем фейковую марку
-                    markIn = new MarkIn();
-                    markIn.setMark(barCode);
-                }
-                this.scannedMarkIn = markIn;
-                // если NomenID не определен (может быть определен на предыдущих шагах) — попытка определения по справочнику «alccodes.json»
-                if (StringUtils.isEmptyOrNull(markIn.getNomenId())) {
-                    // Если AlcCode не определен, то:
-                    //- для марок DataMatrix: пропустить этап определения по справочнику «alccodes.json»
-                    //- для марок PDF417: декодировать текст марки в алкокод
-                    if (barCodeType == PDF417 && StringUtils.isEmptyOrNull(markIn.getAlcCode())) {
-                        markIn.setAlcCode(BarcodeObject.extractAlcode(barCode));
-                    }
-                    // у марок старого типа (PDF417) отключить идентификацию номенклатуры по справочнику alccodes.json
-                    if (barCodeType != PDF417) {
-                        // искать алкокод в справочнике «alccodes.json». Если найден -  сохранить значение NomenID из записи с алкокодом
-                        AlcCodeIn alcCodeIn = DaoMem.getDaoMem().findAlcCode(markIn.getAlcCode());
-                        if (alcCodeIn != null) {
-                            markIn.setNomenId(alcCodeIn.getNomenId());
+                    this.scannedMarkIn = markIn;
+                    // если NomenID не определен (может быть определен на предыдущих шагах) — попытка определения по справочнику «alccodes.json»
+                    if (StringUtils.isEmptyOrNull(markIn.getNomenId())) {
+                        // Если AlcCode не определен, то:
+                        //- для марок DataMatrix: пропустить этап определения по справочнику «alccodes.json»
+                        //- для марок PDF417: декодировать текст марки в алкокод
+                        if (barCodeType == PDF417 && StringUtils.isEmptyOrNull(markIn.getAlcCode())) {
+                            markIn.setAlcCode(BarcodeObject.extractAlcode(barCode));
+                        }
+                        // у марок старого типа (PDF417) отключить идентификацию номенклатуры по справочнику alccodes.json
+                        if (barCodeType != PDF417) {
+                            // искать алкокод в справочнике «alccodes.json». Если найден -  сохранить значение NomenID из записи с алкокодом
+                            AlcCodeIn alcCodeIn = DaoMem.getDaoMem().findAlcCode(markIn.getAlcCode());
+                            if (alcCodeIn != null) {
+                                markIn.setNomenId(alcCodeIn.getNomenId());
+                            }
                         }
                     }
+                    // если NomenID не определен
+                    if (StringUtils.isEmptyOrNull(markIn.getNomenId())) {
+                        // 8.1) подсказку изменить на «Сканируйте штрихкод»
+                        this.currentState = STATE_SCAN_EAN;
+                        // 8.2) Звуковое сообщение «Сканируйте штрихкод»
+                        MessageUtils.playSound(R.raw.scan_ean);
+                        updateCaption();
+                        return;
+                    }
+                    NomenIn nomenIn2 = DaoMem.getDaoMem().findNomenInAlcoByNomenId(markIn.getNomenId());
+                    if (nomenIn2 == null) {
+                        MessageUtils.showModalMessage(this, "Внимание!", "Товар по марке " + barCode + ", не найден. Обратитесь к категорийному менеджеру");
+                        return;
+                    }
+                    InvRecContent irc = ActInvRecContent.fillInvRecContent(invRec, nomenIn2, null);
+                    proceedOneBottle(irc, nomenIn2);
+
+                } else if (barCode.length() == 21 ) { // для марок 21 символ (пачка сигарет):
+                    // искать марку в справочнике «marks.json»
+                    markIn = DaoMem.getDaoMem().findMarkByBarcode(barCode);
+                    if (markIn == null) {
+                        //проиграть alarm.mp3
+                        MessageUtils.playSound(R.raw.alarm);
+                        // продолжить после закрытия модального окна (по возможности)
+                        // из ШК марки, начиная со второго символа, вырезать 13 символов. От них отбросить лидирующие нули.
+                        String s = barCode.substring(1, 14);
+                        int idx = 0;
+                        while (s.charAt(idx) == '0') {
+                            idx++;
+                        }
+                        s=s.substring(idx);
+                        //по получившемуся ШК найти номенклатуру в справочнике nomen.json
+                        NomenIn nomenIn3 = DaoMem.getDaoMem().findNomenInByBarCode(s);
+                        if (nomenIn3 != null) {
+                            MarkIn markStub = new MarkIn();
+                            markStub.setMark(barCode);
+                            markStub.setNomenId(nomenIn3.getId());
+                            // добавить в документ позицию с этой номенклатурой и МРЦ 0 (ноль - константа всегда для таких случаев), количество 1, саму марку - записать в эту позицию.
+                            InvRecContent newRow = ActInvRecContent.findOrAddNomen(invRec, nomenIn3, markStub, barCode, 0d);
+                            message = "Марка не состоит на учете в магазине. Отложите эту продукцию для дальнейшего разбора. Продукция будет учтена в фактическом наличии, но выставлять ее на продажу нельзя.";
+                            pickRec(this, invRec.getDocId(), newRow, 0, null, false, false);
+                            message = null;
+                        } else {
+                            MessageUtils.showModalMessage(this, "Внимание!", "Марка не состоит на учете в магазине. Отложите эту продукцию для дальнейшего разбора. Продукция будет учтена в фактическом наличии, но выставлять ее на продажу нельзя.");
+                        }
+                        return;
+                    }
+                    this.scannedMarkIn = markIn;
+
+                    NomenIn nomenIn3 = DaoMem.getDaoMem().findNomenInByNomenId(markIn.getNomenId());
+                    if (nomenIn3 == null) {
+                        // если не найдена: модальное сообщение , прерывание обработки события.
+                        MessageUtils.showModalMessage(this, "Внимание!", "Товар не состоит на учете. Обработка невозможна. Отложите для дальнейшего разбора и сканируйте другую!");
+                        return;
+                    }
+                    InvRecContent irc = ActInvRecContent.fillInvRecContent(invRec, nomenIn3, markIn.getMrc());
+                    proceedOneBottle(irc, nomenIn3);
+
+                } else if (barCode.length() == 25) { // для марок 25 символов
+                    // для всех марок в marks.json по фильтру в реквизите Box – выполнить добавление в документ с накоплением счетчиков обработанных, пропущенных и добавленных марок
+                    // в справочнике marks.json найти все марки с ШК коробки, соответствующей сканированной
+                    List<MarkIn> marksInBox = DaoMem.getDaoMem().findMarksByBoxBarcode(barCode);
+                    if (marksInBox.size() == 0) {
+                        // если ни одной марки не найдено вывести модальное сообщение: «По ШК коробки #BoxBarcode# марки не найдены». Прервать обработку.
+                        MessageUtils.showModalMessage(this, "Внимание!", "По ШК " + barCode + " Блок сигарет не найден, сканируйте каждую пачку");
+                        break;
+                    }
+                    // Обнулить переменные «Числится марок в текущей коробке», «Количество, добавленное по текущей коробке»
+                    int marksInCurrentBox = 0;
+                    int qtyAddedCurrentBox = 0;
+                    Integer position = null;
+                    // Найти Еан в Марке
+                    String ean = BarcodeObject.extractEanFromGS1DM(barCode);
+                    if (ean.length() != 8 && ean.length() != 13) {
+                        MessageUtils.showModalMessage(this, "Внимание!", "Не найден ШК из марки!");
+                        return;
+                    }
+                    NomenIn foundNomenIn = DaoMem.getDaoMem().findNomenInByBarCode(ean);
+                    if (foundNomenIn == null) {
+                        MessageUtils.showModalMessage(this, "Внимание!", "Не найден товар по ШК из марки -" + ean);
+                        return;
+                    }
+
+                    InvRecContent row = null;
+                    List<InvRecContent> recContentsToSave = new ArrayList<>();
+                    // для каждой найденной марки выполнить обработку
+                    for (MarkIn mark : marksInBox) {
+                        // Увеличить на 1 переменную «Числится марок в текущей коробке»
+                        marksInCurrentBox++;
+                        // 4.2 из найденной записи марки извлечь номенклатуру, выполнить поиск в товарной части документа.
+                        // Уникальный ключ для поиска записей в документе - «NomenID»+"Mrc"
+                        // Если записи товара в документе не найдено — добавить новую.
+                        // проверить наличие текущей марки среди ранее сканированных в документе. При наличии — пропустить обработку марки
+                        position = ActInvRecContent.findInContentByMark(invRec, mark.getMark());
+                        if (position != null) {
+                            continue;
+                        }
+                        row = ActInvRecContent.findOrAddNomen(invRec, foundNomenIn, mark, barCode, mark.getMrc());
+                        position = Integer.parseInt(row.getPosition());
+                        boolean foundRecContentToSave = false;
+                        for (int i=0; i<recContentsToSave.size(); i++) {
+                            if (recContentsToSave.get(i).getNomenIn().getId().equals(foundNomenIn.getId())) {
+                                foundRecContentToSave = true;
+                                break;
+                            }
+                        }
+                        if (!foundRecContentToSave) {
+                            recContentsToSave.add(row);
+                        }
+                        // увеличить на 1 переменную «Количество, добавленное по текущей коробке»
+                        qtyAddedCurrentBox++;
+                    }
+                    ActInvRecContent.saveDbRecContents(invRec, recContentsToSave);
+                    // 6 Информировать пользователя, о результате сканирования ШК коробки:
+                    //6.1 в зависимости от значения переменной «Количество, добавленное по текущей коробке»:
+                    //- 0: звуковые файлы не проигрывать
+                    //- 1: проиграть звуковой файл «bottle_one.mp3»
+                    if (qtyAddedCurrentBox == 1) {
+                        MessageUtils.playSound(R.raw.bottle_one);
+                    }
+                    //- более 1: проиграть звуковой файл «bottle_many.mp3»
+                    if (qtyAddedCurrentBox > 1) {
+                        MessageUtils.playSound(R.raw.bottle_many);
+                    }
+                    if (row == null && position != null) {
+                        row = ActInvRecContent.findRecContentByPosition(invRec, position);
+                    }
+                    if (row != null) {
+                        //6.2 вывести модальное сообщение:
+                        //В коробке #ШККоробки# числится номенклатура #НаименованиеНоменклатуры# (#NomenID#) с учетным количеством #Числится марок в текущей коробке# марок.
+                        //Количество марок, добавленное в документ #Количество, добавленное по текущей коробке# шт.
+                        message = "В коробке " + barCode + " числится номенклатура " + foundNomenIn.getName() + " (" + foundNomenIn.getId() + ") с учетным количеством " + marksInCurrentBox + " марок." +
+                                " Количество марок, добавленное в документ " + qtyAddedCurrentBox + " шт.";
+                        pickRec(this, invRec.getDocId(), row, 0, null, false, false);
+                        message = null;
+                    }
+                } else {
+                    MessageUtils.showModalMessage(this, "Внимание!", "Неверная длина сканированного ШК, повторите сканирование марки, фактичесая длина марки " + barCode.length());
                 }
-                // если NomenID не определен
-                if (StringUtils.isEmptyOrNull(markIn.getNomenId())) {
-                    // 8.1) подсказку изменить на «Сканируйте штрихкод»
-                    this.currentState = STATE_SCAN_EAN;
-                    // 8.2) Звуковое сообщение «Сканируйте штрихкод»
-                    MessageUtils.playSound(R.raw.scan_ean);
-                    updateCaption();
-                    return;
-                }
-                NomenIn nomenIn2 = DaoMem.getDaoMem().findNomenInAlcoByNomenId(markIn.getNomenId());
-                if (nomenIn2 == null) {
-                    MessageUtils.showModalMessage(this, "Внимание!", "Товар по марке " + barCode + ", не найден. Обратитесь к категорийному менеджеру");
-                    return;
-                }
-                InvRecContent irc = ActInvRecContent.fillInvRecContent(invRec, nomenIn2, null);
-                proceedOneBottle(irc, nomenIn2);
                 break;
             case CODE128:
                 if (currentState == STATE_SCAN_EAN) {
@@ -389,7 +501,7 @@ public class ActInvRec extends ActBaseDocRec implements PickMRCCallback{
                     if (position != null) {
                         continue;
                     }
-                    row = ActInvRecContent.findOrAddNomen(invRec, foundNomenIn, mark, barCode);
+                    row = ActInvRecContent.findOrAddNomen(invRec, foundNomenIn, mark, barCode, mark.getMrc());
                     position = Integer.parseInt(row.getPosition());
 
                     boolean foundRecContentToSave = false;

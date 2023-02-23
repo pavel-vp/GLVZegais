@@ -291,7 +291,7 @@ public class ActWriteoffRec extends ActBaseDocRec {
                     MessageUtils.showModalMessage(this, "Внимание!", "Сканируйте штрихкод, с того же товара с которой только что сканировали марку");
                     return;
                 }
-                barCode = tryToTransformMark(barCodeType, barCode);
+                barCode = BarcodeObject.tryToTransformMark(barCodeType, barCode);
                 // выполнить проверку корректности ШК по длине:  PDF-417 должна быть 68 символов,  DataMatrix – 150
                 if (barCodeType == PDF417 && barCode.length() != 68) {
                     MessageUtils.showModalMessage(this, "Внимание!", "Неверная длина сканированного ШК, повторите сканирование марки (должна быть 68, фактически " + barCode.length());
@@ -593,28 +593,6 @@ public class ActWriteoffRec extends ActBaseDocRec {
                 }
         }
 
-    }
-
-    private String tryToTransformMark(BarcodeObject.BarCodeType barCodeType, String barCode) {
-        //Алгоритм предварительного преобразования ШК:
-        if (barCodeType == DATAMATRIX) {
-            // –	150 символов - оставить без изменений (алкоголь, новая марка)
-            if (barCode.length() == 150) return barCode;
-            //–	29 символов - взять первые 21 символ (пачка табачной продукции)
-            if (barCode.length() == 29) {
-                return barCode.substring(0, 21);
-            }
-        }
-        if (barCodeType == GS1_DATAMATRIX_CIGA) {
-            //–	удалить символы “(“ и “)”
-            String tmp = barCode.replaceAll("\\(", "").replaceAll("\\)", "");
-            // –	43 и более и соответствует шаблону
-            String pattern = "^01\\d{14}21.{7}[\\x1D]8005\\d+[\\x1D].*";
-            if (tmp.length() >= 43 && tmp.matches(pattern)) {
-                return tmp.substring(0,25);
-            }
-        }
-        return barCode;
     }
 
     private Integer findInContentByMark(String mark) {

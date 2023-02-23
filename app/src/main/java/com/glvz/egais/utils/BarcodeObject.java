@@ -1,5 +1,8 @@
 package com.glvz.egais.utils;
 
+import static com.glvz.egais.utils.BarcodeObject.BarCodeType.DATAMATRIX;
+import static com.glvz.egais.utils.BarcodeObject.BarCodeType.GS1_DATAMATRIX_CIGA;
+
 import android.content.Context;
 import android.util.Log;
 import com.honeywell.aidc.*;
@@ -251,6 +254,28 @@ public class BarcodeObject implements BarcodeReader.BarcodeListener {
 
     public static void setCurrentListener(BarcodeReader.BarcodeListener listener) {
         currentListener = listener;
+    }
+
+    public static String tryToTransformMark(BarcodeObject.BarCodeType barCodeType, String barCode) {
+        //Алгоритм предварительного преобразования ШК:
+        if (barCodeType == DATAMATRIX) {
+            // –	150 символов - оставить без изменений (алкоголь, новая марка)
+            if (barCode.length() == 150) return barCode;
+            //–	29 символов - взять первые 21 символ (пачка табачной продукции)
+            if (barCode.length() == 29) {
+                return barCode.substring(0, 21);
+            }
+        }
+        if (barCodeType == GS1_DATAMATRIX_CIGA) {
+            //–	удалить символы “(“ и “)”
+            String tmp = barCode.replaceAll("\\(", "").replaceAll("\\)", "");
+            // –	43 и более и соответствует шаблону
+            String pattern = "^01\\d{14}21.{7}[\\x1D]8005\\d+[\\x1D].*";
+            if (tmp.length() >= 43 && tmp.matches(pattern)) {
+                return tmp.substring(0,25);
+            }
+        }
+        return barCode;
     }
 
 
