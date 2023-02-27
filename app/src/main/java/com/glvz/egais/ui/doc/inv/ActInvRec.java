@@ -357,8 +357,9 @@ public class ActInvRec extends ActBaseDocRec implements PickMRCCallback{
                             markStub.setNomenId(nomenIn3.getId());
                             // добавить в документ позицию с этой номенклатурой и МРЦ 0 (ноль - константа всегда для таких случаев), количество 1, саму марку - записать в эту позицию.
                             InvRecContent newRow = ActInvRecContent.findOrAddNomen(invRec, nomenIn3, markStub, barCode, 0d);
+                            newRow.setQtyAccepted(0d);
                             message = "Марка не состоит на учете в магазине. Отложите эту продукцию для дальнейшего разбора. Продукция будет учтена в фактическом наличии, но выставлять ее на продажу нельзя.";
-                            pickRec(this, invRec.getDocId(), newRow, 0, null, false, false);
+                            proceedOneBottle(newRow, nomenIn3);
                             message = null;
                         } else {
                             MessageUtils.showModalMessage(this, "Внимание!", "Марка не состоит на учете в магазине. Отложите эту продукцию для дальнейшего разбора. Продукция будет учтена в фактическом наличии, но выставлять ее на продажу нельзя.");

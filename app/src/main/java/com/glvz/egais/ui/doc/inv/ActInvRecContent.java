@@ -488,8 +488,9 @@ public class ActInvRecContent extends Activity implements BarcodeReader.BarcodeL
                             markStub.setMark(barCode);
                             markStub.setNomenId(nomenIn3.getId());
                             // добавить в документ позицию с этой номенклатурой и МРЦ 0 (ноль - константа всегда для таких случаев), количество 1, саму марку - записать в эту позицию.
-                            InvRecContent newRow = ActInvRecContent.findOrAddNomen(invRec, nomenIn3, markStub, barCode, 0d);
-                            fillActWithNomenIdPosition(nomenIn3, null);
+                            invRecContent = ActInvRecContent.findOrAddNomen(invRec, nomenIn3, markStub, barCode, 0d);
+                            invRecContent.setQtyAccepted(0d);
+                            proceedOneBottle(nomenIn3);
                         }
                         MessageUtils.showModalMessage(this, "Внимание!", "Марка не состоит на учете в магазине. Отложите эту продукцию для дальнейшего разбора. Продукция будет учтена в фактическом наличии, но выставлять ее на продажу нельзя.");
                         return;
