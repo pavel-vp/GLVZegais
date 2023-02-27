@@ -234,8 +234,9 @@ public class ActInvRec extends ActBaseDocRec implements PickMRCCallback{
                 // если найден, то в соответствии с NomenType:
                 switch (nomenIn.getNomenType()) {
                     case NomenIn.NOMENTYPE_ALCO_MARK:
+                    case NomenIn.NOMENTYPE_ALCO_TOBACCO:
                         if (!((InvIn)invRec.getDocIn()).ableDirectInput()) {
-                            MessageUtils.showModalMessage(this, "Внимание!", "Маркированный алкоголь. Необходимо сканировать марку");
+                            MessageUtils.showModalMessage(this, "Внимание!", "Маркированный товар. Необходимо сканировать марку");
                         } else {
                             // по NomenID искать товарную позицию документа и открыть ее карточку (если такой не было: добавить и открыть)
                             InvRecContent irc = ActInvRecContent.fillInvRecContent(invRec, nomenIn, null);
@@ -247,11 +248,6 @@ public class ActInvRec extends ActBaseDocRec implements PickMRCCallback{
                         // по NomenID искать товарную позицию документа и открыть ее карточку (если такой не было: добавить и открыть)
                         InvRecContent irc = ActInvRecContent.fillInvRecContent(invRec, nomenIn, null);
                         pickRec(this, invRec.getDocId(), irc, 0, null, false, false);
-                        break;
-                    case NomenIn.NOMENTYPE_ALCO_TOBACCO:
-                        // вывести список МРЦ (из записи nomen.json) для выбора пользователем
-                        // после выбора пользователем МРЦ, по NomenID и МРЦ искать товарную позицию документа и открыть ее карточку (если такой не было: добавить и открыть)
-                        ActInvRec.chooseMRC(this, nomenIn, nomenIn.getMcArr(), this);
                         break;
                 }
                 break;

@@ -366,8 +366,9 @@ public class ActInvRecContent extends Activity implements BarcodeReader.BarcodeL
                 // если найден, то в соответствии с NomenType:
                 switch (nomenIn.getNomenType()) {
                     case NomenIn.NOMENTYPE_ALCO_MARK:
+                    case NomenIn.NOMENTYPE_ALCO_TOBACCO:
                         if (!((InvIn)invRec.getDocIn()).ableDirectInput()) {
-                            MessageUtils.showModalMessage(this, "Внимание!", "Маркированный алкоголь. Необходимо сканировать марку");
+                            MessageUtils.showModalMessage(this, "Внимание!", "Маркированный товар. Необходимо сканировать марку");
                         } else {
                             // по NomenID искать товарную позицию документа и открыть ее карточку (если такой не было: добавить и открыть)
                             fillActWithNomenIdPosition(nomenIn, null);
@@ -377,11 +378,6 @@ public class ActInvRecContent extends Activity implements BarcodeReader.BarcodeL
                     case NomenIn.NOMENTYPE_ALCO_NOMARK:
                         // по NomenID искать товарную позицию документа и открыть ее карточку (если такой не было: добавить и открыть)
                         fillActWithNomenIdPosition(nomenIn, null);
-                        break;
-                    case NomenIn.NOMENTYPE_ALCO_TOBACCO:
-                        // вывести список МРЦ (из записи nomen.json) для выбора пользователем
-                        // после выбора пользователем МРЦ, по NomenID и МРЦ искать товарную позицию документа и открыть ее карточку (если такой не было: добавить и открыть)
-                        ActInvRec.chooseMRC(this, nomenIn, nomenIn.getMcArr(), this);
                         break;
                 }
                 break;
