@@ -136,7 +136,7 @@ public class ActInvRecContent extends Activity implements BarcodeReader.BarcodeL
         return null;
     }
 
-    public static InvRecContent findOrAddNomen(InvRec invRec, NomenIn nomenIn, MarkIn mark, String barCode, Double mrc) {
+    public static InvRecContent findOrAddNomen(InvRec invRec, NomenIn nomenIn, MarkIn mark, String barCode, Double mrc, Double qtyAdd) {
         InvRecContent resultRecContent = null;
         // 9) найти в документе позицию с NomenID (если такой нет — добавить) и у этой позиции
         int position = 0;
@@ -157,7 +157,7 @@ public class ActInvRecContent extends Activity implements BarcodeReader.BarcodeL
             invRec.getRecContentList().add(resultRecContent);
         }
         //10) поле «Количество факт» добавить 1 шт к предыдущему значению
-        resultRecContent.setQtyAccepted((resultRecContent.getQtyAccepted() == null ? 0 : resultRecContent.getQtyAccepted()) + 1);
+        resultRecContent.setQtyAccepted((resultRecContent.getQtyAccepted() == null ? 0 : resultRecContent.getQtyAccepted()) + qtyAdd);
         resultRecContent.getBaseRecContentMarkList().add(new InvRecContentMark(mark.getMark(), BaseRecContentMark.MARK_SCANNED_AS_BOX, mark.getMark(), barCode));
 
         //13) установить статус документа «в работе»
@@ -488,8 +488,7 @@ public class ActInvRecContent extends Activity implements BarcodeReader.BarcodeL
                             markStub.setMark(barCode);
                             markStub.setNomenId(nomenIn3.getId());
                             // добавить в документ позицию с этой номенклатурой и МРЦ 0 (ноль - константа всегда для таких случаев), количество 1, саму марку - записать в эту позицию.
-                            invRecContent = ActInvRecContent.findOrAddNomen(invRec, nomenIn3, markStub, barCode, 0d);
-                            invRecContent.setQtyAccepted(0d);
+                            invRecContent = ActInvRecContent.findOrAddNomen(invRec, nomenIn3, markStub, barCode, 0d, 0d);
                             proceedOneBottle(nomenIn3);
                         }
                         MessageUtils.showModalMessage(this, "Внимание!", "Марка не состоит на учете в магазине. Отложите эту продукцию для дальнейшего разбора. Продукция будет учтена в фактическом наличии, но выставлять ее на продажу нельзя.");
@@ -545,7 +544,7 @@ public class ActInvRecContent extends Activity implements BarcodeReader.BarcodeL
                         if (position != null) {
                             continue;
                         }
-                        row = ActInvRecContent.findOrAddNomen(invRec, foundNomenIn, mark, barCode, mark.getMrc());
+                        row = ActInvRecContent.findOrAddNomen(invRec, foundNomenIn, mark, barCode, mark.getMrc(), 1d);
                         position = Integer.parseInt(row.getPosition());
                         boolean foundRecContentToSave = false;
                         for (int i=0; i<recContentsToSave.size(); i++) {
@@ -628,7 +627,7 @@ public class ActInvRecContent extends Activity implements BarcodeReader.BarcodeL
                     if (position != null) {
                         continue;
                     }
-                    row = ActInvRecContent.findOrAddNomen(invRec, foundNomenIn, mark, barCode, mark.getMrc());
+                    row = ActInvRecContent.findOrAddNomen(invRec, foundNomenIn, mark, barCode, mark.getMrc(), 1d);
                     position = Integer.parseInt(row.getPosition());
 
                     boolean foundRecContentToSave = false;

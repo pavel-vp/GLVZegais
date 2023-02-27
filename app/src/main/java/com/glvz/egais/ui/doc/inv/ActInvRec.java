@@ -356,8 +356,7 @@ public class ActInvRec extends ActBaseDocRec implements PickMRCCallback{
                             markStub.setMark(barCode);
                             markStub.setNomenId(nomenIn3.getId());
                             // добавить в документ позицию с этой номенклатурой и МРЦ 0 (ноль - константа всегда для таких случаев), количество 1, саму марку - записать в эту позицию.
-                            InvRecContent newRow = ActInvRecContent.findOrAddNomen(invRec, nomenIn3, markStub, barCode, 0d);
-                            newRow.setQtyAccepted(0d);
+                            InvRecContent newRow = ActInvRecContent.findOrAddNomen(invRec, nomenIn3, markStub, barCode, 0d, 0d);
                             message = "Марка не состоит на учете в магазине. Отложите эту продукцию для дальнейшего разбора. Продукция будет учтена в фактическом наличии, но выставлять ее на продажу нельзя.";
                             proceedOneBottle(newRow, nomenIn3);
                             message = null;
@@ -416,7 +415,7 @@ public class ActInvRec extends ActBaseDocRec implements PickMRCCallback{
                         if (position != null) {
                             continue;
                         }
-                        row = ActInvRecContent.findOrAddNomen(invRec, foundNomenIn, mark, barCode, mark.getMrc());
+                        row = ActInvRecContent.findOrAddNomen(invRec, foundNomenIn, mark, barCode, mark.getMrc(), 1d);
                         position = Integer.parseInt(row.getPosition());
                         boolean foundRecContentToSave = false;
                         for (int i=0; i<recContentsToSave.size(); i++) {
@@ -498,7 +497,7 @@ public class ActInvRec extends ActBaseDocRec implements PickMRCCallback{
                     if (position != null) {
                         continue;
                     }
-                    row = ActInvRecContent.findOrAddNomen(invRec, foundNomenIn, mark, barCode, mark.getMrc());
+                    row = ActInvRecContent.findOrAddNomen(invRec, foundNomenIn, mark, barCode, mark.getMrc(), 1d);
                     position = Integer.parseInt(row.getPosition());
 
                     boolean foundRecContentToSave = false;
