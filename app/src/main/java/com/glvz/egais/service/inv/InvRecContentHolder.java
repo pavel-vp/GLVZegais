@@ -49,6 +49,7 @@ public class InvRecContentHolder extends DocRecContentHolder {
             llPosition.setVisibility(View.VISIBLE);
             tvPosition.setText(recContent.getPosition().toString());
         }
+        tvStatusRow.setVisibility(View.INVISIBLE);
         switch (recContent.getStatus()) {
             case NOT_ENTERED:
                 tvStatusRow.setText("Не обработана");

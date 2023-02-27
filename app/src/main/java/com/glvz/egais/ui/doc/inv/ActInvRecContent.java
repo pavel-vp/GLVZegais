@@ -313,7 +313,8 @@ public class ActInvRecContent extends Activity implements BarcodeReader.BarcodeL
                 invRecContentHolder.setItem(invRecContent, 0, DocContentArrayAdapter.RECCONTENT_MODE);
                 // Недоступна у товаров "NomenType": 1 (маркированный алкоголь)
                 if (invRecContent.getNomenIn() == null ||
-                        (invRecContent.getNomenIn().getNomenType() == NomenIn.NOMENTYPE_ALCO_MARK && !((InvIn)invRec.getDocIn()).ableDirectInput() )) {
+                        (invRecContent.getNomenIn().getNomenType() == NomenIn.NOMENTYPE_ALCO_MARK && !((InvIn)invRec.getDocIn()).ableDirectInput() ) ||
+                        (invRecContent.getNomenIn().getNomenType() == NomenIn.NOMENTYPE_ALCO_TOBACCO)   ) {
                     btnAdd.setEnabled(false);
                     edQtyAdd.setEnabled(false);
                 } else {
