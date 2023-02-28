@@ -161,10 +161,10 @@ public class DaoDbInv {
             String barcode = cursor.getString(cursor.getColumnIndexOrThrow(BaseRec.KEY_POS_BARCODE));
             String posStatus = cursor.getString(cursor.getColumnIndexOrThrow(BaseRec.KEY_POS_STATUS));
             float qtyAccepted = Float.parseFloat(cursor.getString(cursor.getColumnIndexOrThrow(BaseRec.KEY_POS_QTYACCEPTED)));
-            float manualMrcFload = Float.parseFloat(cursor.getString(cursor.getColumnIndexOrThrow(BaseRec.KEY_POS_MANUAL_MRC)));
+            String manualMrcStr = cursor.getString(cursor.getColumnIndexOrThrow(BaseRec.KEY_POS_MANUAL_MRC));
             String docContentId = cursor.getString(cursor.getColumnIndexOrThrow(BaseRec.KEY_DOC_CONTENTID));
 
-            Double manualMrc = manualMrcFload == 0 ? null : (double) manualMrcFload;
+            Double manualMrc = manualMrcStr == null ? null : Double.parseDouble(manualMrcStr);
 
             // Попробовать найти уже созданную строку
             InvRecContent recContent = null;
