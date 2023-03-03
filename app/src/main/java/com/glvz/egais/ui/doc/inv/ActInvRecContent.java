@@ -141,9 +141,12 @@ public class ActInvRecContent extends Activity implements BarcodeReader.BarcodeL
         // 9) найти в документе позицию с NomenID (если такой нет — добавить) и у этой позиции
         int position = 0;
         for (InvRecContent recContent : invRec.getInvRecContentList()) {
-            Double recMrc = recContent.getContentIn() == null ? null : recContent.getContentIn().getMrc();
+            Double recMrc = recContent.getContentIn() == null ? recContent.getManualMrc() : recContent.getContentIn().getMrc();
             if (recContent.getNomenIn().getId().equals(nomenIn.getId()) &&
-                    ((recMrc == null && mrc == null) || (recMrc == null && mrc == 0) || (recMrc == 0 && mrc == null) || (Double.compare(recMrc, mrc) == 0))) {
+                    ((recMrc == null && mrc == null) ||
+                            (recMrc == null && mrc == 0) ||
+                            (mrc == null && recMrc == 0) ||
+                            (recMrc != null && mrc != null && Double.compare(recMrc, mrc) == 0))) {
                 resultRecContent = recContent;
                 break;
             }
