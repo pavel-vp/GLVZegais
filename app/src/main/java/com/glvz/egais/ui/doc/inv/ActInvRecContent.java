@@ -407,7 +407,7 @@ public class ActInvRecContent extends Activity implements BarcodeReader.BarcodeL
                 if (markScanned != null) {
                     InvRecContent irc = (InvRecContent)markScanned.recContent;
                     // Если марка найдена — открыть товарную позицию
-                    fillActWithNomenIdPosition(irc.getNomenIn(), irc.getContentIn().getMrc());
+                    fillActWithNomenIdPosition(irc.getNomenIn(), irc.getContentIn() == null ? irc.getManualMrc() : irc.getContentIn().getMrc());
                     MessageUtils.showModalMessage(this, "Внимание!", "Эта марка ранее уже была отсканирована в этом задании в позиции " + markScanned.recContent.getPosition() + " товара " + markScanned.recContent.getNomenIn().getName());
                     return;
                 }
@@ -578,7 +578,7 @@ public class ActInvRecContent extends Activity implements BarcodeReader.BarcodeL
                         row = findRecContentByPosition(invRec, position);
                     }
                     if (row != null) {
-                        fillActWithNomenIdPosition(foundNomenIn, row.getContentIn().getMrc());
+                        fillActWithNomenIdPosition(foundNomenIn, row.getContentIn() == null ? row.getManualMrc() : row.getContentIn().getMrc());
                     }
                     //6.2 вывести модальное сообщение:
                     //В коробке #ШККоробки# числится номенклатура #НаименованиеНоменклатуры# (#NomenID#) с учетным количеством #Числится марок в текущей коробке# марок.
