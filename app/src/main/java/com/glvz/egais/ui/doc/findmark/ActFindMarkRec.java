@@ -130,10 +130,10 @@ public class ActFindMarkRec extends ActBaseDocRec {
             case PDF417:
             case DATAMATRIX:
                 // выполнить проверку корректности ШК по длине:  PDF-417 должна быть 68 символов,  DataMatrix – 150
-                if (barCodeType == DATAMATRIX && barCode.length() != 150) {
-                    MessageUtils.showModalMessage(this, "Внимание!", "Неверная длина считанного штрихкода ("+ barCode.length()+"). Сканируйте марки с алкогольной продукции");
-                    return;
-                }
+                //if (barCodeType == DATAMATRIX && barCode.length() != 150) {
+                //    MessageUtils.showModalMessage(this, "Внимание!", "Неверная длина считанного штрихкода ("+ barCode.length()+"). Сканируйте марки с алкогольной продукции");
+                //    return;
+                //}
                 // проверить марку на соответствие маркам в задании
                 SearchUtil.CheckMarkScannedResultForFindMark markScanned = SearchUtil.checkMarkScannedForFindMark(findMarkRec, barCode);
                 if (markScanned == null) {
