@@ -30,6 +30,11 @@
             android:enabled="true"
             android:layout_height="wrap_content" android:id="@+id/buttonLoadDocs"/>
     <Button
+        android:text="Экспорт БД"
+        android:layout_width="match_parent"
+        android:enabled="true"
+        android:layout_height="wrap_content" android:id="@+id/buttonExportDb"/>
+    <Button
             android:text="Главное меню"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" android:id="@+id/buttonMainMenu"/>

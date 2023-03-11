@@ -12,6 +12,7 @@ import com.glvz.egais.model.income.IncomeRec;
 import com.glvz.egais.model.writeoff.WriteoffRec;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.List;
 import java.util.Set;
 
@@ -58,4 +59,6 @@ public interface Integration {
     String getBasePath();
 
     void LogWrite(String shopId, String log_text);
+
+    void exportDbFile(String shopId, String pathDb) throws IOException;
 }

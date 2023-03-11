@@ -18,7 +18,7 @@ import com.glvz.egais.integration.sdcard.Integration;
 import com.glvz.egais.integration.sdcard.IntegrationSDCard;
 import com.glvz.egais.utils.MessageUtils;
 
-import java.io.File;
+import java.io.IOException;
 import java.util.List;
 
 public class ActChooseShop extends Activity {
@@ -26,6 +26,7 @@ public class ActChooseShop extends Activity {
     private TextView tvShopChosen;
     private TextView tvUser;
     private Button buttonLoadDocs;
+    private Button buttonExportDb;
     private Button buttonMainMenu;
     Integration integrationFile;
 
@@ -97,6 +98,20 @@ public class ActChooseShop extends Activity {
             public void onClick(View v) {
                 //DaoMem.getDaoMem().initDocuments(true);
                 clearAllShared();
+            }
+        });
+
+        buttonExportDb = (Button) findViewById(R.id.buttonExportDb);
+        buttonExportDb.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                try {
+                    DaoMem.getDaoMem().exportDb();
+                    MessageUtils.showToastMessage("БД выгружена");
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    MessageUtils.showToastMessage("Ошибка:" + e.getMessage());
+                }
             }
         });
 

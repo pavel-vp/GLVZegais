@@ -8,6 +8,7 @@ import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
+import android.os.FileUtils;
 import android.support.v4.content.FileProvider;
 import android.util.Log;
 
@@ -71,6 +72,8 @@ import com.glvz.egais.utils.StringUtils;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
@@ -644,6 +647,13 @@ public class DaoMem {
         // вызываем сервис
         CommandCall commandCall = new CommandCall(commandIn, barcode, shopId, userIn.getId(), nomen);
         commandCall.call(commandFinishCallback);
+    }
+
+    public void exportDb() throws IOException {
+        String pathDb = appDbHelper.getReadableDatabase().getPath();
+        integrationFile.exportDbFile(shopId, pathDb);
+        // По событию кнопки выгружать базу данных main в каталог результирующих файлов текущего магазина (GLVZ/Shops/%SHOPID%/OUT),
+        // к имени файла дописывать серийный номер ТСД.
     }
 
     public static class CheckMarkScannedResult {

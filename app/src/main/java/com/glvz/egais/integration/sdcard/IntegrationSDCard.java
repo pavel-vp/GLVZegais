@@ -610,4 +610,31 @@ public class IntegrationSDCard implements Integration {
         }
     }
 
+    public void exportDbFile(String shopId, String pathDb) throws IOException {
+            DateFormat dtf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            Date date = new Date();
+            String FILENAME =  "GLVZ.db."+ DaoMem.getDaoMem().getDeviceId();
+            File sdFile = new File(basePath, FILENAME);
+            copy(new File(pathDb), sdFile);
+    }
+
+    private static void copy(File src, File dst) throws IOException {
+        InputStream in = new FileInputStream(src);
+        try {
+            OutputStream out = new FileOutputStream(dst);
+            try {
+                // Transfer bytes from in to out
+                byte[] buf = new byte[1024];
+                int len;
+                while ((len = in.read(buf)) > 0) {
+                    out.write(buf, 0, len);
+                }
+            } finally {
+                out.close();
+            }
+        } finally {
+            in.close();
+        }
+    }
+
 }
