@@ -614,7 +614,7 @@ public class IntegrationSDCard implements Integration {
             DateFormat dtf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             Date date = new Date();
             String FILENAME =  "GLVZ.db."+ DaoMem.getDaoMem().getDeviceId();
-            File sdFile = new File(basePath, FILENAME);
+            File sdFile = new File(basePath + "/" + SHOPS_DIR + "/" + shopId + "/" + OUT_DIR, FILENAME);
             copy(new File(pathDb), sdFile);
     }
 

@@ -154,15 +154,18 @@ public class ActChooseShop extends Activity {
         tvShopChosen.setText(DaoMem.getDaoMem().getShopInName());
         if (DaoMem.getDaoMem().getShopId() == null) {
             buttonLoadDocs.setEnabled(false);
+            buttonExportDb.setEnabled(false);
             buttonMainMenu.setEnabled(false);
         } else {
             if ((DaoMem.getDaoMem().getUserIn().getId().equals("290a6e3a974-4e9c-11e8-83d3-2c59e542040c")) ||   //Ложкин
                     (DaoMem.getDaoMem().getUserIn().getId().equals("2907657a845-597d-11eb-9cde-2c59e542040c"))) //Марков
-            {buttonLoadDocs.setEnabled(true);
+            {
+                buttonLoadDocs.setEnabled(true);
             }else{
                 buttonLoadDocs.setEnabled(false);}
 
             buttonMainMenu.setEnabled(true);
+            buttonExportDb.setEnabled(true);
         }
     }
 
