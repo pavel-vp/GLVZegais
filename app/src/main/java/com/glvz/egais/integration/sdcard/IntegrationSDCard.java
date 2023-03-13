@@ -67,6 +67,7 @@ public class IntegrationSDCard implements Integration {
     private static final String DOC_PREFIX_INV = "INV";
     private static final String DOC_PREFIX_PHOTO = "IMG";
     private static final String DOC_PREFIX_LOG = "LOG";
+    private static final String DOC_PREFIX_DB = "GLVZ";
 
     private ObjectMapper objectMapper = new ObjectMapper();
 
@@ -538,7 +539,9 @@ public class IntegrationSDCard implements Integration {
             }
             // Фото
             if (file.getName().toUpperCase().startsWith(DOC_PREFIX_PHOTO) ||
-                    file.getName().toUpperCase().startsWith(DOC_PREFIX_LOG)) {
+                    file.getName().toUpperCase().startsWith(DOC_PREFIX_LOG) ||
+                    file.getName().toUpperCase().startsWith(DOC_PREFIX_DB)
+            ) {
                 // Если это экспорт
                 if (file.getAbsolutePath().contains("/" + OUT_DIR + "/")) {
                     try {
@@ -548,7 +551,11 @@ public class IntegrationSDCard implements Integration {
                         // IMG-2020-10-10 20:20:20.
                         if (file.getName().toUpperCase().startsWith(DOC_PREFIX_PHOTO+"-MINI")) {
                             date = file.getName().substring(9,28);
-                        } else {
+                        }
+                        else if (file.getName().toUpperCase().startsWith(DOC_PREFIX_DB)) {
+                            date = file.getName().substring(5,24);
+                        }
+                        else {
                             date = file.getName().substring(4,23);
                         }
                         Date d = StringUtils.imgStringToDate(date);
@@ -611,9 +618,9 @@ public class IntegrationSDCard implements Integration {
     }
 
     public void exportDbFile(String shopId, String pathDb) throws IOException {
-            DateFormat dtf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
             Date date = new Date();
-            String FILENAME =  "GLVZ.db."+ DaoMem.getDaoMem().getDeviceId();
+            String FILENAME =  "GLVZ-" + df.format(date) + " 00_00_00" + "-" + DaoMem.getDaoMem().getDeviceId() + ".db";
             File sdFile = new File(basePath + "/" + SHOPS_DIR + "/" + shopId + "/" + OUT_DIR, FILENAME);
             copy(new File(pathDb), sdFile);
     }
