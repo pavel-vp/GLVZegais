@@ -278,7 +278,7 @@ public class ActInvRec extends ActBaseDocRec implements PickMRCCallback{
                     return;
                 }
                 MarkIn markIn = null;
-                if (barCode.length() == 150) { // для марок длиной 150 символов (алкоголь)
+                if (barCode.length() == 150 || barCode.length() == 68) { // для марок длиной 150 символов (алкоголь)
                     // - для Всех типов док - выполнить проверку допустимости добавления этой марки, типы проверяемых марок зависят от состояния CheckMark в справочнике магазинов shops.json:
                     //   - «DataMatrix» - проверяются только марки DataMatrix (проверка PDF417 - пропускается)
                     //   - «DataMatrixPDF417» - проверяются марки DataMatrix и PDF417

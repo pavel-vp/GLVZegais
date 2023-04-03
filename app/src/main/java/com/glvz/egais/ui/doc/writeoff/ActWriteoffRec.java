@@ -298,7 +298,7 @@ public class ActWriteoffRec extends ActBaseDocRec {
                     return;
                 }
                 MarkIn markIn = null;
-                if (barCode.length() == 150) { // для марок длиной 150 символов (алкоголь)
+                if (barCode.length() == 150 || barCode.length() == 68) { // для марок длиной 150 символов (алкоголь)
                     // Проверить наличие этой марки среди ранее сохраненных марок всех товарных позиций этого задания.
                     // Проверить что этот ШК ранее не сканировался в данной ТТН
                     DaoMem.CheckMarkScannedResult markScanned = DaoMem.getDaoMem().checkMarkScanned(writeoffRec, barCode);
