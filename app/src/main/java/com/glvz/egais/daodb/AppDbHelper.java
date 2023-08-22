@@ -12,7 +12,7 @@ import com.glvz.egais.model.writeoff.WriteoffRec;
 
 public class AppDbHelper extends SQLiteOpenHelper {
     // If you change the database schema, you must increment the database version.
-    public static final int DATABASE_VERSION = 1;
+    public static final int DATABASE_VERSION = 2;
     public static final String DATABASE_NAME = "GLVZ.db";
 
     //
@@ -64,6 +64,20 @@ public class AppDbHelper extends SQLiteOpenHelper {
             "CREATE INDEX "+DaoMem.KEY_INV+DaoMem.CONTENT_MARK+"_index_2 ON " + DaoMem.KEY_INV + DaoMem.CONTENT_MARK + " ("+BaseRec.KEY_DOC_CONTENTID+")";
     private static final String SQL_CREATE_INV_CONTENT_MARK_INDEX_3 =
             "CREATE INDEX "+DaoMem.KEY_INV+DaoMem.CONTENT_MARK+"_index_3 ON " + DaoMem.KEY_INV + DaoMem.CONTENT_MARK + " ("+BaseRec.KEY_DOC_CONTENT_MARKID+")";
+    private static final String SQL_CREATE_INV_CONTENT_MARK_INDEX_4 =
+            "CREATE UNIQUE INDEX "+DaoMem.KEY_INV+DaoMem.CONTENT_MARK+"_index_4 ON " + DaoMem.KEY_INV + DaoMem.CONTENT_MARK + " ("+BaseRec.KEY_DOCID+", "+BaseRec.KEY_POS_MARKSCANNED+")";
+
+    private static final String SQL_FIX_INV_DOUBLE_MARK = "delete from inv_content_mark " +
+            "WHERE (docid||pos_markscannedreal) IN ( " +
+            "SELECT CM.DOCID||CM.POS_MARKSCANNEDREAL " +
+            "FROM INV_CONTENT_MARK CM " +
+            "GROUP BY CM.DOCID, CM.POS_MARKSCANNEDREAL " +
+            "HAVING COUNT(*) > 1 " +
+            ") " +
+            "AND _ID NOT IN (SELECT MIN(CM._ID)" +
+            "FROM INV_CONTENT_MARK CM " +
+            "GROUP BY CM.DOCID, CM.POS_MARKSCANNEDREAL " +
+            "HAVING COUNT(*) > 1)";
 
     private static final String SQL_DELETE_INV = "DROP TABLE IF EXISTS " + DaoMem.KEY_INV;
     private static final String SQL_DELETE_INV_CONTENT = "DROP TABLE IF EXISTS " + DaoMem.KEY_INV+DaoMem.CONTENT;
@@ -370,6 +384,7 @@ public class AppDbHelper extends SQLiteOpenHelper {
         db.execSQL(SQL_CREATE_INV_CONTENT_MARK_INDEX_1);
         db.execSQL(SQL_CREATE_INV_CONTENT_MARK_INDEX_2);
         db.execSQL(SQL_CREATE_INV_CONTENT_MARK_INDEX_3);
+        db.execSQL(SQL_CREATE_INV_CONTENT_MARK_INDEX_4);
         //
         // FINDMARK
         //
@@ -442,32 +457,37 @@ public class AppDbHelper extends SQLiteOpenHelper {
         db.execSQL(SQL_CREATE_PRICE_CONTENT_MARK_INDEX_3);
     }
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        // INV
-        db.execSQL(SQL_DELETE_INV_CONTENT_MARK);
-        db.execSQL(SQL_DELETE_INV_CONTENT);
-        db.execSQL(SQL_DELETE_INV);
-        // FINDMARK
-        db.execSQL(SQL_DELETE_FINDMARK_CONTENT_MARK);
-        db.execSQL(SQL_DELETE_FINDMARK_CONTENT);
-        db.execSQL(SQL_DELETE_FINDMARK);
-        // CHECKMARK
-        db.execSQL(SQL_DELETE_CHECKMARK_CONTENT_MARK);
-        db.execSQL(SQL_DELETE_CHECKMARK_CONTENT);
-        db.execSQL(SQL_DELETE_CHECKMARK);
-        // WRITEOFF
-        db.execSQL(SQL_DELETE_WRITEOFF_CONTENT_MARK);
-        db.execSQL(SQL_DELETE_WRITEOFF_CONTENT);
-        db.execSQL(SQL_DELETE_WRITEOFF);
-        // DOC
-        db.execSQL(SQL_DELETE_DOC_CONTENT_MARK);
-        db.execSQL(SQL_DELETE_DOC_CONTENT);
-        db.execSQL(SQL_DELETE_DOC);
-        // PRICE
-        db.execSQL(SQL_DELETE_PRICE_CONTENT_MARK);
-        db.execSQL(SQL_DELETE_PRICE_CONTENT);
-        db.execSQL(SQL_DELETE_PRICE);
+        if ((oldVersion==1)&&(newVersion==2)) {
+            db.execSQL(SQL_FIX_INV_DOUBLE_MARK);
+            db.execSQL(SQL_CREATE_INV_CONTENT_MARK_INDEX_4);
+        } else {
+            // INV
+            db.execSQL(SQL_DELETE_INV_CONTENT_MARK);
+            db.execSQL(SQL_DELETE_INV_CONTENT);
+            db.execSQL(SQL_DELETE_INV);
+            // FINDMARK
+            db.execSQL(SQL_DELETE_FINDMARK_CONTENT_MARK);
+            db.execSQL(SQL_DELETE_FINDMARK_CONTENT);
+            db.execSQL(SQL_DELETE_FINDMARK);
+            // CHECKMARK
+            db.execSQL(SQL_DELETE_CHECKMARK_CONTENT_MARK);
+            db.execSQL(SQL_DELETE_CHECKMARK_CONTENT);
+            db.execSQL(SQL_DELETE_CHECKMARK);
+            // WRITEOFF
+            db.execSQL(SQL_DELETE_WRITEOFF_CONTENT_MARK);
+            db.execSQL(SQL_DELETE_WRITEOFF_CONTENT);
+            db.execSQL(SQL_DELETE_WRITEOFF);
+            // DOC
+            db.execSQL(SQL_DELETE_DOC_CONTENT_MARK);
+            db.execSQL(SQL_DELETE_DOC_CONTENT);
+            db.execSQL(SQL_DELETE_DOC);
+            // PRICE
+            db.execSQL(SQL_DELETE_PRICE_CONTENT_MARK);
+            db.execSQL(SQL_DELETE_PRICE_CONTENT);
+            db.execSQL(SQL_DELETE_PRICE);
 
-        onCreate(db);
+            onCreate(db);
+        }
     }
     public void onDowngrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         onUpgrade(db, oldVersion, newVersion);

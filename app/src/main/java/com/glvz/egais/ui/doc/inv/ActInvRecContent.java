@@ -411,6 +411,11 @@ public class ActInvRecContent extends Activity implements BarcodeReader.BarcodeL
                     MessageUtils.showModalMessage(this, "Внимание!", "Эта марка ранее уже была отсканирована в этом задании в позиции " + markScanned.recContent.getPosition() + " товара " + markScanned.recContent.getNomenIn().getName());
                     return;
                 }
+                //by LAG 2023-08-22
+                if (DaoDbInv.getDaoDbInv().readDbInvScanedMark(invRec.getDocId(), barCode).size() > 0) {
+                    MessageUtils.showModalMessage(this, "Внимание!", "Эта марка ранее уже была отсканирована в этом документе");
+                    return;
+                };
 
                 MarkIn markIn = null;
                 if (barCode.length() == 150 || barCode.length() == 68) { // для марок длиной 150 символов (алкоголь)
@@ -713,6 +718,9 @@ public class ActInvRecContent extends Activity implements BarcodeReader.BarcodeL
                     Log.e("ActInvRecContent","Error in Catching", e);
                 }
 
+            } else {
+                MessageUtils.playSound(R.raw.alarm);
+                MessageUtils.showModalMessage(activity, "Внимание!", "Попытка записи в базу данных дубля марки. Перезагрузите ТСД и продолжите работу. При повторении данной ошибки - обратитесь в техподдержку.");
             }
 
         }

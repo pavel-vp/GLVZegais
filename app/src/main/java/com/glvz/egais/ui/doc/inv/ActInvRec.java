@@ -277,6 +277,11 @@ public class ActInvRec extends ActBaseDocRec implements PickMRCCallback{
                     pickRec(this, invRec.getDocId(), irc, 0, null, false, false);
                     return;
                 }
+                //by LAG 2023-08-22
+                if (DaoDbInv.getDaoDbInv().readDbInvScanedMark(invRec.getDocId(), barCode).size() > 0) {
+                    MessageUtils.showModalMessage(this, "Внимание!", "Эта марка ранее уже была отсканирована в этом документе");
+                    return;
+                };
                 MarkIn markIn = null;
                 if (barCode.length() == 150 || barCode.length() == 68) { // для марок длиной 150 символов (алкоголь)
                     // - для Всех типов док - выполнить проверку допустимости добавления этой марки, типы проверяемых марок зависят от состояния CheckMark в справочнике магазинов shops.json:

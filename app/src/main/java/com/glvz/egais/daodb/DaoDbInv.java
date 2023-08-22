@@ -63,6 +63,31 @@ public class DaoDbInv {
         return result;
     }
 
+    // by LAG 2023-08-22
+    public Map<String, Object> readDbInvScanedMark(String docId, String Mark) {
+        Map<String, Object> result = null;
+        SQLiteDatabase db = appDbHelper.getReadableDatabase();
+        Cursor cursor = db.query(
+                DaoMem.KEY_INV+DaoMem.CONTENT_MARK,   // The table to query
+                null,             // The array of columns to return (pass null to get all)
+                BaseRec.KEY_DOCID+" = ? and "+BaseRec.KEY_POS_MARKSCANNED+ " = ?",              // The columns for the WHERE clause
+                new String[] { docId,  Mark},                              // The values for the WHERE clause
+                null,                   // don't group the rows
+                null,                   // don't filter by row groups
+                BaseColumns._ID + " ASC"               // The sort order
+        );
+        while(cursor.moveToNext()) {
+            result = new HashMap<>();
+            result.put(BaseRec.KEY_DOC_CONTENTID, cursor.getString(cursor.getColumnIndexOrThrow(BaseRec.KEY_DOC_CONTENTID)));
+            result.put(BaseRec.KEY_DOC_CONTENT_MARKID, cursor.getString(cursor.getColumnIndexOrThrow(BaseRec.KEY_DOC_CONTENT_MARKID)));
+        }
+        cursor.close();
+        if (result == null) {
+            result = new HashMap<>();
+        }
+        return result;
+    }
+
     private Map<String, Object> readDbInvRecContent(String contentId) {
         Map<String, Object> result = null;
         SQLiteDatabase db = appDbHelper.getReadableDatabase();
@@ -275,11 +300,6 @@ public class DaoDbInv {
         Map<String, Object> dbInvRecContent = readDbInvRecContent(contentId);
 
         SQLiteDatabase db = appDbHelper.getWritableDatabase();
-        if (dbInvRecContent == null) {
-            db.insert(DaoMem.KEY_INV+DaoMem.CONTENT, null, values);
-        } else {
-            db.update(DaoMem.KEY_INV+DaoMem.CONTENT, values, BaseRec.KEY_DOC_CONTENTID + " = ?", new String[] { contentId });
-        }
         if (recContent.getBaseRecContentMarkList().isEmpty()) {
             int deletedRowsMark = db.delete(DaoMem.KEY_INV + DaoMem.CONTENT_MARK, BaseRec.KEY_DOC_CONTENTID + " = ?", new String[]{contentId});
         } else {
@@ -327,9 +347,17 @@ public class DaoDbInv {
                     idx++;
                 }
                 db.setTransactionSuccessful();
+            } catch (android.database.sqlite.SQLiteConstraintException e) {
+                db.endTransaction();
+                return;
             } finally {
                 db.endTransaction();
             }
+        }
+        if (dbInvRecContent == null) {
+            db.insert(DaoMem.KEY_INV+DaoMem.CONTENT, null, values);
+        } else {
+            db.update(DaoMem.KEY_INV+DaoMem.CONTENT, values, BaseRec.KEY_DOC_CONTENTID + " = ?", new String[] { contentId });
         }
 
         Log.v("DaoMem", "saveDbInvRecContent end");
@@ -361,7 +389,5 @@ public class DaoDbInv {
             }
         }
     }
-
-
 
 }
