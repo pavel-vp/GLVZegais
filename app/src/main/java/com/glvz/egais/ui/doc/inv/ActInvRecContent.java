@@ -688,6 +688,7 @@ public class ActInvRecContent extends Activity implements BarcodeReader.BarcodeL
     public static void proceedOneBottle(Activity activity, InvRec invRec, InvRecContent invRecContent, NomenIn nomenIn, MarkIn scannedMarkIn) {
         Double qtyAcceptedPrev = invRecContent.getQtyAccepted();
         boolean soundPlayed = false;
+        boolean DoubledMark = false;
         try {
             invRecContent.setNomenIn(nomenIn, null);
             //10) поле «Количество факт» добавить addQty шт к предыдущему значению
@@ -699,10 +700,12 @@ public class ActInvRecContent extends Activity implements BarcodeReader.BarcodeL
             //13) установить статус документа «в работе»
             invRecContent.setStatus(BaseRecContentStatus.DONE);
             invRec.setStatus(BaseRecStatus.INPROGRESS);
-            DaoDbInv.getDaoDbInv().saveDbInvRecContent(invRec, invRecContent);
-            //12) проиграть файл «bottle_one.mp3» - проигрываем файл в самом конце после успешного сохранения записи
-            MessageUtils.playSound(R.raw.bottle_one);
-            soundPlayed = true;
+            DoubledMark = DaoDbInv.getDaoDbInv().saveDbInvRecContent(invRec, invRecContent);
+            if (DoubledMark==false) {
+                //12) проиграть файл «bottle_one.mp3» - проигрываем файл в самом конце после успешного сохранения записи
+                MessageUtils.playSound(R.raw.bottle_one);
+                soundPlayed = true;
+            }
         } finally {
             if (soundPlayed) {
                 try {

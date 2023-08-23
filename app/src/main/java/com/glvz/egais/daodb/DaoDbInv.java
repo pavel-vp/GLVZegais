@@ -266,8 +266,9 @@ public class DaoDbInv {
         int deletedRowsContent = db.delete(DaoMem.KEY_INV+DaoMem.CONTENT, BaseRec.KEY_DOCID + " = ?", new String[] { invRec.getDocId() });
     }
 
-    public void saveDbInvRecContent(InvRec invRec, InvRecContent recContent) {
+    public boolean saveDbInvRecContent(InvRec invRec, InvRecContent recContent) {
         Log.v("DaoMem", "saveDbInvRecContent start");
+        boolean DoubledMark = false;
         saveDbInvRec(invRec);
         ContentValues values = new ContentValues();
         values.put(BaseRec.KEY_DOCID, invRec.getDocId());
@@ -348,19 +349,23 @@ public class DaoDbInv {
                 }
                 db.setTransactionSuccessful();
             } catch (android.database.sqlite.SQLiteConstraintException e) {
-                db.endTransaction();
-                return;
+//                db.endTransaction();
+//                return;
+                DoubledMark = true;
             } finally {
                 db.endTransaction();
             }
         }
-        if (dbInvRecContent == null) {
-            db.insert(DaoMem.KEY_INV+DaoMem.CONTENT, null, values);
-        } else {
-            db.update(DaoMem.KEY_INV+DaoMem.CONTENT, values, BaseRec.KEY_DOC_CONTENTID + " = ?", new String[] { contentId });
+        if (DoubledMark == false) {
+            if (dbInvRecContent == null) {
+                db.insert(DaoMem.KEY_INV + DaoMem.CONTENT, null, values);
+            } else {
+                db.update(DaoMem.KEY_INV + DaoMem.CONTENT, values, BaseRec.KEY_DOC_CONTENTID + " = ?", new String[]{contentId});
+            }
         }
 
         Log.v("DaoMem", "saveDbInvRecContent end");
+        return DoubledMark;
     }
 
 
