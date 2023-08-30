@@ -163,14 +163,14 @@ public class DaoDbDoc {
             String posStatus = cursor.getString(cursor.getColumnIndexOrThrow(BaseRec.KEY_POS_STATUS));
             float qtyAccepted = Float.parseFloat(cursor.getString(cursor.getColumnIndexOrThrow(BaseRec.KEY_POS_QTYACCEPTED)));
             String docContentId = cursor.getString(cursor.getColumnIndexOrThrow(BaseRec.KEY_DOC_CONTENTID));
-            int position = Integer.parseInt(cursor.getString(cursor.getColumnIndexOrThrow(BaseRec.KEY_POS_POSITION)));
+            String position = cursor.getString(cursor.getColumnIndexOrThrow(BaseRec.KEY_POS_POSITION));
 
             // Попробовать найти уже созданную строку
             BaseRecContent recContent = null;
             for (BaseRecContent brc : baseRec.getRecContentList()) {
 
                 BaseRecContent ircTemp = (BaseRecContent) brc;
-                if (ircTemp.getPosition() != null && Integer.parseInt(ircTemp.getPosition()) == position) {
+                if (ircTemp.getPosition() != null && ircTemp.getPosition().equals(position)) {
                     recContent = ircTemp;
                 }
             }
