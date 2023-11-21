@@ -591,6 +591,25 @@ public class ActInvRecContent extends Activity implements BarcodeReader.BarcodeL
                     MessageUtils.showModalMessage(this, "Внимание!", "В коробке " + barCode + " числится номенклатура " + foundNomenIn.getName() + " (" + foundNomenIn.getId() + ") с учетным количеством " + marksInCurrentBox + " марок." +
                             " Количество марок, добавленное в документ " + qtyAddedCurrentBox + " шт.");
                     updateData();
+                } else if (barCode.length() == 36 && barCode.matches("^[a-z0-9]{8}-[a-z0-9]{4}-4[a-z0-9]{3}-[a-z0-9]{4}-[a-z0-9]{12}")) { // 36 символ (подарочная карта):
+                    // искать марку в справочнике «marks.json»
+                    markIn = DaoMem.getDaoMem().findMarkByBarcode(barCode);
+                    if (markIn == null) {
+                        MessageUtils.playSound(R.raw.alarm);
+                        MessageUtils.showModalMessage(this, "Внимание!", "Подарочная карта не состоит на учете в магазине. Отложите эту продукцию для дальнейшего разбора. Продукция не будет учтена в фактическом наличии, выставлять ее на продажу нельзя.");
+                        return;
+                    }
+                    this.scannedMarkIn = markIn;
+
+                    NomenIn nomenIn3 = DaoMem.getDaoMem().findNomenInByNomenId(markIn.getNomenId());
+                    if (nomenIn3 == null) {
+                        // если не найдена: модальное сообщение , прерывание обработки события.
+                        MessageUtils.showModalMessage(this, "Внимание!", "Товар не состоит на учете. Обработка невозможна. Отложите для дальнейшего разбора и сканируйте другую!");
+                        return;
+                    }
+                    invRecContent = ActInvRecContent.fillInvRecContent(invRec, nomenIn3, markIn.getMrc());
+                    proceedOneBottle(nomenIn3);
+
                 } else {
                     MessageUtils.showModalMessage(this, "Внимание!", "Неверная длина сканированного ШК, повторите сканирование марки, фактичесая длина марки " + barCode.length());
                 }

@@ -480,6 +480,30 @@ public class ActWriteoffRec extends ActBaseDocRec {
                     //Количество марок, добавленное в документ #Количество, добавленное по текущей коробке# шт.
                     MessageUtils.showModalMessage(this, "Внимание!", "В коробке " + barCode + " числится номенклатура " + foundNomenIn.getName() + " (" + foundNomenIn.getId() + ") с учетным количеством " + marksInCurrentBox + " марок." +
                             " Количество марок, добавленное в документ " + qtyAddedCurrentBox + " шт.");
+                } else if (barCode.length() == 36 && barCode.matches("^[a-z0-9]{8}-[a-z0-9]{4}-4[a-z0-9]{3}-[a-z0-9]{4}-[a-z0-9]{12}")) { // 36 символов (подарочная карта)
+                    // Проверить наличие этой марки среди ранее сохраненных марок всех товарных позиций этого задания.
+                    // Проверить что этот ШК ранее не сканировался в данной ТТН
+                    DaoMem.CheckMarkScannedResult markScanned = DaoMem.getDaoMem().checkMarkScanned(writeoffRec, barCode);
+                    if (markScanned != null && (markScanned.markScannedAsType == BaseRecContentMark.MARK_SCANNED_AS_MARK || markScanned.markScannedAsType == BaseRecContentMark.MARK_SCANNED_AS_BOX)) {
+                        // Если марка найдена — модальное сообщение «», прервать обработку события
+                        MessageUtils.showModalMessage(this, "Внимание!", "Эта марка ранее уже была отсканирована в этом задании в позиции " + markScanned.recContent.getPosition() + " товара " + markScanned.recContent.getNomenIn().getName());
+                        return;
+                    }
+                    // искать марку в справочнике «marks.json»
+                    markIn = DaoMem.getDaoMem().findMarkByBarcode(barCode);
+                    if (markIn == null) {
+                        // если не найдена: модальное сообщение , прерывание обработки события.
+                        MessageUtils.showModalMessage(this, "Внимание!", "Подарочная карта не состоит на учете. Обработка невозможна. Отложите для дальнейшего разбора и сканируйте другую!");
+                        return;
+                    }
+                    this.scannedMarkIn = markIn;
+                    NomenIn nomenIn = DaoMem.getDaoMem().findNomenInByNomenId(markIn.getNomenId());
+                    if (nomenIn == null) {
+                        // если не найдена: модальное сообщение , прерывание обработки события.
+                        MessageUtils.showModalMessage(this, "Внимание!", "Товар не состоит на учете. Обработка невозможна. Отложите для дальнейшего разбора и сканируйте другую!");
+                        return;
+                    }
+                    proceedOneBottle(nomenIn, 1, this.scannedMarkIn.getMrc());
                 } else {
                     MessageUtils.showModalMessage(this, "Внимание!", "Неверная длина сканированного ШК, повторите сканирование марки, фактичесая длина марки " + barCode.length());
                 }
